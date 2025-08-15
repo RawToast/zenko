@@ -1,0 +1,32 @@
+{
+  "name": "zwagger",
+  "version": "0.1.0",
+  "description": "Generate TypeScript types and path functions from OpenAPI specs",
+  "main": "index.ts",
+  "module": "index.ts",
+  "type": "module",
+  "bin": {
+    "zwagger": "./bin/zwagger.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "bun run build",
+    "format": "prettier --write '**/*'{js,ts,tsx,json} --experimental-cli",
+    "format:check": "prettier --check '**/*'{js,ts,tsx,json} --experimental-cli"
+  },
+  "devDependencies": {
+    "@prettier/plugin-oxc": "0.0.4",
+    "@types/bun": "latest",
+    "@types/js-yaml": "4.0.9",
+    "oxlint": "1.11.2",
+    "prettier": "3.6.2",
+    "typescript": "^5"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "js-yaml": "4.1.0",
+    "zod": "4.0.17"
+  }
+}

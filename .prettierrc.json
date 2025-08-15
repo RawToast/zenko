@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json.schemastore.org/prettierrc.json",
+  "plugins": ["@prettier/plugin-oxc"],
+  "arrowParens": "always",
+  "bracketSpacing": true,
+  "endOfLine": "lf",
+  "importOrder": [
+    "",
+    "<BUILT_IN_MODULES>",
+    "",
+    "<THIRD_PARTY_MODULES>",
+    "^@/",
+    "",
+    "^~/",
+    "",
+    "^[.]"
+  ],
+  "printWidth": 80,
+  "semi": false,
+  "singleQuote": false,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "tailwindAttributes": ["className", "innerClassName"],
+  "tailwindFunctions": ["cn"]
+}
