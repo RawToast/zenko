@@ -7,10 +7,10 @@ import { formatPropertyName } from "./utils/property-name"
 
 type OpenAPISpec = {
   openapi: string
-  info: any
-  paths: Record<string, Record<string, any>>
+  info: unknown
+  paths: Record<string, Record<string, unknown>>
   components?: {
-    schemas?: Record<string, any>
+    schemas?: Record<string, unknown>
   }
 }
 
@@ -111,14 +111,14 @@ export class OpenAPIGenerator {
 
     for (const [path, pathItem] of Object.entries(this.spec.paths)) {
       for (const [method, operation] of Object.entries(pathItem)) {
-        if (!operation.operationId) continue
+        if (!(operation as any).operationId) continue
 
         const pathParams = this.extractPathParams(path)
         const requestType = this.getRequestType(operation)
         const responseType = this.getResponseType(operation)
 
         operations.push({
-          operationId: operation.operationId,
+          operationId: (operation as any).operationId,
           path,
           method: method.toLowerCase(),
           pathParams,
@@ -241,7 +241,7 @@ export class OpenAPIGenerator {
             .join(", ")
           return `z.object({ ${props} })`
         }
-        return "z.record(z.any())"
+        return "z.record(z.unknown())"
       default:
         return "z.unknown()"
     }
