@@ -92,7 +92,7 @@ export class OpenAPIGenerator {
       output.push(`  path: paths.${op.operationId},`)
 
       if (op.requestType) {
-        output.push(`  request: ${op.requestType}.safeParse,`)
+        output.push(`  request: ${op.requestType},`)
       }
 
       if (op.responseType) {

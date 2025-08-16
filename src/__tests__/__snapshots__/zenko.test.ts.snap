@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`OpenAPIGenerator can generate a valid schema given a spec 1`] = `
+exports[`OpenAPIGenerator Petstore OpenAPI spec generates complete TypeScript output: petstore-complete-output 1`] = `
 "import { z } from "zod";
 
 // Generated Zod Schemas
@@ -39,7 +39,7 @@ export const listPets = {
 
 export const createPets = {
   path: paths.createPets,
-  request: Pet.safeParse,
+  request: Pet,
 } as const;
 
 export const showPetById = {
@@ -47,4 +47,53 @@ export const showPetById = {
   response: Pet,
 } as const;
 "
+`;
+
+exports[`OpenAPIGenerator Edge cases handles spec with no components: no-components-spec-output 1`] = `
+"import { z } from "zod";
+
+// Path Functions
+export const paths = {
+  getTest: () => "/test",
+} as const;
+
+// Operation Objects
+export const getTest = {
+  path: paths.getTest,
+} as const;
+"
+`;
+
+exports[`OpenAPIGenerator Edge cases handles circular dependencies gracefully: circular-dependencies-output 1`] = `
+"import { z } from "zod";
+
+// Generated Zod Schemas
+
+export const B = z.object({
+  a: A.optional(),
+});
+
+export type B = z.infer<typeof B>;
+
+export const A = z.object({
+  b: B.optional(),
+});
+
+export type A = z.infer<typeof A>;
+
+// Path Functions
+export const paths = {
+} as const;
+
+// Operation Objects"
+`;
+
+exports[`OpenAPIGenerator Edge cases handles empty spec: empty-spec-output 1`] = `
+"import { z } from "zod";
+
+// Path Functions
+export const paths = {
+} as const;
+
+// Operation Objects"
 `;
