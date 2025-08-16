@@ -1,5 +1,9 @@
 import { test, expect, describe } from "bun:test"
-import { topologicalSort, extractDependencies, extractRefName } from "./topological-sort"
+import {
+  topologicalSort,
+  extractDependencies,
+  extractRefName,
+} from "../topological-sort"
 import * as yaml from "js-yaml"
 import * as fs from "fs"
 
@@ -7,22 +11,22 @@ describe("topologicalSort", () => {
   test("should handle simple dependency chain", () => {
     const schemas = {
       A: { type: "string" },
-      B: { 
+      B: {
         type: "object",
         properties: {
-          a: { $ref: "#/components/schemas/A" }
-        }
+          a: { $ref: "#/components/schemas/A" },
+        },
       },
       C: {
-        type: "object", 
+        type: "object",
         properties: {
-          b: { $ref: "#/components/schemas/B" }
-        }
-      }
+          b: { $ref: "#/components/schemas/B" },
+        },
+      },
     }
 
     const result = topologicalSort(schemas)
-    
+
     // A should come before B, B should come before C
     expect(result.indexOf("A")).toBeLessThan(result.indexOf("B"))
     expect(result.indexOf("B")).toBeLessThan(result.indexOf("C"))
@@ -33,14 +37,14 @@ describe("topologicalSort", () => {
     const schemas = {
       SimpleString: { type: "string" },
       SimpleNumber: { type: "number" },
-      SimpleBoolean: { type: "boolean" }
+      SimpleBoolean: { type: "boolean" },
     }
 
     const result = topologicalSort(schemas)
-    
+
     expect(result).toHaveLength(3)
     expect(result).toContain("SimpleString")
-    expect(result).toContain("SimpleNumber") 
+    expect(result).toContain("SimpleNumber")
     expect(result).toContain("SimpleBoolean")
   })
 
@@ -49,36 +53,39 @@ describe("topologicalSort", () => {
       A: {
         type: "object",
         properties: {
-          b: { $ref: "#/components/schemas/B" }
-        }
+          b: { $ref: "#/components/schemas/B" },
+        },
       },
       B: {
         type: "object",
         properties: {
-          a: { $ref: "#/components/schemas/A" }
-        }
-      }
+          a: { $ref: "#/components/schemas/A" },
+        },
+      },
     }
 
     const result = topologicalSort(schemas)
-    
+
     expect(result).toHaveLength(2)
     expect(result).toContain("A")
     expect(result).toContain("B")
   })
 
   test("should work with petstore schema", () => {
-    const petstoreContent = fs.readFileSync("src/resources/petstore.yaml", "utf8")
+    const petstoreContent = fs.readFileSync(
+      "src/resources/petstore.yaml",
+      "utf8"
+    )
     const petstore = yaml.load(petstoreContent) as any
     const schemas = petstore.components.schemas
 
     const result = topologicalSort(schemas)
-    
+
     expect(result).toHaveLength(3)
     expect(result).toContain("Pet")
-    expect(result).toContain("Pets") 
+    expect(result).toContain("Pets")
     expect(result).toContain("Error")
-    
+
     // Pet should come before Pets since Pets references Pet
     expect(result.indexOf("Pet")).toBeLessThan(result.indexOf("Pets"))
   })
@@ -88,12 +95,12 @@ describe("topologicalSort", () => {
       Item: { type: "string" },
       ItemList: {
         type: "array",
-        items: { $ref: "#/components/schemas/Item" }
-      }
+        items: { $ref: "#/components/schemas/Item" },
+      },
     }
 
     const result = topologicalSort(schemas)
-    
+
     expect(result.indexOf("Item")).toBeLessThan(result.indexOf("ItemList"))
   })
 
@@ -103,15 +110,15 @@ describe("topologicalSort", () => {
         type: "object",
         properties: {
           street: { type: "string" },
-          city: { type: "string" }
-        }
+          city: { type: "string" },
+        },
       },
       Person: {
         type: "object",
         properties: {
           name: { type: "string" },
-          address: { $ref: "#/components/schemas/Address" }
-        }
+          address: { $ref: "#/components/schemas/Address" },
+        },
       },
       Company: {
         type: "object",
@@ -119,14 +126,14 @@ describe("topologicalSort", () => {
           name: { type: "string" },
           employees: {
             type: "array",
-            items: { $ref: "#/components/schemas/Person" }
-          }
-        }
-      }
+            items: { $ref: "#/components/schemas/Person" },
+          },
+        },
+      },
     }
 
     const result = topologicalSort(schemas)
-    
+
     expect(result.indexOf("Address")).toBeLessThan(result.indexOf("Person"))
     expect(result.indexOf("Person")).toBeLessThan(result.indexOf("Company"))
   })
@@ -137,8 +144,8 @@ describe("extractDependencies", () => {
     const schema = {
       type: "object",
       properties: {
-        user: { $ref: "#/components/schemas/User" }
-      }
+        user: { $ref: "#/components/schemas/User" },
+      },
     }
 
     const deps = extractDependencies(schema)
@@ -147,11 +154,11 @@ describe("extractDependencies", () => {
 
   test("should extract multiple dependencies", () => {
     const schema = {
-      type: "object", 
+      type: "object",
       properties: {
         user: { $ref: "#/components/schemas/User" },
-        address: { $ref: "#/components/schemas/Address" }
-      }
+        address: { $ref: "#/components/schemas/Address" },
+      },
     }
 
     const deps = extractDependencies(schema)
@@ -163,7 +170,7 @@ describe("extractDependencies", () => {
   test("should handle array item dependencies", () => {
     const schema = {
       type: "array",
-      items: { $ref: "#/components/schemas/Item" }
+      items: { $ref: "#/components/schemas/Item" },
     }
 
     const deps = extractDependencies(schema)
@@ -175,8 +182,8 @@ describe("extractDependencies", () => {
       type: "object",
       properties: {
         name: { type: "string" },
-        age: { type: "number" }
-      }
+        age: { type: "number" },
+      },
     }
 
     const deps = extractDependencies(schema)
@@ -188,8 +195,8 @@ describe("extractDependencies", () => {
       type: "object",
       properties: {
         user1: { $ref: "#/components/schemas/User" },
-        user2: { $ref: "#/components/schemas/User" }
-      }
+        user2: { $ref: "#/components/schemas/User" },
+      },
     }
 
     const deps = extractDependencies(schema)

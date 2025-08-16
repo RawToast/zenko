@@ -3,6 +3,7 @@
 import * as fs from "fs"
 import * as yaml from "js-yaml"
 import { topologicalSort, extractRefName } from "./utils/topological-sort"
+import { formatPropertyName } from "./utils/property-name"
 
 type OpenAPISpec = {
   openapi: string
@@ -193,7 +194,7 @@ export class OpenAPIGenerator {
         const isRequired = schema.required?.includes(propName) ?? false
         const zodType = this.getZodTypeFromSchema(propSchema as any)
         const finalType = isRequired ? zodType : `${zodType}.optional()`
-        properties.push(`  ${propName}: ${finalType},`)
+        properties.push(`  ${formatPropertyName(propName)}: ${finalType},`)
       }
 
       return `export const ${name} = z.object({\n${properties.join("\n")}\n});`
@@ -235,7 +236,7 @@ export class OpenAPIGenerator {
               const isRequired = schema.required?.includes(key) ?? false
               const zodType = this.getZodTypeFromSchema(prop)
               const finalType = isRequired ? zodType : `${zodType}.optional()`
-              return `${key}: ${finalType}`
+              return `${formatPropertyName(key)}: ${finalType}`
             })
             .join(", ")
           return `z.object({ ${props} })`
@@ -245,7 +246,6 @@ export class OpenAPIGenerator {
         return "z.unknown()"
     }
   }
-
 
   private capitalize(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1)

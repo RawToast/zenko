@@ -33,6 +33,9 @@ npx zenko input.yaml output.ts
 
 # Or directly with tsx
 npx tsx src/zenko.ts input.yaml output.ts
+
+# Use bun
+bun run src/zenko input.yaml output.ts
 ```
 
 ### Programmatic Usage
@@ -55,7 +58,7 @@ fs.writeFileSync("types.ts", output)
 
 ## Generated Output
 
-Zwagger generates three main types of code:
+Zenko generates three main types of code:
 
 ### 1. Zod Schemas
 
@@ -165,11 +168,11 @@ npm install
 npm test
 
 # Test with example spec
-npx tsx src/zwagger.ts resources/auth.yml output.ts
+npx tsx src/zenko.ts resources/auth.yml output.ts
 ```
 
 ## Architecture
 
-- **`src/zwagger.ts`** - Main Zod-based generator (current default)
-- **`bin/zwagger.js`** - CLI entry point
+- **`src/zenko.ts`** - Main Zod-based generator (current default)
+- **`bin/zenko.js`** - CLI entry point
 - **Topological Sort** - Ensures proper dependency ordering for schema generation
