@@ -1,18 +1,21 @@
 {
-  "name": "zwagger",
+  "name": "zenko",
   "version": "0.1.0",
   "description": "Generate TypeScript types and path functions from OpenAPI specs",
   "main": "index.ts",
   "module": "index.ts",
   "type": "module",
   "bin": {
-    "zwagger": "./bin/zwagger.js"
+    "zenko": "./bin/zenko.js"
   },
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "bun run build",
     "format": "prettier --write '**/*'{js,ts,tsx,json} --experimental-cli",
-    "format:check": "prettier --check '**/*'{js,ts,tsx,json} --experimental-cli"
+    "format:check": "prettier --check '**/*'{js,ts,tsx,json} --experimental-cli",
+    "coverage": "bun test --coverage",
+    "lint": "oxlint src --fix --max-warnings=0",
+    "lint:check": "oxlint src --fix --max-warnings=0"
   },
   "devDependencies": {
     "@prettier/plugin-oxc": "0.0.4",

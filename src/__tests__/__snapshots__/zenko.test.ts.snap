@@ -1,0 +1,50 @@
+// Bun Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`OpenAPIGenerator can generate a valid schema given a spec 1`] = `
+"import { z } from "zod";
+
+// Generated Zod Schemas
+
+export const Pet = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  tag: z.string().optional(),
+});
+
+export type Pet = z.infer<typeof Pet>;
+
+export const Pets = z.array(Pet);
+
+export type Pets = z.infer<typeof Pets>;
+
+export const Error = z.object({
+  code: z.number().int(),
+  message: z.string(),
+});
+
+export type Error = z.infer<typeof Error>;
+
+// Path Functions
+export const paths = {
+  listPets: () => "/pets",
+  createPets: () => "/pets",
+  showPetById: ({ petId }: { petId: string }) => \`/pets/\${petId}\`,
+} as const;
+
+// Operation Objects
+export const listPets = {
+  path: paths.listPets,
+  response: Pets,
+} as const;
+
+export const createPets = {
+  path: paths.createPets,
+  request: Pet.safeParse,
+} as const;
+
+export const showPetById = {
+  path: paths.showPetById,
+  response: Pet,
+} as const;
+"
+`;

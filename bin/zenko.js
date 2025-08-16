@@ -4,12 +4,12 @@
 import * as fs from "fs"
 import * as yaml from "js-yaml"
 
-// Import the main logic from zwagger-zod.ts
+// Import the main logic from zenko.ts
 async function main() {
   const args = process.argv.slice(2)
 
   if (args.length < 2) {
-    console.error("Usage: zwagger <input-file> <output-file>")
+    console.error("Usage: zenko <input-file> <output-file>")
     console.error("  input-file: OpenAPI spec file (.json or .yaml)")
     console.error("  output-file: Generated TypeScript file")
     process.exit(1)
@@ -18,7 +18,7 @@ async function main() {
   const [inputFile, outputFile] = args
 
   if (!inputFile || !outputFile) {
-    console.error("Usage: zwagger <input-file> <output-file>")
+    console.error("Usage: zenko <input-file> <output-file>")
     console.error("  input-file: OpenAPI spec file (.json or .yaml)")
     console.error("  output-file: Generated TypeScript file")
     process.exit(1)

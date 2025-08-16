@@ -5,7 +5,7 @@ import * as yaml from "js-yaml"
 import { topologicalSort, extractRefName } from "./utils/topological-sort"
 import { formatPropertyName } from "./utils/property-name"
 
-type OpenAPISpec = {
+export type OpenAPISpec = {
   openapi: string
   info: unknown
   paths: Record<string, Record<string, unknown>>
