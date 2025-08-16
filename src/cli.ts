@@ -7,13 +7,16 @@ import { OpenAPIGenerator } from "./generator.js"
 function main() {
   const args = process.argv.slice(2)
 
-  if (args.length !== 2) {
+  if (args.includes("-h") || args.includes("--help") || args.length !== 2) {
     console.log("Usage: zenko <input-file> <output-file>")
     console.log(
       "  input-file:  OpenAPI specification file (.json, .yaml, .yml)"
     )
     console.log("  output-file: Output TypeScript file (.ts)")
-    process.exit(1)
+    console.log("")
+    console.log("Options:")
+    console.log("  -h, --help    Show this help message")
+    process.exit(args.includes("-h") || args.includes("--help") ? 0 : 1)
   }
 
   const inputFile = args[0]!

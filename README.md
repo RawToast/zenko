@@ -14,13 +14,28 @@ Unlike most OpenAPI generators, Zenko does not create a client. Instead you are 
 
 ## Installation
 
-Use your package manager of choice:
+### One-time Usage
 
 ```bash
-bun install zenko
-yarn install zenko
-pnpm install zenko
+# Use directly with npx (no installation required)
+npx zenko input.yaml output.ts
+
+# Or with bunx
+bunx zenko input.yaml output.ts
+```
+
+### Install for Repeated Use
+
+```bash
+# Install globally
+npm install -g zenko
+bun install -g zenko
+
+# Or install locally
 npm install zenko
+bun add zenko
+yarn add zenko
+pnpm add zenko
 ```
 
 ## Usage
@@ -29,24 +44,27 @@ npm install zenko
 
 ```bash
 # Generate TypeScript types from OpenAPI spec
+zenko input.yaml output.ts
+zenko petstore.json api-types.ts
+
+# Show help
+zenko --help
+zenko -h
+
+# One-time usage (no installation)
 npx zenko input.yaml output.ts
-
-# Or directly with tsx
-npx tsx src/zenko.ts input.yaml output.ts
-
-# Use bun
-bun run src/zenko input.yaml output.ts
+bunx zenko input.yaml output.ts
 ```
 
 ### Programmatic Usage
 
 ```typescript
-import { OpenAPIGenerator } from "zenko/src/zenko"
+import { OpenAPIGenerator, type OpenAPISpec } from "zenko"
 import * as fs from "fs"
-import * as yaml from "js-yaml"
+import { load } from "js-yaml"
 
 // Load your OpenAPI spec
-const spec = yaml.load(fs.readFileSync("api.yaml", "utf8"))
+const spec = load(fs.readFileSync("api.yaml", "utf8")) as OpenAPISpec
 
 // Generate TypeScript code
 const generator = new OpenAPIGenerator(spec)
@@ -54,6 +72,18 @@ const output = generator.generate()
 
 // Write to file
 fs.writeFileSync("types.ts", output)
+```
+
+#### ES Modules
+
+```typescript
+import { OpenAPIGenerator } from "zenko"
+```
+
+#### CommonJS
+
+```javascript
+const { OpenAPIGenerator } = require("zenko")
 ```
 
 ## Generated Output
@@ -162,17 +192,24 @@ Runtime validation with Zod schemas provides:
 
 ```bash
 # Install dependencies
-npm install
+bun install
 
 # Run tests
-npm test
+bun test
+
+# Build the package
+bun run build
 
 # Test with example spec
-npx tsx src/zenko.ts resources/auth.yml output.ts
+zenko src/resources/petstore.yaml output.ts
+
+# Format code
+bun run format
 ```
 
 ## Architecture
 
-- **`src/zenko.ts`** - Main Zod-based generator (current default)
-- **`bin/zenko.js`** - CLI entry point
+- **`src/generator.ts`** - Main OpenAPI → TypeScript generator
+- **`src/cli.ts`** - Command-line interface
+- **`dist/`** - Bundled outputs (CJS + ESM)
 - **Topological Sort** - Ensures proper dependency ordering for schema generation
