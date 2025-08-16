@@ -32,25 +32,25 @@ npm install zenko
 npx zenko input.yaml output.ts
 
 # Or directly with tsx
-npx tsx src/zwagger.ts input.yaml output.ts
+npx tsx src/zenko.ts input.yaml output.ts
 ```
 
 ### Programmatic Usage
 
 ```typescript
-import { OpenAPIGenerator } from "zenko/src/zwagger";
-import * as fs from "fs";
-import * as yaml from "js-yaml";
+import { OpenAPIGenerator } from "zenko/src/zenko"
+import * as fs from "fs"
+import * as yaml from "js-yaml"
 
 // Load your OpenAPI spec
-const spec = yaml.load(fs.readFileSync("api.yaml", "utf8"));
+const spec = yaml.load(fs.readFileSync("api.yaml", "utf8"))
 
 // Generate TypeScript code
-const generator = new OpenAPIGenerator(spec);
-const output = generator.generate();
+const generator = new OpenAPIGenerator(spec)
+const output = generator.generate()
 
 // Write to file
-fs.writeFileSync("types.ts", output);
+fs.writeFileSync("types.ts", output)
 ```
 
 ## Generated Output
@@ -60,25 +60,25 @@ Zwagger generates three main types of code:
 ### 1. Zod Schemas
 
 ```typescript
-import { z } from "zod";
+import { z } from "zod"
 
 // Enum schemas
-export const OtpDispatchMethod = z.enum(["SMS", "VOICE"]);
-export type OtpDispatchMethod = z.infer<typeof OtpDispatchMethod>;
+export const OtpDispatchMethod = z.enum(["SMS", "VOICE"])
+export type OtpDispatchMethod = z.infer<typeof OtpDispatchMethod>
 
 // Object schemas with dependencies resolved
 export const Recaptcha = z.object({
   recaptcha_token: z.string(),
   recaptcha_platform: z.enum(["Web", "IOS", "ANDROID", "CHECKOUT"]),
-});
-export type Recaptcha = z.infer<typeof Recaptcha>;
+})
+export type Recaptcha = z.infer<typeof Recaptcha>
 
 // Complex request/response schemas
 export const AuthenticateRequest = z.object({
   recaptcha: Recaptcha,
   otp_dispatch_method: OtpDispatchMethod,
-});
-export type AuthenticateRequest = z.infer<typeof AuthenticateRequest>;
+})
+export type AuthenticateRequest = z.infer<typeof AuthenticateRequest>
 ```
 
 ### 2. Path Functions
@@ -93,7 +93,7 @@ export const paths = {
   getUserById: ({ userId }: { userId: string }) => `/users/${userId}`,
   updatePost: ({ userId, postId }: { userId: string; postId: string }) =>
     `/users/${userId}/posts/${postId}`,
-} as const;
+} as const
 ```
 
 ### 3. Operation Objects
@@ -104,25 +104,21 @@ export const authenticateUser = {
   path: paths.authenticateUser,
   request: AuthenticateRequest.safeParse,
   response: AuthenticateResponse,
-} as const;
+} as const
 
 export const getUserById = {
   path: paths.getUserById,
   response: UserResponse,
-} as const;
+} as const
 ```
 
 ## Example Usage in Your App
 
 ```typescript
-import {
-  paths,
-  authenticateUser,
-  AuthenticateRequest,
-} from "./generated-types";
+import { paths, authenticateUser, AuthenticateRequest } from "./generated-types"
 
 // Type-safe path building
-const userPath = paths.getUserById({ userId: "123" });
+const userPath = paths.getUserById({ userId: "123" })
 // → "/users/123"
 
 // Request validation with Zod
@@ -132,15 +128,15 @@ const requestData = {
     recaptcha_platform: "Web" as const,
   },
   otp_dispatch_method: "SMS" as const,
-};
+}
 
-const validation = authenticateUser.request(requestData);
+const validation = authenticateUser.request(requestData)
 if (validation.success) {
   // Make API call with validated data
   const response = await fetch("/api" + authenticateUser.path(), {
     method: "POST",
     body: JSON.stringify(validation.data),
-  });
+  })
 }
 ```
 

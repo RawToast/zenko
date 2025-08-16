@@ -2,8 +2,9 @@
 
 import * as fs from "fs"
 import * as yaml from "js-yaml"
+import { topologicalSort, extractRefName } from "./utils/topological-sort"
 
-interface OpenAPISpec {
+type OpenAPISpec = {
   openapi: string
   info: any
   paths: Record<string, Record<string, any>>
@@ -12,12 +13,12 @@ interface OpenAPISpec {
   }
 }
 
-interface PathParam {
+type PathParam = {
   name: string
   type: string
 }
 
-interface Operation {
+type Operation = {
   operationId: string
   path: string
   method: string
@@ -46,7 +47,7 @@ export class OpenAPIGenerator {
       output.push("")
 
       // Sort schemas by dependencies (topological sort)
-      const sortedSchemas = this.topologicalSort(this.spec.components.schemas)
+      const sortedSchemas = topologicalSort(this.spec.components.schemas)
 
       for (const name of sortedSchemas) {
         const schema = this.spec.components.schemas[name]
@@ -152,7 +153,7 @@ export class OpenAPIGenerator {
     if (!requestBody) return undefined
 
     if (requestBody.$ref) {
-      return this.extractRefName(requestBody.$ref)
+      return extractRefName(requestBody.$ref)
     }
 
     // Generate inline type if needed
@@ -166,7 +167,7 @@ export class OpenAPIGenerator {
     if (!response200) return undefined
 
     if (response200.$ref) {
-      return this.extractRefName(response200.$ref)
+      return extractRefName(response200.$ref)
     }
 
     // Generate inline type if needed
@@ -208,7 +209,7 @@ export class OpenAPIGenerator {
 
   private getZodTypeFromSchema(schema: any): string {
     if (schema.$ref) {
-      return this.extractRefName(schema.$ref)
+      return extractRefName(schema.$ref)
     }
 
     if (schema.enum) {
@@ -245,70 +246,6 @@ export class OpenAPIGenerator {
     }
   }
 
-  private topologicalSort(schemas: Record<string, any>): string[] {
-    const visited = new Set<string>()
-    const visiting = new Set<string>()
-    const result: string[] = []
-
-    const visit = (name: string): void => {
-      if (visited.has(name)) return
-      if (visiting.has(name)) {
-        // Circular dependency detected, just add it anyway
-        return
-      }
-
-      visiting.add(name)
-
-      // Find dependencies of this schema
-      const schema = schemas[name]
-      const dependencies = this.extractDependencies(schema)
-
-      // Visit dependencies first
-      for (const dep of dependencies) {
-        if (schemas[dep]) {
-          visit(dep)
-        }
-      }
-
-      visiting.delete(name)
-      visited.add(name)
-      result.push(name)
-    }
-
-    // Visit all schemas
-    for (const name of Object.keys(schemas)) {
-      visit(name)
-    }
-
-    return result
-  }
-
-  private extractDependencies(schema: any): string[] {
-    const dependencies: string[] = []
-
-    const traverse = (obj: any): void => {
-      if (typeof obj !== "object" || obj === null) return
-
-      if (obj.$ref && typeof obj.$ref === "string") {
-        const refName = this.extractRefName(obj.$ref)
-        dependencies.push(refName)
-        return
-      }
-
-      if (Array.isArray(obj)) {
-        obj.forEach(traverse)
-      } else {
-        Object.values(obj).forEach(traverse)
-      }
-    }
-
-    traverse(schema)
-    return [...new Set(dependencies)] // Remove duplicates
-  }
-
-  private extractRefName(ref: string): string {
-    return ref.split("/").pop() || "Unknown"
-  }
 
   private capitalize(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1)
