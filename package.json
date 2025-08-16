@@ -2,18 +2,49 @@
   "name": "zenko",
   "version": "0.1.0",
   "description": "Generate TypeScript types and path functions from OpenAPI specs",
-  "main": "index.ts",
-  "module": "index.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "type": "module",
   "bin": {
-    "zenko": "./bin/zenko.js"
+    "zenko": "dist/cli.cjs"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jim/zenko.git"
+  },
+  "author": "Jim",
+  "license": "MIT",
+  "keywords": [
+    "openapi",
+    "typescript",
+    "codegen",
+    "api",
+    "generator",
+    "swagger",
+    "zod"
+  ],
+  "homepage": "https://github.com/jim/zenko#readme",
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage",
     "prepublishOnly": "bun run build",
     "format": "prettier --write '**/*'{js,ts,tsx,json} --experimental-cli",
     "format:check": "prettier --check '**/*'{js,ts,tsx,json} --experimental-cli",
-    "coverage": "bun test --coverage",
     "lint": "oxlint src --fix --max-warnings=0",
     "lint:check": "oxlint src --fix --max-warnings=0"
   },
@@ -23,6 +54,7 @@
     "@types/js-yaml": "^4.0.9",
     "oxlint": "1.11.2",
     "prettier": "3.6.2",
+    "tsup": "^8.5.0",
     "typescript": "^5"
   },
   "peerDependencies": {

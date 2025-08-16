@@ -1,1 +1,1 @@
-export * from "./src/zenko.js"
+export { OpenAPIGenerator, type OpenAPISpec } from "./src/generator.js"
