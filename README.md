@@ -61,7 +61,7 @@ bunx zenko input.yaml output.ts
 ### Programmatic Usage
 
 ```typescript
-import { OpenAPIGenerator, type OpenAPISpec } from "zenko"
+import { generate, type OpenAPISpec } from "zenko"
 import * as fs from "fs"
 import { load } from "js-yaml"
 
@@ -69,8 +69,7 @@ import { load } from "js-yaml"
 const spec = load(fs.readFileSync("api.yaml", "utf8")) as OpenAPISpec
 
 // Generate TypeScript code
-const generator = new OpenAPIGenerator(spec)
-const output = generator.generate()
+const output = generate(spec)
 
 // Write to file
 fs.writeFileSync("types.ts", output)
@@ -79,13 +78,13 @@ fs.writeFileSync("types.ts", output)
 #### ES Modules
 
 ```typescript
-import { OpenAPIGenerator } from "zenko"
+import { generate } from "zenko"
 ```
 
 #### CommonJS
 
 ```javascript
-const { OpenAPIGenerator } = require("zenko")
+const { generate } = require("zenko")
 ```
 
 ## Generated Output
@@ -211,7 +210,7 @@ bun run format
 
 ## Architecture
 
-- **`src/generator.ts`** - Main OpenAPI → TypeScript generator
+- **`src/zenko.ts`** - Main OpenAPI → TypeScript generator
 - **`src/cli.ts`** - Command-line interface
 - **`dist/`** - Bundled outputs (CJS + ESM)
 - **Topological Sort** - Ensures proper dependency ordering for schema generation

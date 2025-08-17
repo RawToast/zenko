@@ -1,9 +1,9 @@
 import { describe, test, expect } from "bun:test"
-import { OpenAPIGenerator, type OpenAPISpec } from "../zenko"
+import { generate, type OpenAPISpec } from "../zenko"
 import * as fs from "fs"
 import jsYaml from "js-yaml"
 
-describe("OpenAPIGenerator", () => {
+describe("generate", () => {
   describe("Petstore OpenAPI spec", () => {
     test("generates complete TypeScript output", () => {
       const petstoreContent = fs.readFileSync(
@@ -11,8 +11,7 @@ describe("OpenAPIGenerator", () => {
         "utf8"
       )
       const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
-      const generator = new OpenAPIGenerator(specYaml)
-      const result = generator.generate()
+      const result = generate(specYaml)
 
       expect(result).toMatchSnapshot("petstore-complete-output")
     })
@@ -23,8 +22,7 @@ describe("OpenAPIGenerator", () => {
         "utf8"
       )
       const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
-      const generator = new OpenAPIGenerator(specYaml)
-      const result = generator.generate()
+      const result = generate(specYaml)
 
       expect(result).toContain('import { z } from "zod"')
     })
@@ -35,8 +33,7 @@ describe("OpenAPIGenerator", () => {
         "utf8"
       )
       const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
-      const generator = new OpenAPIGenerator(specYaml)
-      const result = generator.generate()
+      const result = generate(specYaml)
 
       // Pet should come before Pets since Pets references Pet
       const petIndex = result.indexOf("export const Pet =")
@@ -52,8 +49,7 @@ describe("OpenAPIGenerator", () => {
         "utf8"
       )
       const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
-      const generator = new OpenAPIGenerator(specYaml)
-      const result = generator.generate()
+      const result = generate(specYaml)
 
       expect(result).toContain("export const Pet =")
       expect(result).toContain("export const Pets =")
@@ -69,8 +65,7 @@ describe("OpenAPIGenerator", () => {
         "utf8"
       )
       const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
-      const generator = new OpenAPIGenerator(specYaml)
-      const result = generator.generate()
+      const result = generate(specYaml)
 
       expect(result).toContain("export const paths = {")
       expect(result).toContain("listPets:")
@@ -84,8 +79,7 @@ describe("OpenAPIGenerator", () => {
         "utf8"
       )
       const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
-      const generator = new OpenAPIGenerator(specYaml)
-      const result = generator.generate()
+      const result = generate(specYaml)
 
       expect(result).toContain("export const listPets =")
       expect(result).toContain("export const createPets =")
@@ -93,6 +87,19 @@ describe("OpenAPIGenerator", () => {
     })
   })
 
+  describe("TicTacToe OpenAPI spec", () => {
+    test("generates complete TypeScript output", () => {
+      const tictactoeContent = fs.readFileSync(
+        "src/resources/tictactoe.yaml",
+        "utf8"
+      )
+      const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+      const result = generate(specYaml)
+
+      expect(result).toMatchSnapshot("tictactoe-complete-output")
+    })
+  })
+  
   describe("Edge cases", () => {
     test("handles empty spec", () => {
       const emptySpec: OpenAPISpec = {
@@ -100,8 +107,7 @@ describe("OpenAPIGenerator", () => {
         info: { title: "Empty", version: "1.0.0" },
         paths: {},
       }
-      const generator = new OpenAPIGenerator(emptySpec)
-      const result = generator.generate()
+      const result = generate(emptySpec)
 
       expect(result).toContain('import { z } from "zod"')
       expect(result).toContain("export const paths = {")
@@ -125,8 +131,7 @@ describe("OpenAPIGenerator", () => {
           },
         },
       }
-      const generator = new OpenAPIGenerator(simpleSpec)
-      const result = generator.generate()
+      const result = generate(simpleSpec)
 
       expect(result).toContain("getTest:")
       expect(result).toMatchSnapshot("no-components-spec-output")
@@ -154,8 +159,7 @@ describe("OpenAPIGenerator", () => {
           },
         },
       }
-      const generator = new OpenAPIGenerator(circularSpec)
-      const result = generator.generate()
+      const result = generate(circularSpec)
 
       expect(result).toContain("export const A =")
       expect(result).toContain("export const B =")

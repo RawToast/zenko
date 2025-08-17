@@ -97,3 +97,159 @@ export const paths = {
 
 // Operation Objects"
 `;
+
+exports[`generate Petstore OpenAPI spec generates complete TypeScript output: petstore-complete-output 1`] = `
+"import { z } from "zod";
+
+// Generated Zod Schemas
+
+export const Pet = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  tag: z.string().optional(),
+});
+
+export type Pet = z.infer<typeof Pet>;
+
+export const Pets = z.array(Pet);
+
+export type Pets = z.infer<typeof Pets>;
+
+export const Error = z.object({
+  code: z.number().int(),
+  message: z.string(),
+});
+
+export type Error = z.infer<typeof Error>;
+
+// Path Functions
+export const paths = {
+  listPets: () => "/pets",
+  createPets: () => "/pets",
+  showPetById: ({ petId }: { petId: string }) => \`/pets/\${petId}\`,
+} as const;
+
+// Operation Objects
+export const listPets = {
+  path: paths.listPets,
+  response: Pets,
+} as const;
+
+export const createPets = {
+  path: paths.createPets,
+  request: Pet,
+} as const;
+
+export const showPetById = {
+  path: paths.showPetById,
+  response: Pet,
+} as const;
+"
+`;
+
+exports[`generate Edge cases handles empty spec: empty-spec-output 1`] = `
+"import { z } from "zod";
+
+// Path Functions
+export const paths = {
+} as const;
+
+// Operation Objects"
+`;
+
+exports[`generate Edge cases handles spec with no components: no-components-spec-output 1`] = `
+"import { z } from "zod";
+
+// Path Functions
+export const paths = {
+  getTest: () => "/test",
+} as const;
+
+// Operation Objects
+export const getTest = {
+  path: paths.getTest,
+} as const;
+"
+`;
+
+exports[`generate Edge cases handles circular dependencies gracefully: circular-dependencies-output 1`] = `
+"import { z } from "zod";
+
+// Generated Zod Schemas
+
+export const B = z.object({
+  a: A.optional(),
+});
+
+export type B = z.infer<typeof B>;
+
+export const A = z.object({
+  b: B.optional(),
+});
+
+export type A = z.infer<typeof A>;
+
+// Path Functions
+export const paths = {
+} as const;
+
+// Operation Objects"
+`;
+
+exports[`generate TicTacToe OpenAPI spec generates complete TypeScript output: tictactoe-complete-output 1`] = `
+"import { z } from "zod";
+
+// Generated Zod Schemas
+
+export const errorMessage = z.string();
+
+export type errorMessage = z.infer<typeof errorMessage>;
+
+export const coordinate = z.number().int();
+
+export type coordinate = z.infer<typeof coordinate>;
+
+export const mark = z.enum([".", "X", "O"]);
+
+export type mark = z.infer<typeof mark>;
+
+export const board = z.array(z.array(mark));
+
+export type board = z.infer<typeof board>;
+
+export const winner = z.enum([".", "X", "O"]);
+
+export type winner = z.infer<typeof winner>;
+
+export const status = z.object({
+  winner: winner.optional(),
+  board: board.optional(),
+});
+
+export type status = z.infer<typeof status>;
+
+// Path Functions
+export const paths = {
+  get-board: () => "/board",
+  get-square: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+  put-square: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+} as const;
+
+// Operation Objects
+export const get-board = {
+  path: paths.get-board,
+  response: status,
+} as const;
+
+export const get-square = {
+  path: paths.get-square,
+  response: mark,
+} as const;
+
+export const put-square = {
+  path: paths.put-square,
+  request: mark,
+  response: status,
+} as const;
+"
+`;

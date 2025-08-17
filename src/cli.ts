@@ -2,7 +2,7 @@
 
 import * as fs from "fs"
 import { load } from "js-yaml"
-import { OpenAPIGenerator } from "./generator.js"
+import { generate, type OpenAPISpec } from "./zenko.js"
 
 function main() {
   const args = process.argv.slice(2)
@@ -25,17 +25,16 @@ function main() {
   try {
     // Read and parse OpenAPI spec
     const fileContent = fs.readFileSync(inputFile, "utf8")
-    let spec
+    let spec: OpenAPISpec
 
     if (inputFile.endsWith(".yaml") || inputFile.endsWith(".yml")) {
-      spec = load(fileContent)
+      spec = load(fileContent) as OpenAPISpec
     } else {
       spec = JSON.parse(fileContent)
     }
 
     // Generate TypeScript
-    const generator = new OpenAPIGenerator(spec)
-    const output = generator.generate()
+    const output = generate(spec)
 
     // Write output
     fs.writeFileSync(outputFile, output)
