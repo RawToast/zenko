@@ -41,7 +41,7 @@
     "build": "tsup",
     "build:watch": "tsup --watch",
     "test": "bun test",
-    "test:coverage": "bun test --coverage",
+    "coverage": "bun test --coverage",
     "prepublishOnly": "bun run build",
     "format": "prettier --write '**/*'{js,ts,tsx,json} --experimental-cli",
     "format:check": "prettier --check '**/*'{js,ts,tsx,json} --experimental-cli",
