@@ -64,6 +64,27 @@ npx zenko input.yaml output.ts
 bunx zenko input.yaml output.ts
 ```
 
+### Config File
+
+The config file is a JSON file that contains an array of schema objects. Each schema object contains the input and output files, and the strict dates and numeric options.
+
+```json
+{
+  "schemas": [
+    {
+      "input": "my-api.yaml",
+      "output": "my-api.gen.ts"
+    },
+    {
+      "input": "my-strict-api.yaml",
+      "output": "my-strict-api.gen.ts",
+      "strictDates": true,
+      "strictNumeric": true
+    }
+  ]
+}
+```
+
 ### Programmatic Usage
 
 ```typescript

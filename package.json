@@ -37,6 +37,12 @@
     "zod"
   ],
   "homepage": "https://github.com/RawToast/zenko#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "bugs": {
+    "url": "https://github.com/RawToast/zenko/issues"
+  },
   "scripts": {
     "build": "tsup",
     "build:watch": "tsup --watch",
