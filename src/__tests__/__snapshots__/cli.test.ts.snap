@@ -42,16 +42,31 @@ export const headers = {
 export const listPets = {
   path: paths.listPets,
   response: Pets,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
 } as const;
 
 export const createPets = {
   path: paths.createPets,
   request: Pet,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
 } as const;
 
 export const showPetById = {
   path: paths.showPetById,
   response: Pet,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
 } as const;
 "
 `;

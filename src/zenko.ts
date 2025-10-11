@@ -1,5 +1,10 @@
 import { topologicalSort, extractRefName } from "./utils/topological-sort"
 import { formatPropertyName, isValidJSIdentifier } from "./utils/property-name"
+import {
+  getStatusCategory,
+  isErrorStatus,
+  mapStatusToIdentifier,
+} from "./utils/http-status"
 
 export type OpenAPISpec = {
   openapi: string
@@ -29,7 +34,15 @@ type Operation = {
   requestType?: string
   responseType?: string
   requestHeaders?: RequestHeader[]
+  errors?: OperationErrorGroup
 }
+type OperationErrorGroup = {
+  clientErrors?: OperationErrorMap
+  serverErrors?: OperationErrorMap
+  defaultErrors?: OperationErrorMap
+  otherErrors?: OperationErrorMap
+}
+type OperationErrorMap = Record<string, string>
 
 type RequestHeader = {
   name: string
@@ -204,17 +217,20 @@ export function generate(
     output.push(`export const ${op.operationId} = {`)
     output.push(`  path: paths.${op.operationId},`)
 
-    if (op.requestType) {
-      output.push(`  request: ${op.requestType},`)
-    }
+    appendOperationField(output, "request", op.requestType)
+    appendOperationField(output, "response", op.responseType)
 
-    if (op.responseType) {
-      output.push(`  response: ${op.responseType},`)
-    }
-
-    // Add headers if the operation has request headers
     if (op.requestHeaders && op.requestHeaders.length > 0) {
       output.push(`  headers: headers.${op.operationId},`)
+    }
+
+    if (op.errors && hasAnyErrors(op.errors)) {
+      output.push("  errors: {")
+      appendErrorGroup(output, "clientErrors", op.errors.clientErrors)
+      appendErrorGroup(output, "serverErrors", op.errors.serverErrors)
+      appendErrorGroup(output, "defaultErrors", op.errors.defaultErrors)
+      appendErrorGroup(output, "otherErrors", op.errors.otherErrors)
+      output.push("  },")
     }
 
     output.push("} as const;")
@@ -222,6 +238,37 @@ export function generate(
   }
 
   return output.join("\n")
+}
+
+function appendOperationField(
+  buffer: string[],
+  key: string,
+  value?: string
+): void {
+  if (!value) return
+  buffer.push(`  ${key}: ${value},`)
+}
+
+function appendErrorGroup(
+  buffer: string[],
+  label: string,
+  errors?: OperationErrorMap
+): void {
+  if (!errors || Object.keys(errors).length === 0) return
+  buffer.push(`    ${label}: {`)
+  for (const [name, typeName] of Object.entries(errors)) {
+    buffer.push(`      ${formatPropertyName(name)}: ${typeName},`)
+  }
+  buffer.push("    },")
+}
+
+function hasAnyErrors(group: OperationErrorGroup): boolean {
+  return [
+    group.clientErrors,
+    group.serverErrors,
+    group.defaultErrors,
+    group.otherErrors,
+  ].some((bucket) => bucket && Object.keys(bucket).length > 0)
 }
 
 function parseOperations(spec: OpenAPISpec): Operation[] {
@@ -233,7 +280,10 @@ function parseOperations(spec: OpenAPISpec): Operation[] {
 
       const pathParams = extractPathParams(path)
       const requestType = getRequestType(operation)
-      const responseType = getResponseType(operation)
+      const { successResponse, errors } = getResponseTypes(
+        operation,
+        (operation as any).operationId
+      )
       const resolvedParameters = collectParameters(pathItem, operation, spec)
       const requestHeaders = getRequestHeaders(resolvedParameters)
 
@@ -243,8 +293,9 @@ function parseOperations(spec: OpenAPISpec): Operation[] {
         method: method.toLowerCase(),
         pathParams,
         requestType,
-        responseType,
+        responseType: successResponse,
         requestHeaders,
+        errors,
       })
     }
   }
@@ -325,18 +376,104 @@ function getRequestType(operation: any): string | undefined {
   return typeName
 }
 
-function getResponseType(operation: any): string | undefined {
-  const response200 =
-    operation.responses?.["200"]?.content?.["application/json"]?.schema
-  if (!response200) return undefined
+function getResponseTypes(
+  operation: any,
+  operationId: string
+): { successResponse?: string; errors?: OperationErrorGroup } {
+  const responses = operation.responses ?? {}
+  const successCodes = new Map<string, string>()
+  const errorEntries: Array<{ code: string; schema: any }> = []
 
-  if (response200.$ref) {
-    return extractRefName(response200.$ref)
+  for (const [statusCode, response] of Object.entries(responses)) {
+    const resolvedSchema = (response as any)?.content?.["application/json"]
+      ?.schema
+    if (!resolvedSchema) continue
+
+    if (isErrorStatus(statusCode)) {
+      errorEntries.push({ code: statusCode, schema: resolvedSchema })
+      continue
+    }
+
+    if (/^2\d\d$/.test(statusCode) || statusCode === "default") {
+      successCodes.set(statusCode, resolvedSchema)
+    }
   }
 
-  // Generate inline type if needed
-  const typeName = `${capitalize(operation.operationId)}Response`
-  return typeName
+  const successResponse = selectSuccessResponse(successCodes, operationId)
+  const errors = buildErrorGroups(errorEntries, operationId)
+
+  return { successResponse, errors }
+}
+
+function selectSuccessResponse(
+  responses: Map<string, any>,
+  operationId: string
+): string | undefined {
+  if (responses.size === 0) return undefined
+
+  const preferredOrder = ["200", "201", "204"]
+  for (const code of preferredOrder) {
+    const schema = responses.get(code)
+    if (schema) {
+      return resolveResponseType(
+        schema,
+        `${capitalize(operationId)}Response${code}`
+      )
+    }
+  }
+
+  const [firstCode, firstSchema] = responses.entries().next().value ?? []
+  if (!firstSchema) return undefined
+  return resolveResponseType(
+    firstSchema,
+    `${capitalize(operationId)}Response${firstCode ?? "Default"}`
+  )
+}
+
+function buildErrorGroups(
+  errors: Array<{ code: string; schema: any }> = [],
+  operationId: string
+): OperationErrorGroup | undefined {
+  if (!errors.length) return undefined
+
+  const group: OperationErrorGroup = {}
+
+  for (const { code, schema } of errors) {
+    const category = getStatusCategory(code)
+    const identifier = mapStatusToIdentifier(code)
+    const typeName = resolveResponseType(
+      schema,
+      `${capitalize(operationId)}${capitalize(identifier)}`
+    )
+
+    switch (category) {
+      case "client":
+        group.clientErrors ??= {}
+        group.clientErrors[identifier] = typeName
+        break
+      case "server":
+        group.serverErrors ??= {}
+        group.serverErrors[identifier] = typeName
+        break
+      case "default":
+        group.defaultErrors ??= {}
+        group.defaultErrors[identifier] = typeName
+        break
+      default:
+        group.otherErrors ??= {}
+        group.otherErrors[identifier] = typeName
+        break
+    }
+  }
+
+  return group
+}
+
+function resolveResponseType(schema: any, fallbackName: string): string {
+  if (schema.$ref) {
+    return extractRefName(schema.$ref)
+  }
+  return fallbackName
 }
 
 function getRequestHeaders(parameters: any[]): RequestHeader[] {
