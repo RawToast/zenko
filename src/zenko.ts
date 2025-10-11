@@ -10,6 +10,11 @@ export type OpenAPISpec = {
   }
 }
 
+export type GenerateOptions = {
+  strictDates?: boolean
+  strictNumeric?: boolean
+}
+
 type PathParam = {
   name: string
   type: string
@@ -24,9 +29,15 @@ type Operation = {
   responseType?: string
 }
 
-export function generate(spec: OpenAPISpec): string {
+export function generate(
+  spec: OpenAPISpec,
+  options: GenerateOptions = {}
+): string {
   const output: string[] = []
   const generatedTypes = new Set<string>()
+  const { strictDates = false, strictNumeric = false } = options
+  void strictDates
+  void strictNumeric
 
   output.push('import { z } from "zod";')
   output.push("")

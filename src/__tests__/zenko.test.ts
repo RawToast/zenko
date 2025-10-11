@@ -99,7 +99,7 @@ describe("generate", () => {
       expect(result).toMatchSnapshot("tictactoe-complete-output")
     })
   })
-  
+
   describe("Edge cases", () => {
     test("handles empty spec", () => {
       const emptySpec: OpenAPISpec = {

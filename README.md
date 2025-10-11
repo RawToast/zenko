@@ -49,6 +49,12 @@ pnpm add zenko
 zenko input.yaml output.ts
 zenko petstore.json api-types.ts
 
+# Enable strict guards (date + numeric metadata only; validation coming soon)
+zenko input.yaml output.ts --strict-dates --strict-numeric
+
+# Drive multiple specs from a config file
+zenko --config zenko.config.json
+
 # Show help
 zenko --help
 zenko -h
