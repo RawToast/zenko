@@ -85,6 +85,35 @@ describe("generate", () => {
       expect(result).toContain("export const createPets =")
       expect(result).toContain("export const showPetById =")
     })
+
+    test("supports strict options", () => {
+      const strictSpec: OpenAPISpec = {
+        openapi: "3.0.0",
+        info: { title: "Strict", version: "1.0.0" },
+        paths: {},
+        components: {
+          schemas: {
+            StrictExample: {
+              type: "object",
+              required: ["timestamp", "count"],
+              properties: {
+                timestamp: { type: "string", format: "date-time" },
+                count: { type: "number", minimum: 0, maximum: 10 },
+              },
+            },
+          },
+        },
+      }
+
+      const result = generate(strictSpec, {
+        strictDates: true,
+        strictNumeric: true,
+      })
+
+      expect(result).toContain("z.string().datetime()")
+      expect(result).toContain(".min(0)")
+      expect(result).toContain(".max(10)")
+    })
   })
 
   describe("TicTacToe OpenAPI spec", () => {

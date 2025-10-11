@@ -36,8 +36,10 @@ export function generate(
   const output: string[] = []
   const generatedTypes = new Set<string>()
   const { strictDates = false, strictNumeric = false } = options
-  void strictDates
-  void strictNumeric
+  const schemaOptions: SchemaOptions = {
+    strictDates,
+    strictNumeric,
+  }
 
   output.push('import { z } from "zod";')
   output.push("")
@@ -52,7 +54,9 @@ export function generate(
 
     for (const name of sortedSchemas) {
       const schema = spec.components.schemas[name]
-      output.push(generateZodSchema(name, schema, generatedTypes))
+      output.push(
+        generateZodSchema(name, schema, generatedTypes, schemaOptions)
+      )
       output.push("")
       // Export inferred type
       output.push(`export type ${name} = z.infer<typeof ${name}>;`)
@@ -176,10 +180,16 @@ function getResponseType(operation: any): string | undefined {
   return typeName
 }
 
+type SchemaOptions = {
+  strictDates: boolean
+  strictNumeric: boolean
+}
+
 function generateZodSchema(
   name: string,
   schema: any,
-  generatedTypes: Set<string>
+  generatedTypes: Set<string>,
+  options: SchemaOptions
 ): string {
   if (generatedTypes.has(name)) return ""
   generatedTypes.add(name)
@@ -196,7 +206,7 @@ function generateZodSchema(
       schema.properties || {}
     )) {
       const isRequired = schema.required?.includes(propName) ?? false
-      const zodType = getZodTypeFromSchema(propSchema as any)
+      const zodType = getZodTypeFromSchema(propSchema as any, options)
       const finalType = isRequired ? zodType : `${zodType}.optional()`
       properties.push(`  ${formatPropertyName(propName)}: ${finalType},`)
     }
@@ -205,14 +215,21 @@ function generateZodSchema(
   }
 
   if (schema.type === "array") {
-    const itemType = getZodTypeFromSchema(schema.items)
-    return `export const ${name} = z.array(${itemType});`
+    const itemSchema = schema.items ?? { type: "unknown" }
+    const itemType = getZodTypeFromSchema(itemSchema, options)
+    const builder = applyStrictArrayBounds(
+      schema,
+      `z.array(${itemType})`,
+      itemSchema,
+      options.strictNumeric
+    )
+    return `export const ${name} = ${builder};`
   }
 
-  return `export const ${name} = ${getZodTypeFromSchema(schema)};`
+  return `export const ${name} = ${getZodTypeFromSchema(schema, options)};`
 }
 
-function getZodTypeFromSchema(schema: any): string {
+function getZodTypeFromSchema(schema: any, options: SchemaOptions): string {
   if (schema.$ref) {
     return extractRefName(schema.$ref)
   }
@@ -224,31 +241,147 @@ function getZodTypeFromSchema(schema: any): string {
 
   switch (schema.type) {
     case "string":
-      return "z.string()"
-    case "number":
-      return "z.number()"
-    case "integer":
-      return "z.number().int()"
+      return buildString(schema, options)
     case "boolean":
       return "z.boolean()"
     case "array":
-      return `z.array(${getZodTypeFromSchema(schema.items)})`
-    case "object":
-      if (schema.properties) {
-        const props = Object.entries(schema.properties)
-          .map(([key, prop]) => {
-            const isRequired = schema.required?.includes(key) ?? false
-            const zodType = getZodTypeFromSchema(prop)
-            const finalType = isRequired ? zodType : `${zodType}.optional()`
-            return `${formatPropertyName(key)}: ${finalType}`
-          })
-          .join(", ")
-        return `z.object({ ${props} })`
-      }
-      return "z.record(z.unknown())"
+      return `z.array(${getZodTypeFromSchema(
+        schema.items ?? { type: "unknown" },
+        options
+      )})`
+    case "null":
+      return "z.null()"
+    case "number":
+      return buildNumber(schema, options)
+    case "integer":
+      return buildInteger(schema, options)
     default:
       return "z.unknown()"
   }
+}
+
+function buildString(schema: any, options: SchemaOptions): string {
+  if (options.strictDates) {
+    switch (schema.format) {
+      case "date-time":
+        return "z.string().datetime()"
+      case "date":
+        return "z.string().date()"
+      case "time":
+        return "z.string().time()"
+      case "duration":
+        return "z.string().duration()"
+    }
+  }
+
+  let builder = "z.string()"
+
+  if (options.strictNumeric) {
+    if (typeof schema.minLength === "number") {
+      builder += `.min(${schema.minLength})`
+    }
+
+    if (typeof schema.maxLength === "number") {
+      builder += `.max(${schema.maxLength})`
+    }
+
+    if (schema.pattern) {
+      builder += `.regex(new RegExp(${JSON.stringify(schema.pattern)}))`
+    }
+  }
+
+  switch (schema.format) {
+    case "uuid":
+      return `${builder}.uuid()`
+    case "email":
+      return `${builder}.email()`
+    case "uri":
+    case "url":
+      return `${builder}.url()`
+    case "ipv4":
+      return `${builder}.ip({ version: "v4" })`
+    case "ipv6":
+      return `${builder}.ip({ version: "v6" })`
+    default:
+      return builder
+  }
+}
+
+function buildNumber(schema: any, options: SchemaOptions): string {
+  let builder = "z.number()"
+
+  if (options.strictNumeric) {
+    builder = applyNumericBounds(schema, builder)
+
+    if (typeof schema.multipleOf === "number" && schema.multipleOf !== 0) {
+      builder += `.refine((value) => Math.abs(value / ${schema.multipleOf} - Math.round(value / ${schema.multipleOf})) < Number.EPSILON, { message: "Must be a multiple of ${schema.multipleOf}" })`
+    }
+  }
+
+  return builder
+}
+
+function buildInteger(schema: any, options: SchemaOptions): string {
+  let builder = buildNumber(schema, options)
+  builder += ".int()"
+  return builder
+}
+
+function applyStrictArrayBounds(
+  schema: any,
+  builder: string,
+  itemSchema: any,
+  enforceBounds: boolean
+): string {
+  if (!enforceBounds) {
+    return builder
+  }
+
+  if (typeof schema.minItems === "number") {
+    builder += `.min(${schema.minItems})`
+  }
+
+  if (typeof schema.maxItems === "number") {
+    builder += `.max(${schema.maxItems})`
+  }
+
+  if (schema.uniqueItems && isPrimitiveLike(itemSchema)) {
+    builder +=
+      '.refine((items) => new Set(items).size === items.length, { message: "Items must be unique" })'
+  }
+
+  return builder
+}
+
+function isPrimitiveLike(schema: any): boolean {
+  if (schema?.$ref) return false
+
+  const primitiveTypes = new Set(["string", "number", "integer", "boolean"])
+  return primitiveTypes.has(schema?.type)
+}
+
+function applyNumericBounds(schema: any, builder: string): string {
+  if (typeof schema.minimum === "number") {
+    if (schema.exclusiveMinimum === true) {
+      builder += `.gt(${schema.minimum})`
+    } else {
+      builder += `.min(${schema.minimum})`
+    }
+  } else if (typeof schema.exclusiveMinimum === "number") {
+    builder += `.gt(${schema.exclusiveMinimum})`
+  }
+
+  if (typeof schema.maximum === "number") {
+    if (schema.exclusiveMaximum === true) {
+      builder += `.lt(${schema.maximum})`
+    } else {
+      builder += `.max(${schema.maximum})`
+    }
+  } else if (typeof schema.exclusiveMaximum === "number") {
+    builder += `.lt(${schema.exclusiveMaximum})`
+  }
+
+  return builder
 }
 
 function capitalize(str: string): string {

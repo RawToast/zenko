@@ -2,6 +2,7 @@ import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import { execSync } from "child_process"
 import * as fs from "fs"
 import * as path from "path"
+import * as jsYaml from "js-yaml"
 
 describe("CLI", () => {
   const tempDir = path.join(process.cwd(), "temp-test")
@@ -152,16 +153,38 @@ describe("CLI", () => {
 
   test("supports strict flags on single run", () => {
     const cliPath = path.join(process.cwd(), "src/cli.ts")
-    const petstorePath = path.join(process.cwd(), "src/resources/petstore.yaml")
+    const strictSpec = {
+      openapi: "3.0.0",
+      info: { title: "Strict", version: "1.0.0" },
+      paths: {},
+      components: {
+        schemas: {
+          StrictExample: {
+            type: "object",
+            required: ["timestamp", "count"],
+            properties: {
+              timestamp: { type: "string", format: "date-time" },
+              count: { type: "number", minimum: 0, maximum: 5 },
+            },
+          },
+        },
+      },
+    }
+
+    const specPath = path.join(tempDir, "strict-spec.yaml")
+    fs.writeFileSync(specPath, jsYaml.dump(strictSpec))
 
     execSync(
-      `bun run ${cliPath} ${petstorePath} ${outputFile} --strict-dates --strict-numeric`,
+      `bun run ${cliPath} ${specPath} ${outputFile} --strict-dates --strict-numeric`,
       {
         encoding: "utf8",
       }
     )
 
     const output = fs.readFileSync(outputFile, "utf8")
+    expect(output).toContain("z.string().datetime()")
+    expect(output).toContain(".min(0)")
+    expect(output).toContain(".max(5)")
     expect(output).toContain("export const paths =")
   })
 })
