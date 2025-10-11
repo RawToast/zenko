@@ -1,5 +1,5 @@
 import { topologicalSort, extractRefName } from "./utils/topological-sort"
-import { formatPropertyName } from "./utils/property-name"
+import { formatPropertyName, isValidJSIdentifier } from "./utils/property-name"
 
 export type OpenAPISpec = {
   openapi: string
@@ -7,6 +7,7 @@ export type OpenAPISpec = {
   paths: Record<string, Record<string, unknown>>
   components?: {
     schemas?: Record<string, unknown>
+    parameters?: Record<string, unknown>
   }
 }
 
@@ -27,6 +28,14 @@ type Operation = {
   pathParams: PathParam[]
   requestType?: string
   responseType?: string
+  requestHeaders?: RequestHeader[]
+}
+
+type RequestHeader = {
+  name: string
+  description?: string
+  schema?: any
+  required?: boolean
 }
 
 export function generate(
@@ -89,6 +98,106 @@ export function generate(
   output.push("} as const;")
   output.push("")
 
+  // Generate header functions
+  output.push("// Header Functions")
+  output.push("export const headers = {")
+
+  for (const op of operations) {
+    if (!op.requestHeaders || op.requestHeaders.length === 0) {
+      output.push(`  ${op.operationId}: () => ({}),`)
+      continue
+    }
+
+    const typeEntries = op.requestHeaders
+      .map(
+        (header) =>
+          `${formatPropertyName(header.name)}${header.required ? "" : "?"}: ${mapHeaderType(
+            header
+          )}`
+      )
+      .join(", ")
+
+    const requiredHeaders = op.requestHeaders.filter(
+      (header) => header.required
+    )
+    const optionalHeaders = op.requestHeaders.filter(
+      (header) => !header.required
+    )
+    const hasRequired = requiredHeaders.length > 0
+    const signature = hasRequired
+      ? `(params: { ${typeEntries} })`
+      : `(params: { ${typeEntries} } = {})`
+
+    if (optionalHeaders.length === 0) {
+      output.push(`  ${op.operationId}: ${signature} => ({`)
+
+      for (const header of requiredHeaders) {
+        const propertyKey = formatPropertyName(header.name)
+        const accessor = isValidJSIdentifier(header.name)
+          ? `params.${header.name}`
+          : `params[${propertyKey}]`
+        output.push(`    ${propertyKey}: ${accessor},`)
+      }
+
+      output.push("  }),")
+      continue
+    }
+
+    if (!hasRequired && optionalHeaders.length === 1 && optionalHeaders[0]) {
+      const header = optionalHeaders[0]
+      const propertyKey = formatPropertyName(header.name)
+      const accessor = isValidJSIdentifier(header.name)
+        ? `params.${header.name}`
+        : `params[${propertyKey}]`
+
+      output.push(`  ${op.operationId}: ${signature} =>`)
+      output.push(
+        `    ${accessor} !== undefined ? { ${propertyKey}: ${accessor} } : {},`
+      )
+      continue
+    }
+
+    const valueTypes = Array.from(
+      new Set(optionalHeaders.map((header) => mapHeaderType(header)))
+    ).join(" | ")
+
+    output.push(`  ${op.operationId}: ${signature} => {`)
+
+    if (hasRequired) {
+      output.push("    const headers = {")
+      for (const header of requiredHeaders) {
+        const propertyKey = formatPropertyName(header.name)
+        const accessor = isValidJSIdentifier(header.name)
+          ? `params.${header.name}`
+          : `params[${propertyKey}]`
+        output.push(`      ${propertyKey}: ${accessor},`)
+      }
+      output.push("    }")
+    } else {
+      output.push(`    const headers: Record<string, ${valueTypes}> = {}`)
+    }
+
+    for (const header of optionalHeaders) {
+      const propertyKey = formatPropertyName(header.name)
+      const accessor = isValidJSIdentifier(header.name)
+        ? `params.${header.name}`
+        : `params[${propertyKey}]`
+      const assignment = isValidJSIdentifier(header.name)
+        ? `headers.${header.name}`
+        : `headers[${propertyKey}]`
+
+      output.push(`    if (${accessor} !== undefined) {`)
+      output.push(`      ${assignment} = ${accessor}`)
+      output.push("    }")
+    }
+
+    output.push("    return headers")
+    output.push("  },")
+  }
+
+  output.push("} as const;")
+  output.push("")
+
   // Generate operation objects
   output.push("// Operation Objects")
   for (const op of operations) {
@@ -101,6 +210,11 @@ export function generate(
 
     if (op.responseType) {
       output.push(`  response: ${op.responseType},`)
+    }
+
+    // Add headers if the operation has request headers
+    if (op.requestHeaders && op.requestHeaders.length > 0) {
+      output.push(`  headers: headers.${op.operationId},`)
     }
 
     output.push("} as const;")
@@ -120,6 +234,8 @@ function parseOperations(spec: OpenAPISpec): Operation[] {
       const pathParams = extractPathParams(path)
       const requestType = getRequestType(operation)
       const responseType = getResponseType(operation)
+      const resolvedParameters = collectParameters(pathItem, operation, spec)
+      const requestHeaders = getRequestHeaders(resolvedParameters)
 
       operations.push({
         operationId: (operation as any).operationId,
@@ -128,11 +244,54 @@ function parseOperations(spec: OpenAPISpec): Operation[] {
         pathParams,
         requestType,
         responseType,
+        requestHeaders,
       })
     }
   }
 
   return operations
+}
+
+function collectParameters(
+  pathItem: Record<string, unknown>,
+  operation: unknown,
+  spec: OpenAPISpec
+): any[] {
+  const parametersMap = new Map<string, any>()
+
+  const addParameters = (params: unknown) => {
+    if (!Array.isArray(params)) return
+
+    for (const param of params) {
+      const resolved = resolveParameter(param, spec)
+      if (!resolved) continue
+      const key = `${resolved.in}:${resolved.name}`
+      parametersMap.set(key, resolved)
+    }
+  }
+
+  addParameters((pathItem as any).parameters)
+  addParameters((operation as any).parameters)
+
+  return Array.from(parametersMap.values())
+}
+
+function resolveParameter(parameter: any, spec: OpenAPISpec) {
+  if (!parameter) return undefined
+
+  if (parameter.$ref) {
+    const refName = extractRefName(parameter.$ref)
+    const resolved = spec.components?.parameters?.[refName]
+    if (!resolved) return undefined
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { $ref, ...overrides } = parameter
+    return {
+      ...resolved,
+      ...overrides,
+    }
+  }
+
+  return parameter
 }
 
 function extractPathParams(path: string): PathParam[] {
@@ -178,6 +337,36 @@ function getResponseType(operation: any): string | undefined {
   // Generate inline type if needed
   const typeName = `${capitalize(operation.operationId)}Response`
   return typeName
+}
+
+function getRequestHeaders(parameters: any[]): RequestHeader[] {
+  const headers: RequestHeader[] = []
+
+  for (const param of parameters ?? []) {
+    if ((param as any).in === "header") {
+      headers.push({
+        name: (param as any).name,
+        description: (param as any).description,
+        schema: (param as any).schema,
+        required: (param as any).required,
+      })
+    }
+  }
+
+  return headers
+}
+
+function mapHeaderType(header: RequestHeader): string {
+  const schemaType = header.schema?.type
+  switch (schemaType) {
+    case "integer":
+    case "number":
+      return "number"
+    case "boolean":
+      return "boolean"
+    default:
+      return "string"
+  }
 }
 
 type SchemaOptions = {

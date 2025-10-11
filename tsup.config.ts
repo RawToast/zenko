@@ -3,7 +3,7 @@ import { defineConfig } from "tsup"
 export default defineConfig({
   // Main library entry point
   entry: {
-    // index: "index.ts",
+    index: "index.ts",
     cli: "src/cli.ts",
   },
 

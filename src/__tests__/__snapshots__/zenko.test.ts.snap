@@ -1,102 +1,4 @@
-// Bun Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`OpenAPIGenerator Petstore OpenAPI spec generates complete TypeScript output: petstore-complete-output 1`] = `
-"import { z } from "zod";
-
-// Generated Zod Schemas
-
-export const Pet = z.object({
-  id: z.number().int(),
-  name: z.string(),
-  tag: z.string().optional(),
-});
-
-export type Pet = z.infer<typeof Pet>;
-
-export const Pets = z.array(Pet);
-
-export type Pets = z.infer<typeof Pets>;
-
-export const Error = z.object({
-  code: z.number().int(),
-  message: z.string(),
-});
-
-export type Error = z.infer<typeof Error>;
-
-// Path Functions
-export const paths = {
-  listPets: () => "/pets",
-  createPets: () => "/pets",
-  showPetById: ({ petId }: { petId: string }) => \`/pets/\${petId}\`,
-} as const;
-
-// Operation Objects
-export const listPets = {
-  path: paths.listPets,
-  response: Pets,
-} as const;
-
-export const createPets = {
-  path: paths.createPets,
-  request: Pet,
-} as const;
-
-export const showPetById = {
-  path: paths.showPetById,
-  response: Pet,
-} as const;
-"
-`;
-
-exports[`OpenAPIGenerator Edge cases handles spec with no components: no-components-spec-output 1`] = `
-"import { z } from "zod";
-
-// Path Functions
-export const paths = {
-  getTest: () => "/test",
-} as const;
-
-// Operation Objects
-export const getTest = {
-  path: paths.getTest,
-} as const;
-"
-`;
-
-exports[`OpenAPIGenerator Edge cases handles circular dependencies gracefully: circular-dependencies-output 1`] = `
-"import { z } from "zod";
-
-// Generated Zod Schemas
-
-export const B = z.object({
-  a: A.optional(),
-});
-
-export type B = z.infer<typeof B>;
-
-export const A = z.object({
-  b: B.optional(),
-});
-
-export type A = z.infer<typeof A>;
-
-// Path Functions
-export const paths = {
-} as const;
-
-// Operation Objects"
-`;
-
-exports[`OpenAPIGenerator Edge cases handles empty spec: empty-spec-output 1`] = `
-"import { z } from "zod";
-
-// Path Functions
-export const paths = {
-} as const;
-
-// Operation Objects"
-`;
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`generate Petstore OpenAPI spec generates complete TypeScript output: petstore-complete-output 1`] = `
 "import { z } from "zod";
@@ -129,6 +31,13 @@ export const paths = {
   showPetById: ({ petId }: { petId: string }) => \`/pets/\${petId}\`,
 } as const;
 
+// Header Functions
+export const headers = {
+  listPets: () => ({}),
+  createPets: () => ({}),
+  showPetById: () => ({}),
+} as const;
+
 // Operation Objects
 export const listPets = {
   path: paths.listPets,
@@ -145,55 +54,6 @@ export const showPetById = {
   response: Pet,
 } as const;
 "
-`;
-
-exports[`generate Edge cases handles empty spec: empty-spec-output 1`] = `
-"import { z } from "zod";
-
-// Path Functions
-export const paths = {
-} as const;
-
-// Operation Objects"
-`;
-
-exports[`generate Edge cases handles spec with no components: no-components-spec-output 1`] = `
-"import { z } from "zod";
-
-// Path Functions
-export const paths = {
-  getTest: () => "/test",
-} as const;
-
-// Operation Objects
-export const getTest = {
-  path: paths.getTest,
-} as const;
-"
-`;
-
-exports[`generate Edge cases handles circular dependencies gracefully: circular-dependencies-output 1`] = `
-"import { z } from "zod";
-
-// Generated Zod Schemas
-
-export const B = z.object({
-  a: A.optional(),
-});
-
-export type B = z.infer<typeof B>;
-
-export const A = z.object({
-  b: B.optional(),
-});
-
-export type A = z.infer<typeof A>;
-
-// Path Functions
-export const paths = {
-} as const;
-
-// Operation Objects"
 `;
 
 exports[`generate TicTacToe OpenAPI spec generates complete TypeScript output: tictactoe-complete-output 1`] = `
@@ -235,6 +95,13 @@ export const paths = {
   put-square: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
 } as const;
 
+// Header Functions
+export const headers = {
+  get-board: () => ({}),
+  get-square: () => ({}),
+  put-square: () => ({}),
+} as const;
+
 // Operation Objects
 export const get-board = {
   path: paths.get-board,
@@ -252,4 +119,131 @@ export const put-square = {
   response: status,
 } as const;
 "
+`;
+
+exports[`generate TicTacToe OpenAPI spec generates complete TypeScript output with strict options: tictactoe-complete-output 1`] = `
+"import { z } from "zod";
+
+// Generated Zod Schemas
+
+export const errorMessage = z.string().max(256);
+
+export type errorMessage = z.infer<typeof errorMessage>;
+
+export const coordinate = z.number().min(1).max(3).int();
+
+export type coordinate = z.infer<typeof coordinate>;
+
+export const mark = z.enum([".", "X", "O"]);
+
+export type mark = z.infer<typeof mark>;
+
+export const board = z.array(z.array(mark)).min(3).max(3);
+
+export type board = z.infer<typeof board>;
+
+export const winner = z.enum([".", "X", "O"]);
+
+export type winner = z.infer<typeof winner>;
+
+export const status = z.object({
+  winner: winner.optional(),
+  board: board.optional(),
+});
+
+export type status = z.infer<typeof status>;
+
+// Path Functions
+export const paths = {
+  get-board: () => "/board",
+  get-square: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+  put-square: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+} as const;
+
+// Header Functions
+export const headers = {
+  get-board: () => ({}),
+  get-square: () => ({}),
+  put-square: () => ({}),
+} as const;
+
+// Operation Objects
+export const get-board = {
+  path: paths.get-board,
+  response: status,
+} as const;
+
+export const get-square = {
+  path: paths.get-square,
+  response: mark,
+} as const;
+
+export const put-square = {
+  path: paths.put-square,
+  request: mark,
+  response: status,
+} as const;
+"
+`;
+
+exports[`generate Edge cases handles empty spec: empty-spec-output 1`] = `
+"import { z } from "zod";
+
+// Path Functions
+export const paths = {
+} as const;
+
+// Header Functions
+export const headers = {
+} as const;
+
+// Operation Objects"
+`;
+
+exports[`generate Edge cases handles spec with no components: no-components-spec-output 1`] = `
+"import { z } from "zod";
+
+// Path Functions
+export const paths = {
+  getTest: () => "/test",
+} as const;
+
+// Header Functions
+export const headers = {
+  getTest: () => ({}),
+} as const;
+
+// Operation Objects
+export const getTest = {
+  path: paths.getTest,
+} as const;
+"
+`;
+
+exports[`generate Edge cases handles circular dependencies gracefully: circular-dependencies-output 1`] = `
+"import { z } from "zod";
+
+// Generated Zod Schemas
+
+export const B = z.object({
+  a: A.optional(),
+});
+
+export type B = z.infer<typeof B>;
+
+export const A = z.object({
+  b: B.optional(),
+});
+
+export type A = z.infer<typeof A>;
+
+// Path Functions
+export const paths = {
+} as const;
+
+// Header Functions
+export const headers = {
+} as const;
+
+// Operation Objects"
 `;

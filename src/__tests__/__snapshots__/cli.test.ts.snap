@@ -1,4 +1,4 @@
-// Bun Snapshot v1, https://goo.gl/fbAQLP
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`CLI generates TypeScript from petstore.yaml: cli-petstore-output 1`] = `
 "import { z } from "zod";
@@ -29,6 +29,13 @@ export const paths = {
   listPets: () => "/pets",
   createPets: () => "/pets",
   showPetById: ({ petId }: { petId: string }) => \`/pets/\${petId}\`,
+} as const;
+
+// Header Functions
+export const headers = {
+  listPets: () => ({}),
+  createPets: () => ({}),
+  showPetById: () => ({}),
 } as const;
 
 // Operation Objects

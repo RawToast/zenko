@@ -1,0 +1,22 @@
+openapi: 3.0.1
+info:
+  title: Optional Headers
+  version: 1.0.0
+paths:
+  /matrix:
+    post:
+      operationId: createMatrix
+      parameters:
+        - $ref: "#/components/parameters/AgentHeader"
+      responses:
+        "200":
+          description: OK
+components:
+  parameters:
+    AgentHeader:
+      name: Agent
+      in: header
+      required: false
+      schema:
+        type: string
+      example: "System"
