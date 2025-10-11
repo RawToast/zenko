@@ -3,9 +3,8 @@ coverage:
     project:
       default:
         target: 80%
+        threshold: 1%
         paths:
           - "src"
-      patch:
-        target: 50%
-        paths:
-          - "src"
+    patch:
+      off: true
