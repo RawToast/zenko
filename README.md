@@ -11,6 +11,7 @@ Unlike most OpenAPI generators, Zenko does not create a client. Instead you are 
 - 🔧 **Zod Schema Generation** - Generates runtime-validated Zod schemas from OpenAPI schemas
 - 🛣️ **Type-safe Path Functions** - Creates functions to build API paths with proper TypeScript types
 - 📋 **Operation Objects** - Generates objects containing path functions, request validation, and response types
+- 🧰 **Operation Type Helpers** - Import `PathFn`, `HeaderFn`, `OperationDefinition`, and `OperationErrors` to power reusable clients
 - 🔄 **Dependency Resolution** - Automatically resolves schema dependencies with topological sorting
 - ⚡ **CLI & Programmatic API** - Use via command line or import as a library
 
@@ -66,10 +67,14 @@ bunx zenko input.yaml output.ts
 
 ### Config File
 
-The config file is a JSON file that contains an array of schema objects. Each schema object contains the input and output files, and the strict dates and numeric options.
+The config file controls generation for multiple specs and can also configure type helper emission.
 
 ```json
 {
+  "types": {
+    "emit": true,
+    "helpers": "package"
+  },
   "schemas": [
     {
       "input": "my-api.yaml",
@@ -79,11 +84,21 @@ The config file is a JSON file that contains an array of schema objects. Each sc
       "input": "my-strict-api.yaml",
       "output": "my-strict-api.gen.ts",
       "strictDates": true,
-      "strictNumeric": true
+      "strictNumeric": true,
+      "types": {
+        "helpers": "inline"
+      }
     }
   ]
 }
 ```
+
+#### Type Helper Modes
+
+- `helpers: "package"` (default) imports helpers from `zenko`
+- `helpers: "inline"` writes the helper definitions into each generated file
+- `helpers: "file"` imports from a custom module (`helpersOutput` path)
+- `emit: false` disables per-operation type aliases entirely
 
 ### Programmatic Usage
 
@@ -157,7 +172,7 @@ export const paths = {
 } as const
 ```
 
-### 3. Operation Objects
+### 3. Operation Objects & Types
 
 ```typescript
 // Operation Objects
@@ -171,12 +186,28 @@ export const getUserById = {
   path: paths.getUserById,
   response: UserResponse,
 } as const
+
+// Operation Types
+import type { OperationDefinition, OperationErrors } from "zenko"
+
+export type AuthenticateUserOperation = OperationDefinition<
+  typeof paths.authenticateUser,
+  typeof AuthenticateRequest,
+  typeof AuthenticateResponse,
+  undefined,
+  OperationErrors
+>
 ```
 
 ## Example Usage in Your App
 
 ```typescript
-import { paths, authenticateUser, AuthenticateRequest } from "./generated-types"
+import {
+  paths,
+  authenticateUser,
+  type AuthenticateUserOperation,
+  AuthenticateRequest,
+} from "./generated-types"
 
 // Type-safe path building
 const userPath = paths.getUserById({ userId: "123" })
@@ -198,6 +229,28 @@ if (validation.success) {
     method: "POST",
     body: JSON.stringify(validation.data),
   })
+}
+```
+
+### Building a Generic Client
+
+```typescript
+import type { OperationDefinition } from "zenko"
+
+async function runOperation<T extends OperationDefinition<PathFn<any[]>, any, any>>(
+  operation: T,
+  config: { baseUrl: string; init?: RequestInit }
+): Promise<
+  T["response"] extends undefined
+    ? void
+    : T["response"] extends (...args: any[]) => infer U
+      ? U
+      : T["response"]
+> {
+  const url = `${config.baseUrl}${operation.path()`
+  const res = await fetch(url, config.init)
+  if (!res.ok) throw new Error(`Request failed: ${res.status}`)
+  return (await res.json()) as any
 }
 ```
 

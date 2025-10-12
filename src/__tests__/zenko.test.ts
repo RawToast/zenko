@@ -1,5 +1,7 @@
 import { describe, test, expect } from "bun:test"
 import { generate, type OpenAPISpec } from "../zenko"
+import * as fs from "fs"
+import jsYaml from "js-yaml"
 
 describe("generate", () => {
   describe("Edge cases", () => {
@@ -177,6 +179,75 @@ describe("generate", () => {
       expect(result).toContain(
         'return `/search/${collection}${_searchParams ? `?${_searchParams}` : ""}`'
       )
+    })
+  })
+
+  describe("Type helpers", () => {
+    const petstoreSpec = jsYaml.load(
+      fs.readFileSync("src/resources/petstore.yaml", "utf8")
+    ) as OpenAPISpec
+
+    test("disables type emission", () => {
+      const result = generate(petstoreSpec, {
+        types: { emit: false },
+      })
+
+      expect(result).not.toContain("// Operation Types")
+      expect(result).not.toContain("OperationDefinition<")
+      expect(result).not.toContain("import type { PathFn")
+      expect(result).not.toContain("type PathFn<")
+    })
+
+    test("uses package helpers by default", () => {
+      const result = generate(petstoreSpec)
+
+      expect(result).toContain(
+        'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";'
+      )
+      expect(result).toContain("// Operation Types")
+      expect(result).toContain(
+        "export type ListPetsOperation = OperationDefinition<"
+      )
+      expect(result).not.toContain("type PathFn<")
+    })
+
+    test("inlines helper types", () => {
+      const result = generate(petstoreSpec, {
+        types: { helpers: "inline" },
+      })
+
+      expect(result).toContain(
+        "type PathFn<TArgs extends unknown[] = []> = (...args: TArgs) => string;"
+      )
+      expect(result).toContain("type OperationDefinition<")
+      expect(result).toContain("// Operation Types")
+      expect(result).toContain(
+        "export type ListPetsOperation = OperationDefinition<"
+      )
+      expect(result).not.toContain("import type { PathFn")
+    })
+
+    test("uses custom helper import path", () => {
+      const result = generate(petstoreSpec, {
+        types: { helpers: "file", helpersOutput: "./custom-types" },
+      })
+
+      expect(result).toContain(
+        'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "./custom-types";'
+      )
+      expect(result).toContain("// Operation Types")
+      expect(result).toContain(
+        "export type ListPetsOperation = OperationDefinition<"
+      )
+      expect(result).not.toContain("type PathFn<")
+    })
+
+    test("generates complete inline output", () => {
+      const result = generate(petstoreSpec, {
+        types: { helpers: "inline" },
+      })
+
+      expect(result).toMatchSnapshot("petstore-inline-helpers-output")
     })
   })
 })

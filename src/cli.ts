@@ -4,17 +4,19 @@ import * as fs from "fs"
 import * as path from "path"
 import { pathToFileURL } from "url"
 import { load } from "js-yaml"
-import { generate, type OpenAPISpec } from "./zenko.js"
+import { generate, type OpenAPISpec, type TypesConfig } from "./zenko.js"
 
 type CliConfigEntry = {
   input: string
   output: string
   strictDates?: boolean
   strictNumeric?: boolean
+  types?: TypesConfig
 }
 
 type CliConfigFile = {
   schemas: CliConfigEntry[]
+  types?: TypesConfig
 }
 
 type ParsedArgs = {
@@ -128,7 +130,7 @@ function printHelp() {
   console.log("")
   console.log("Config file format:")
   console.log(
-    '  {"schemas": [{ input, output, strictDates?, strictNumeric? }] }'
+    '  {"types"?: { emit?, helpers?, helpersOutput? }, "schemas": [{ input, output, strictDates?, strictNumeric?, types? }] }'
   )
 }
 
@@ -139,15 +141,18 @@ async function runFromConfig(parsed: ParsedArgs) {
   validateConfig(config)
 
   const baseDir = path.dirname(resolvedConfigPath)
+  const baseTypesConfig = config.types
 
   for (const entry of config.schemas) {
     const inputFile = resolvePath(entry.input, baseDir)
     const outputFile = resolvePath(entry.output, baseDir)
+    const typesConfig = resolveTypesConfig(baseTypesConfig, entry.types)
     await generateSingle({
       inputFile,
       outputFile,
       strictDates: entry.strictDates ?? parsed.strictDates,
       strictNumeric: entry.strictNumeric ?? parsed.strictNumeric,
+      typesConfig,
     })
   }
 }
@@ -193,18 +198,35 @@ function resolvePath(filePath: string, baseDir: string): string {
   return path.isAbsolute(filePath) ? filePath : path.join(baseDir, filePath)
 }
 
+function resolveTypesConfig(
+  baseConfig: TypesConfig | undefined,
+  entryConfig: TypesConfig | undefined
+): TypesConfig | undefined {
+  if (!baseConfig && !entryConfig) return undefined
+  return {
+    ...baseConfig,
+    ...entryConfig,
+  }
+}
+
 async function generateSingle(options: {
   inputFile: string
   outputFile: string
   strictDates: boolean
   strictNumeric: boolean
+  typesConfig?: TypesConfig
 }) {
-  const { inputFile, outputFile, strictDates, strictNumeric } = options
+  const { inputFile, outputFile, strictDates, strictNumeric, typesConfig } =
+    options
   const resolvedInput = path.resolve(inputFile)
   const resolvedOutput = path.resolve(outputFile)
 
   const spec = readSpec(resolvedInput)
-  const output = generate(spec, { strictDates, strictNumeric })
+  const output = generate(spec, {
+    strictDates,
+    strictNumeric,
+    types: typesConfig,
+  })
 
   fs.mkdirSync(path.dirname(resolvedOutput), { recursive: true })
   fs.writeFileSync(resolvedOutput, output)

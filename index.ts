@@ -1,1 +1,12 @@
-export { generate, type OpenAPISpec, type GenerateOptions } from "./src/zenko"
+export {
+  generate,
+  type OpenAPISpec,
+  type GenerateOptions,
+  type TypesConfig,
+} from "./src/zenko"
+export {
+  type PathFn,
+  type HeaderFn,
+  type OperationErrors,
+  type OperationDefinition,
+} from "./src/types"

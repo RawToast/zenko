@@ -16,9 +16,18 @@ export type OpenAPISpec = {
   }
 }
 
+export type TypesHelperMode = "package" | "inline" | "file"
+
+export type TypesConfig = {
+  emit?: boolean
+  helpers?: TypesHelperMode
+  helpersOutput?: string
+}
+
 export type GenerateOptions = {
   strictDates?: boolean
   strictNumeric?: boolean
+  types?: TypesConfig
 }
 
 type PathParam = {
@@ -66,12 +75,14 @@ export function generate(
   const output: string[] = []
   const generatedTypes = new Set<string>()
   const { strictDates = false, strictNumeric = false } = options
+  const typesConfig = normalizeTypesConfig(options.types)
   const schemaOptions: SchemaOptions = {
     strictDates,
     strictNumeric,
   }
 
   output.push('import { z } from "zod";')
+  appendHelperTypesImport(output, typesConfig)
   output.push("")
 
   // Generate Zod schemas from components/schemas
@@ -326,6 +337,8 @@ export function generate(
     output.push("")
   }
 
+  generateOperationTypes(output, operations, typesConfig)
+
   return output.join("\n")
 }
 
@@ -392,6 +405,123 @@ function parseOperations(spec: OpenAPISpec): Operation[] {
   }
 
   return operations
+}
+
+function normalizeTypesConfig(
+  config: TypesConfig | undefined
+): NormalizedTypesConfig {
+  return {
+    emit: config?.emit ?? true,
+    helpers: config?.helpers ?? "package",
+    helpersOutput: config?.helpersOutput ?? "./zenko-types",
+  }
+}
+
+type NormalizedTypesConfig = {
+  emit: boolean
+  helpers: TypesHelperMode
+  helpersOutput: string
+}
+
+function appendHelperTypesImport(
+  buffer: string[],
+  config: NormalizedTypesConfig
+) {
+  if (!config.emit) return
+
+  switch (config.helpers) {
+    case "package":
+      buffer.push(
+        'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";'
+      )
+      return
+    case "file":
+      buffer.push(
+        `import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "${config.helpersOutput}";`
+      )
+      return
+    case "inline":
+      buffer.push(
+        "type PathFn<TArgs extends unknown[] = []> = (...args: TArgs) => string;"
+      )
+      buffer.push(
+        "type HeaderFn<TArgs extends unknown[] = [], TResult = Record<string, unknown> | Record<string, never>> = (...args: TArgs) => TResult;"
+      )
+      buffer.push(
+        "type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {"
+      )
+      buffer.push("  clientErrors?: Record<string, TClient>;")
+      buffer.push("  serverErrors?: Record<string, TServer>;")
+      buffer.push("  defaultErrors?: Record<string, TDefault>;")
+      buffer.push("  otherErrors?: Record<string, TOther>;")
+      buffer.push("};")
+      buffer.push(
+        "type OperationDefinition<TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
+      )
+      buffer.push("  path: TPath;")
+      buffer.push("  request?: TRequest;")
+      buffer.push("  response?: TResponse;")
+      buffer.push("  headers?: THeaders;")
+      buffer.push("  errors?: TErrors;")
+      buffer.push("};")
+      return
+  }
+}
+
+function generateOperationTypes(
+  buffer: string[],
+  operations: Operation[],
+  config: NormalizedTypesConfig
+) {
+  if (!config.emit) return
+
+  buffer.push("// Operation Types")
+
+  for (const op of operations) {
+    const headerType = op.requestHeaders?.length
+      ? `typeof headers.${op.operationId}`
+      : "undefined"
+    const requestType = op.requestType ?? "undefined"
+    const responseType = op.responseType ?? "undefined"
+    const errorsType = buildOperationErrorsType(op.errors)
+
+    buffer.push(
+      `export type ${capitalize(op.operationId)}Operation = OperationDefinition<`
+    )
+    buffer.push(`  typeof paths.${op.operationId},`)
+    buffer.push(`  ${requestType},`)
+    buffer.push(`  ${responseType},`)
+    buffer.push(`  ${headerType},`)
+    buffer.push(`  ${errorsType}`)
+    buffer.push(`>;`)
+    buffer.push("")
+  }
+}
+
+function buildOperationErrorsType(errors?: OperationErrorGroup): string {
+  if (!errors || !hasAnyErrors(errors)) {
+    return "OperationErrors"
+  }
+
+  const client = buildErrorBucket(errors.clientErrors)
+  const server = buildErrorBucket(errors.serverErrors)
+  const fallback = buildErrorBucket(errors.defaultErrors)
+  const other = buildErrorBucket(errors.otherErrors)
+
+  return `OperationErrors<${client}, ${server}, ${fallback}, ${other}>`
+}
+
+function buildErrorBucket(bucket?: OperationErrorMap): string {
+  if (!bucket || Object.keys(bucket).length === 0) {
+    return "unknown"
+  }
+
+  const entries = Object.entries(bucket)
+  const typeEntries = entries
+    .map(([name, type]) => `${formatPropertyName(name)}: ${type}`)
+    .join("; ")
+
+  return `{ ${typeEntries} }`
 }
 
 function collectParameters(

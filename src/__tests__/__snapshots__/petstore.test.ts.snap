@@ -2,6 +2,7 @@
 
 exports[`Petstore generates complete TypeScript output: petstore-complete-output 1`] = `
 "import { z } from "zod";
+import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
 
 // Generated Zod Schemas
 
@@ -75,11 +76,37 @@ export const showPetById = {
     },
   },
 } as const;
+
+// Operation Types
+export type ListPetsOperation = OperationDefinition<
+  typeof paths.listPets,
+  undefined,
+  Pets,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
+
+export type CreatePetsOperation = OperationDefinition<
+  typeof paths.createPets,
+  Pet,
+  undefined,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
+
+export type ShowPetByIdOperation = OperationDefinition<
+  typeof paths.showPetById,
+  undefined,
+  Pet,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
 "
 `;
 
 exports[`Petstore generates complete TypeScript output: petstore-complete-output 2`] = `
 "import { z } from "zod";
+import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
 
 // Generated Zod Schemas
 
@@ -153,11 +180,37 @@ export const showPetById = {
     },
   },
 } as const;
+
+// Operation Types
+export type ListPetsOperation = OperationDefinition<
+  typeof paths.listPets,
+  undefined,
+  Pets,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
+
+export type CreatePetsOperation = OperationDefinition<
+  typeof paths.createPets,
+  Pet,
+  undefined,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
+
+export type ShowPetByIdOperation = OperationDefinition<
+  typeof paths.showPetById,
+  undefined,
+  Pet,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
 "
 `;
 
 exports[`Petstore generates expected TypeScript from petstore.yaml: cli-petstore-output 1`] = `
 "import { z } from "zod";
+import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
 
 // Generated Zod Schemas
 
@@ -231,5 +284,30 @@ export const showPetById = {
     },
   },
 } as const;
+
+// Operation Types
+export type ListPetsOperation = OperationDefinition<
+  typeof paths.listPets,
+  undefined,
+  Pets,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
+
+export type CreatePetsOperation = OperationDefinition<
+  typeof paths.createPets,
+  Pet,
+  undefined,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
+
+export type ShowPetByIdOperation = OperationDefinition<
+  typeof paths.showPetById,
+  undefined,
+  Pet,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
 "
 `;

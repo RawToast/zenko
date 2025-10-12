@@ -2,6 +2,7 @@
 
 exports[`generate Edge cases handles empty spec: empty-spec-output 1`] = `
 "import { z } from "zod";
+import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
 
 // Path Functions
 export const paths = {
@@ -11,11 +12,13 @@ export const paths = {
 export const headers = {
 } as const;
 
-// Operation Objects"
+// Operation Objects
+// Operation Types"
 `;
 
 exports[`generate Edge cases handles spec with no components: no-components-spec-output 1`] = `
 "import { z } from "zod";
+import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
 
 // Path Functions
 export const paths = {
@@ -31,11 +34,21 @@ export const headers = {
 export const getTest = {
   path: paths.getTest,
 } as const;
+
+// Operation Types
+export type GetTestOperation = OperationDefinition<
+  typeof paths.getTest,
+  undefined,
+  undefined,
+  undefined,
+  OperationErrors
+>;
 "
 `;
 
 exports[`generate Edge cases handles circular dependencies gracefully: circular-dependencies-output 1`] = `
 "import { z } from "zod";
+import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
 
 // Generated Zod Schemas
 
@@ -59,5 +72,124 @@ export const paths = {
 export const headers = {
 } as const;
 
-// Operation Objects"
+// Operation Objects
+// Operation Types"
+`;
+
+exports[`generate Type helpers generates complete inline output: petstore-inline-helpers-output 1`] = `
+"import { z } from "zod";
+type PathFn<TArgs extends unknown[] = []> = (...args: TArgs) => string;
+type HeaderFn<TArgs extends unknown[] = [], TResult = Record<string, unknown> | Record<string, never>> = (...args: TArgs) => TResult;
+type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {
+  clientErrors?: Record<string, TClient>;
+  serverErrors?: Record<string, TServer>;
+  defaultErrors?: Record<string, TDefault>;
+  otherErrors?: Record<string, TOther>;
+};
+type OperationDefinition<TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {
+  path: TPath;
+  request?: TRequest;
+  response?: TResponse;
+  headers?: THeaders;
+  errors?: TErrors;
+};
+
+// Generated Zod Schemas
+
+export const Pet = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  tag: z.string().optional(),
+});
+
+export type Pet = z.infer<typeof Pet>;
+
+export const Pets = z.array(Pet);
+
+export type Pets = z.infer<typeof Pets>;
+
+export const Error = z.object({
+  code: z.number().int(),
+  message: z.string(),
+});
+
+export type Error = z.infer<typeof Error>;
+
+// Path Functions
+export const paths = {
+  listPets: ({ limit }: { limit?: number } = {}) => {
+    const params = new URLSearchParams()
+    if (limit !== undefined) {
+      params.set("limit", String(limit))
+    }
+    const _searchParams = params.toString()
+    return \`/pets\${_searchParams ? \`?\${_searchParams}\` : ""}\`
+  },
+  createPets: () => "/pets",
+  showPetById: ({ petId }: { petId: string }) => \`/pets/\${petId}\`,
+} as const;
+
+// Header Functions
+export const headers = {
+  listPets: () => ({}),
+  createPets: () => ({}),
+  showPetById: () => ({}),
+} as const;
+
+// Operation Objects
+export const listPets = {
+  path: paths.listPets,
+  response: Pets,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
+
+export const createPets = {
+  path: paths.createPets,
+  request: Pet,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
+
+export const showPetById = {
+  path: paths.showPetById,
+  response: Pet,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
+
+// Operation Types
+export type ListPetsOperation = OperationDefinition<
+  typeof paths.listPets,
+  undefined,
+  Pets,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
+
+export type CreatePetsOperation = OperationDefinition<
+  typeof paths.createPets,
+  Pet,
+  undefined,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
+
+export type ShowPetByIdOperation = OperationDefinition<
+  typeof paths.showPetById,
+  undefined,
+  Pet,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
+"
 `;

@@ -2,6 +2,7 @@
 
 exports[`CLI generates TypeScript from petstore.yaml: cli-petstore-output 1`] = `
 "import { z } from "zod";
+import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
 
 // Generated Zod Schemas
 
@@ -75,5 +76,30 @@ export const showPetById = {
     },
   },
 } as const;
+
+// Operation Types
+export type ListPetsOperation = OperationDefinition<
+  typeof paths.listPets,
+  undefined,
+  Pets,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
+
+export type CreatePetsOperation = OperationDefinition<
+  typeof paths.createPets,
+  Pet,
+  undefined,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
+
+export type ShowPetByIdOperation = OperationDefinition<
+  typeof paths.showPetById,
+  undefined,
+  Pet,
+  undefined,
+  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+>;
 "
 `;
