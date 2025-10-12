@@ -68,7 +68,7 @@ export const put-square = {
 export type Get-boardOperation = OperationDefinition<
   typeof paths.get-board,
   undefined,
-  status,
+  typeof status,
   undefined,
   OperationErrors
 >;
@@ -76,15 +76,15 @@ export type Get-boardOperation = OperationDefinition<
 export type Get-squareOperation = OperationDefinition<
   typeof paths.get-square,
   undefined,
-  mark,
+  typeof mark,
   undefined,
   OperationErrors
 >;
 
 export type Put-squareOperation = OperationDefinition<
   typeof paths.put-square,
-  mark,
-  status,
+  typeof mark,
+  typeof status,
   undefined,
   OperationErrors
 >;
@@ -159,7 +159,7 @@ export const put-square = {
 export type Get-boardOperation = OperationDefinition<
   typeof paths.get-board,
   undefined,
-  status,
+  typeof status,
   undefined,
   OperationErrors
 >;
@@ -167,15 +167,15 @@ export type Get-boardOperation = OperationDefinition<
 export type Get-squareOperation = OperationDefinition<
   typeof paths.get-square,
   undefined,
-  mark,
+  typeof mark,
   undefined,
   OperationErrors
 >;
 
 export type Put-squareOperation = OperationDefinition<
   typeof paths.put-square,
-  mark,
-  status,
+  typeof mark,
+  typeof status,
   undefined,
   OperationErrors
 >;
