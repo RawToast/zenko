@@ -25,7 +25,9 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: |
+          bun install --frozen-lockfile
+          bun install -g turbo
 
       - name: Check formatting
         run: turbo run format:check lint:check check-types
