@@ -26,11 +26,19 @@ type PathParam = {
   type: string
 }
 
+type QueryParam = {
+  name: string
+  description?: string
+  schema?: any
+  required?: boolean
+}
+
 type Operation = {
   operationId: string
   path: string
   method: string
   pathParams: PathParam[]
+  queryParams: QueryParam[]
   requestType?: string
   responseType?: string
   requestHeaders?: RequestHeader[]
@@ -94,18 +102,99 @@ export function generate(
   output.push("export const paths = {")
 
   for (const op of operations) {
-    if (op.pathParams.length === 0) {
+    const pathParamNames = op.pathParams.map((p) => p.name)
+    const hasPathParams = pathParamNames.length > 0
+    const hasQueryParams = op.queryParams.length > 0
+
+    if (!hasPathParams && !hasQueryParams) {
       output.push(`  ${op.operationId}: () => "${op.path}",`)
-    } else {
-      const paramNames = op.pathParams.map((p) => p.name).join(", ")
-      const paramTypes = op.pathParams
-        .map((p) => `${p.name}: string`)
-        .join(", ")
-      const pathWithParams = op.path.replace(/{([^}]+)}/g, "${$1}")
-      output.push(
-        `  ${op.operationId}: ({ ${paramNames} }: { ${paramTypes} }) => \`${pathWithParams}\`,`
+      continue
+    }
+
+    const allParamNames = [
+      ...pathParamNames,
+      ...op.queryParams.map((p) => p.name),
+    ]
+    const signaturePieces: string[] = []
+    for (const param of op.pathParams) {
+      signaturePieces.push(`${param.name}: string`)
+    }
+    for (const param of op.queryParams) {
+      signaturePieces.push(
+        `${param.name}${param.required ? "" : "?"}: ${mapQueryType(param)}`
       )
     }
+    const signatureParams = signaturePieces.join(", ")
+    const needsDefaultObject =
+      !hasPathParams &&
+      hasQueryParams &&
+      op.queryParams.every((param) => !param.required)
+    const signatureArgs = allParamNames.length
+      ? `{ ${allParamNames.join(", ")} }`
+      : "{}"
+    const signature = `${signatureArgs}: { ${signatureParams} }${
+      needsDefaultObject ? " = {}" : ""
+    }`
+
+    const pathWithParams = op.path.replace(/{([^}]+)}/g, "${$1}")
+
+    if (!hasQueryParams) {
+      output.push(
+        `  ${op.operationId}: (${signature}) => \`${pathWithParams}\`,`
+      )
+      continue
+    }
+
+    output.push(`  ${op.operationId}: (${signature}) => {`)
+
+    output.push("    const params = new URLSearchParams()")
+    for (const param of op.queryParams) {
+      const propertyKey = formatPropertyName(param.name)
+      const accessor = isValidJSIdentifier(param.name)
+        ? param.name
+        : propertyKey
+      const schema = param.schema ?? {}
+
+      if (schema?.type === "array") {
+        const itemValueExpression = convertQueryParamValue(
+          schema.items ?? {},
+          "value"
+        )
+
+        if (param.required) {
+          output.push(`    for (const value of ${accessor}) {`)
+          output.push(
+            `      params.append("${param.name}", ${itemValueExpression})`
+          )
+          output.push("    }")
+        } else {
+          output.push(`    if (${accessor} !== undefined) {`)
+          output.push(`      for (const value of ${accessor}) {`)
+          output.push(
+            `        params.append("${param.name}", ${itemValueExpression})`
+          )
+          output.push("      }")
+          output.push("    }")
+        }
+
+        continue
+      }
+
+      const valueExpression = convertQueryParamValue(schema, accessor)
+      if (param.required) {
+        output.push(`    params.set("${param.name}", ${valueExpression})`)
+      } else {
+        output.push(`    if (${accessor} !== undefined) {`)
+        output.push(`      params.set("${param.name}", ${valueExpression})`)
+        output.push("    }")
+      }
+    }
+
+    output.push("    const _searchParams = params.toString()")
+    output.push(
+      `    return \`${pathWithParams}\${_searchParams ? \`?\${_searchParams}\` : ""}\``
+    )
+    output.push("  },")
   }
 
   output.push("} as const;")
@@ -286,12 +375,14 @@ function parseOperations(spec: OpenAPISpec): Operation[] {
       )
       const resolvedParameters = collectParameters(pathItem, operation, spec)
       const requestHeaders = getRequestHeaders(resolvedParameters)
+      const queryParams = getQueryParams(resolvedParameters)
 
       operations.push({
         operationId: (operation as any).operationId,
         path,
         method: method.toLowerCase(),
         pathParams,
+        queryParams,
         requestType,
         responseType: successResponse,
         requestHeaders,
@@ -493,6 +584,23 @@ function getRequestHeaders(parameters: any[]): RequestHeader[] {
   return headers
 }
 
+function getQueryParams(parameters: any[]): QueryParam[] {
+  const queryParams: QueryParam[] = []
+
+  for (const param of parameters ?? []) {
+    if ((param as any).in === "query") {
+      queryParams.push({
+        name: (param as any).name,
+        description: (param as any).description,
+        schema: (param as any).schema,
+        required: (param as any).required,
+      })
+    }
+  }
+
+  return queryParams
+}
+
 function mapHeaderType(header: RequestHeader): string {
   const schemaType = header.schema?.type
   switch (schemaType) {
@@ -503,6 +611,45 @@ function mapHeaderType(header: RequestHeader): string {
       return "boolean"
     default:
       return "string"
+  }
+}
+
+function mapQueryType(param: QueryParam): string {
+  return mapQuerySchemaType(param.schema)
+}
+
+function mapQuerySchemaType(schema: any): string {
+  if (!schema) return "string"
+
+  if (schema.type === "array") {
+    const itemType = mapQuerySchemaType(schema.items)
+    return `Array<${itemType}>`
+  }
+
+  switch (schema.type) {
+    case "integer":
+    case "number":
+      return "number"
+    case "boolean":
+      return "boolean"
+    default:
+      return "string"
+  }
+}
+
+function convertQueryParamValue(schema: any, accessor: string): string {
+  if (!schema) {
+    return `String(${accessor})`
+  }
+
+  switch (schema.type) {
+    case "integer":
+    case "number":
+      return `String(${accessor})`
+    case "boolean":
+      return `${accessor} ? "true" : "false"`
+    default:
+      return `String(${accessor})`
   }
 }
 

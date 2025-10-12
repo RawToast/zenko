@@ -26,7 +26,14 @@ export type Error = z.infer<typeof Error>;
 
 // Path Functions
 export const paths = {
-  listPets: () => "/pets",
+  listPets: ({ limit }: { limit?: number } = {}) => {
+    const params = new URLSearchParams()
+    if (limit !== undefined) {
+      params.set("limit", String(limit))
+    }
+    const _searchParams = params.toString()
+    return \`/pets\${_searchParams ? \`?\${_searchParams}\` : ""}\`
+  },
   createPets: () => "/pets",
   showPetById: ({ petId }: { petId: string }) => \`/pets/\${petId}\`,
 } as const;

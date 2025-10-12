@@ -110,5 +110,73 @@ describe("generate", () => {
       expect(result).toContain("categories: z.array(z.string())")
       expect(result).not.toContain("members: z.array(z.unknown())")
     })
+
+    test("generates path helpers with query parameters", () => {
+      const querySpec: OpenAPISpec = {
+        openapi: "3.0.0",
+        info: { title: "Query", version: "1.0.0" },
+        paths: {
+          "/search/{collection}": {
+            get: {
+              operationId: "searchCollection",
+              parameters: [
+                {
+                  name: "collection",
+                  in: "path",
+                  required: true,
+                  schema: { type: "string" },
+                },
+                {
+                  name: "term",
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+                {
+                  name: "limit",
+                  in: "query",
+                  schema: { type: "integer" },
+                },
+                {
+                  name: "includeArchived",
+                  in: "query",
+                  schema: { type: "boolean" },
+                },
+                {
+                  name: "tags",
+                  in: "query",
+                  schema: { type: "array", items: { type: "string" } },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "OK",
+                },
+              },
+            },
+          },
+        },
+      }
+
+      const result = generate(querySpec)
+
+      expect(result).toContain(
+        "searchCollection: ({ collection, term, limit, includeArchived, tags }: { collection: string, term: string, limit?: number, includeArchived?: boolean, tags?: Array<string> }) => {"
+      )
+      expect(result).toContain("const params = new URLSearchParams()")
+      expect(result).toContain('params.set("term", String(term))')
+      expect(result).toContain(
+        'if (limit !== undefined) {\n      params.set("limit", String(limit))\n    }'
+      )
+      expect(result).toContain(
+        'if (includeArchived !== undefined) {\n      params.set("includeArchived", includeArchived ? "true" : "false")\n    }'
+      )
+      expect(result).toContain(
+        'if (tags !== undefined) {\n      for (const value of tags) {\n        params.append("tags", String(value))\n      }\n    }'
+      )
+      expect(result).toContain(
+        'return `/search/${collection}${_searchParams ? `?${_searchParams}` : ""}`'
+      )
+    })
   })
 })
