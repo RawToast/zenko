@@ -481,8 +481,8 @@ function generateOperationTypes(
     const headerType = op.requestHeaders?.length
       ? `typeof headers.${op.operationId}`
       : "undefined"
-    const requestType = op.requestType ?? "undefined"
-    const responseType = op.responseType ?? "undefined"
+    const requestType = wrapTypeReference(op.requestType)
+    const responseType = wrapTypeReference(op.responseType)
     const errorsType = buildOperationErrorsType(op.errors)
 
     buffer.push(
@@ -517,11 +517,52 @@ function buildErrorBucket(bucket?: OperationErrorMap): string {
   }
 
   const entries = Object.entries(bucket)
-  const typeEntries = entries
-    .map(([name, type]) => `${formatPropertyName(name)}: ${type}`)
-    .join("; ")
+  const accessibleEntries = entries.map(([name, type]) => {
+    const propertyKey = formatPropertyName(name)
+    const valueType = wrapErrorValueType(type)
+    return `${propertyKey}: ${valueType}`
+  })
 
-  return `{ ${typeEntries} }`
+  return `{ ${accessibleEntries.join("; ")} }`
+}
+
+const TYPE_KEYWORDS = new Set([
+  "any",
+  "unknown",
+  "never",
+  "void",
+  "null",
+  "undefined",
+  "string",
+  "number",
+  "boolean",
+  "bigint",
+  "symbol",
+])
+
+function wrapTypeReference(typeName?: string): string {
+  if (!typeName) return "undefined"
+  if (typeName === "undefined") return "undefined"
+  if (TYPE_KEYWORDS.has(typeName)) return typeName
+  if (typeName.startsWith("typeof ")) return typeName
+
+  const identifierPattern = /^[A-Za-z_$][A-Za-z0-9_$]*$/
+  if (identifierPattern.test(typeName)) {
+    return `typeof ${typeName}`
+  }
+
+  return typeName
+}
+
+function wrapErrorValueType(typeName?: string): string {
+  if (!typeName) return "unknown"
+  if (TYPE_KEYWORDS.has(typeName)) return typeName
+  if (typeName.startsWith("typeof ")) return typeName
+  const identifierPattern = /^[A-Za-z_$][A-Za-z0-9_$]*$/
+  if (identifierPattern.test(typeName)) {
+    return `typeof ${typeName}`
+  }
+  return typeName
 }
 
 function collectParameters(

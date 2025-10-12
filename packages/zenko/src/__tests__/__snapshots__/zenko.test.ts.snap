@@ -171,25 +171,25 @@ export const showPetById = {
 export type ListPetsOperation = OperationDefinition<
   typeof paths.listPets,
   undefined,
-  Pets,
+  typeof Pets,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
 
 export type CreatePetsOperation = OperationDefinition<
   typeof paths.createPets,
-  Pet,
+  typeof Pet,
   undefined,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
 
 export type ShowPetByIdOperation = OperationDefinition<
   typeof paths.showPetById,
   undefined,
-  Pet,
+  typeof Pet,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: Error }, unknown>
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
 "
 `;
