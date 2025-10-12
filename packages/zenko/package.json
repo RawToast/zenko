@@ -1,6 +1,6 @@
 {
   "name": "zenko",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Generate TypeScript types and path functions from OpenAPI specs",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
