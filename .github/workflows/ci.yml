@@ -28,13 +28,13 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Check formatting
-        run: bun turbo run format:check lint:check
+        run: turbo run format:check lint:check check-types
 
       - name: Type check and build
-        run: bun run build
+        run: turbo run build
 
       - name: Run tests
-        run: bun coverage
+        run: turbo run coverage
 
       - name: Upload coverage reports
         if: matrix.node-version == 22
