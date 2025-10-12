@@ -25,16 +25,18 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: |
+          bun install --frozen-lockfile
+          bun install -g turbo
 
       - name: Check formatting
-        run: bun turbo run format:check lint:check
+        run: turbo run format:check lint:check check-types
 
       - name: Type check and build
-        run: bun run build
+        run: turbo run build
 
       - name: Run tests
-        run: bun coverage
+        run: turbo run coverage
 
       - name: Upload coverage reports
         if: matrix.node-version == 22
@@ -42,3 +44,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
+          files: ./packages/zenko/coverage/lcov.info

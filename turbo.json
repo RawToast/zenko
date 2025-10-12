@@ -1,12 +1,23 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
-    "lint": {},
-    "lint:check": {},
-    "format": {},
-    "format:check": {},
+    "build": {
+      "outputs": ["dist/**"]
+    },
+    "//#lint": {},
+    "//#lint:check": {},
+    "//#format": {},
+    "//#format:check": {},
     "check-types": {
+      "dependsOn": ["^check-types"],
       "inputs": ["**/*.{ts,tsx}"]
+    },
+    "test": {
+      "dependsOn": ["^test"]
+    },
+    "coverage": {
+      "dependsOn": ["^coverage"],
+      "cache": false
     }
   }
 }
