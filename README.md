@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/RawToast/zenko/actions/workflows/ci.yml/badge.svg)](https://github.com/RawToast/zenko/actions/workflows/ci.yml)
 
-A TypeScript generator for OpenAPI specifications that creates **Zod schemas**, **type-safe path functions**, and **operation objects**.
+A work in progressTypeScript generator for OpenAPI specifications that creates **Zod schemas**, **type-safe path functions**, and **operation objects**.
 
 Unlike most OpenAPI generators, Zenko does not create a client. Instead you are free to use your own fetch wrapper or library of choice.
 
@@ -234,10 +234,3 @@ zenko src/resources/petstore.yaml output.ts
 # Format code
 bun run format
 ```
-
-## Architecture
-
-- **`src/zenko.ts`** - Main OpenAPI → TypeScript generator
-- **`src/cli.ts`** - Command-line interface
-- **`dist/`** - Bundled outputs (CJS + ESM)
-- **Topological Sort** - Ensures proper dependency ordering for schema generation

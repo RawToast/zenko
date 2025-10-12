@@ -526,18 +526,7 @@ function generateZodSchema(
   }
 
   if (schema.type === "object" || schema.properties) {
-    const properties: string[] = []
-
-    for (const [propName, propSchema] of Object.entries(
-      schema.properties || {}
-    )) {
-      const isRequired = schema.required?.includes(propName) ?? false
-      const zodType = getZodTypeFromSchema(propSchema as any, options)
-      const finalType = isRequired ? zodType : `${zodType}.optional()`
-      properties.push(`  ${formatPropertyName(propName)}: ${finalType},`)
-    }
-
-    return `export const ${name} = z.object({\n${properties.join("\n")}\n});`
+    return `export const ${name} = ${buildZodObject(schema, options)};`
   }
 
   if (schema.type === "array") {
@@ -565,6 +554,10 @@ function getZodTypeFromSchema(schema: any, options: SchemaOptions): string {
     return `z.enum([${enumValues}])`
   }
 
+  if (schema.type === "object" || schema.properties) {
+    return buildZodObject(schema, options)
+  }
+
   switch (schema.type) {
     case "string":
       return buildString(schema, options)
@@ -584,6 +577,25 @@ function getZodTypeFromSchema(schema: any, options: SchemaOptions): string {
     default:
       return "z.unknown()"
   }
+}
+
+function buildZodObject(schema: any, options: SchemaOptions): string {
+  const properties: string[] = []
+
+  for (const [propName, propSchema] of Object.entries(
+    schema.properties || {}
+  )) {
+    const isRequired = schema.required?.includes(propName) ?? false
+    const zodType = getZodTypeFromSchema(propSchema as any, options)
+    const finalType = isRequired ? zodType : `${zodType}.optional()`
+    properties.push(`  ${formatPropertyName(propName)}: ${finalType},`)
+  }
+
+  if (properties.length === 0) {
+    return "z.object({})"
+  }
+
+  return `z.object({\n${properties.join("\n")}\n})`
 }
 
 function buildString(schema: any, options: SchemaOptions): string {

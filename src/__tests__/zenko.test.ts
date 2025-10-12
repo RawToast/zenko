@@ -67,5 +67,48 @@ describe("generate", () => {
       expect(result).toContain("export const B =")
       expect(result).toMatchSnapshot("circular-dependencies-output")
     })
+
+    test("generates inline object schemas inside arrays", () => {
+      const inlineSpec: OpenAPISpec = {
+        openapi: "3.0.0",
+        info: { title: "Inline", version: "1.0.0" },
+        paths: {},
+        components: {
+          schemas: {
+            CollectionResponse: {
+              type: "object",
+              required: ["members"],
+              properties: {
+                members: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    required: ["identifier", "label", "categories"],
+                    properties: {
+                      identifier: { type: "string" },
+                      label: { type: "string" },
+                      categories: {
+                        type: "array",
+                        items: { type: "string" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }
+
+      const result = generate(inlineSpec)
+
+      expect(result).toContain(
+        "export const CollectionResponse = z.object({\n  members: z.array(z.object({"
+      )
+      expect(result).toContain("identifier: z.string()")
+      expect(result).toContain("label: z.string()")
+      expect(result).toContain("categories: z.array(z.string())")
+      expect(result).not.toContain("members: z.array(z.unknown())")
+    })
   })
 })
