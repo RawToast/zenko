@@ -237,7 +237,9 @@ if (validation.success) {
 ```typescript
 import type { OperationDefinition } from "zenko"
 
-async function runOperation<T extends OperationDefinition<PathFn<any[]>, any, any>>(
+async function runOperation<
+  T extends OperationDefinition<PathFn<any[]>, any, any>,
+>(
   operation: T,
   config: { baseUrl: string; init?: RequestInit }
 ): Promise<
@@ -247,7 +249,7 @@ async function runOperation<T extends OperationDefinition<PathFn<any[]>, any, an
       ? U
       : T["response"]
 > {
-  const url = `${config.baseUrl}${operation.path()`
+  const url = `${config.baseUrl}${operation.path()}`
   const res = await fetch(url, config.init)
   if (!res.ok) throw new Error(`Request failed: ${res.status}`)
   return (await res.json()) as any
