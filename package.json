@@ -17,9 +17,15 @@
     "lint:check": "oxlint packages/*/src --max-warnings=0",
     "check": "turbo lint format check-types",
     "dev": "turbo watch lint format check-types test",
-    "zenko": "bun run --cwd packages/zenko"
+    "zenko": "bun run --cwd packages/zenko",
+    "changeset": "bunx changeset",
+    "changeset:version": "bunx changeset version",
+    "changeset:publish": "bunx changeset publish",
+    "release": "turbo run build --filter=zenko && bunx changeset publish"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "0.5.1",
+    "@changesets/cli": "2.29.7",
     "@prettier/plugin-oxc": "0.0.4",
     "oxlint": "1.11.2",
     "prettier": "3.6.2",

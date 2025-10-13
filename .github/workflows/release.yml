@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Configure npm auth token
+        run: |
+          cat <<'EOF' > "$HOME/.npmrc"
+          //registry.npmjs.org/:_authToken=${NPM_TOKEN}
+          always-auth=true
+          registry=https://registry.npmjs.org/
+          EOF
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create release PR or publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: bun run changeset:version
+          publish: bun run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub release
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: |
+          VERSION=$(echo "$PUBLISHED_PACKAGES" | jq -r 'map(select(.name=="zenko"))[0].version')
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "No zenko publication detected"
+            exit 0
+          fi
+
+          export VERSION
+
+          node <<'EOF'
+          const fs = require("fs")
+          const path = require("path")
+
+          const version = process.env.VERSION
+          if (!version) process.exit(0)
+
+          const changelogPath = path.join("packages", "zenko", "CHANGELOG.md")
+          const raw = fs.readFileSync(changelogPath, "utf8")
+          const escapedVersion = version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+          const pattern = new RegExp(`## ${escapedVersion}\\n([\\s\\S]*?)(?=\n## |$)`)
+          const match = raw.match(pattern)
+          const section = match ? match[1].trim() : ""
+          fs.writeFileSync("RELEASE_NOTES.md", section ? `## ${version}\n\n${section}\n` : `## ${version}\n`)
+          EOF
+
+          gh release create "zenko@${VERSION}" --title "zenko ${VERSION}" --notes-file RELEASE_NOTES.md
