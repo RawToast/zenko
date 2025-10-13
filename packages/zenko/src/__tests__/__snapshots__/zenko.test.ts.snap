@@ -32,11 +32,13 @@ export const headers = {
 
 // Operation Objects
 export const getTest = {
+  method: "get",
   path: paths.getTest,
 } as const;
 
 // Operation Types
 export type GetTestOperation = OperationDefinition<
+  "get",
   typeof paths.getTest,
   undefined,
   undefined,
@@ -79,6 +81,7 @@ export const headers = {
 exports[`generate Type helpers generates complete inline output: petstore-inline-helpers-output 1`] = `
 "import { z } from "zod";
 type PathFn<TArgs extends unknown[] = []> = (...args: TArgs) => string;
+type RequestMethod = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 type HeaderFn<TArgs extends unknown[] = [], TResult = Record<string, unknown> | Record<string, never>> = (...args: TArgs) => TResult;
 type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {
   clientErrors?: Record<string, TClient>;
@@ -86,7 +89,8 @@ type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, T
   defaultErrors?: Record<string, TDefault>;
   otherErrors?: Record<string, TOther>;
 };
-type OperationDefinition<TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {
+type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {
+  method: TMethod;
   path: TPath;
   request?: TRequest;
   response?: TResponse;
@@ -138,6 +142,7 @@ export const headers = {
 
 // Operation Objects
 export const listPets = {
+  method: "get",
   path: paths.listPets,
   response: Pets,
   errors: {
@@ -148,6 +153,7 @@ export const listPets = {
 } as const;
 
 export const createPets = {
+  method: "post",
   path: paths.createPets,
   request: Pet,
   errors: {
@@ -158,6 +164,7 @@ export const createPets = {
 } as const;
 
 export const showPetById = {
+  method: "get",
   path: paths.showPetById,
   response: Pet,
   errors: {
@@ -169,6 +176,7 @@ export const showPetById = {
 
 // Operation Types
 export type ListPetsOperation = OperationDefinition<
+  "get",
   typeof paths.listPets,
   undefined,
   typeof Pets,
@@ -177,6 +185,7 @@ export type ListPetsOperation = OperationDefinition<
 >;
 
 export type CreatePetsOperation = OperationDefinition<
+  "post",
   typeof paths.createPets,
   typeof Pet,
   undefined,
@@ -185,6 +194,7 @@ export type CreatePetsOperation = OperationDefinition<
 >;
 
 export type ShowPetByIdOperation = OperationDefinition<
+  "get",
   typeof paths.showPetById,
   undefined,
   typeof Pet,

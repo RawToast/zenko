@@ -5,6 +5,7 @@ import {
   isErrorStatus,
   mapStatusToIdentifier,
 } from "./utils/http-status"
+import type { RequestMethod } from "./types"
 
 export type OpenAPISpec = {
   openapi: string
@@ -45,7 +46,7 @@ type QueryParam = {
 type Operation = {
   operationId: string
   path: string
-  method: string
+  method: RequestMethod
   pathParams: PathParam[]
   queryParams: QueryParam[]
   requestType?: string
@@ -315,6 +316,7 @@ export function generate(
   output.push("// Operation Objects")
   for (const op of operations) {
     output.push(`export const ${op.operationId} = {`)
+    output.push(`  method: "${op.method}",`)
     output.push(`  path: paths.${op.operationId},`)
 
     appendOperationField(output, "request", op.requestType)
@@ -373,11 +375,29 @@ function hasAnyErrors(group: OperationErrorGroup): boolean {
   ].some((bucket) => bucket && Object.keys(bucket).length > 0)
 }
 
+function isRequestMethod(method: string): method is RequestMethod {
+  switch (method) {
+    case "get":
+    case "put":
+    case "post":
+    case "delete":
+    case "options":
+    case "head":
+    case "patch":
+    case "trace":
+      return true
+    default:
+      return false
+  }
+}
+
 function parseOperations(spec: OpenAPISpec): Operation[] {
   const operations: Operation[] = []
 
   for (const [path, pathItem] of Object.entries(spec.paths)) {
     for (const [method, operation] of Object.entries(pathItem)) {
+      const normalizedMethod = method.toLowerCase()
+      if (!isRequestMethod(normalizedMethod)) continue
       if (!(operation as any).operationId) continue
 
       const pathParams = extractPathParams(path)
@@ -393,7 +413,7 @@ function parseOperations(spec: OpenAPISpec): Operation[] {
       operations.push({
         operationId: (operation as any).operationId,
         path,
-        method: method.toLowerCase(),
+        method: normalizedMethod,
         pathParams,
         queryParams,
         requestType,
@@ -445,6 +465,9 @@ function appendHelperTypesImport(
         "type PathFn<TArgs extends unknown[] = []> = (...args: TArgs) => string;"
       )
       buffer.push(
+        'type RequestMethod = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";'
+      )
+      buffer.push(
         "type HeaderFn<TArgs extends unknown[] = [], TResult = Record<string, unknown> | Record<string, never>> = (...args: TArgs) => TResult;"
       )
       buffer.push(
@@ -456,8 +479,9 @@ function appendHelperTypesImport(
       buffer.push("  otherErrors?: Record<string, TOther>;")
       buffer.push("};")
       buffer.push(
-        "type OperationDefinition<TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
+        "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
       )
+      buffer.push("  method: TMethod;")
       buffer.push("  path: TPath;")
       buffer.push("  request?: TRequest;")
       buffer.push("  response?: TResponse;")
@@ -488,6 +512,7 @@ function generateOperationTypes(
     buffer.push(
       `export type ${capitalize(op.operationId)}Operation = OperationDefinition<`
     )
+    buffer.push(`  "${op.method}",`)
     buffer.push(`  typeof paths.${op.operationId},`)
     buffer.push(`  ${requestType},`)
     buffer.push(`  ${responseType},`)
