@@ -1,3 +1,5 @@
+[install]
+exact = true
+
 [test]
 coverageReporter  = ["text", "lcov"]
-exact = true

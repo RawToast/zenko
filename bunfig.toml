@@ -1,3 +1,5 @@
-[test]
+[install]
 exact = true
+
+[test]
 preload = ["./.test-guard.ts"]
