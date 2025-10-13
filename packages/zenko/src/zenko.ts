@@ -52,6 +52,7 @@ type Operation = {
   requestType?: string
   responseType?: string
   requestHeaders?: RequestHeader[]
+  responseHeaders?: string
   errors?: OperationErrorGroup
 }
 type OperationErrorGroup = {
@@ -333,6 +334,8 @@ export function generate(
       output.push(`  headers: headers.${op.operationId},`)
     }
 
+    appendOperationField(output, "responseHeaders", op.responseHeaders)
+
     if (op.errors && hasAnyErrors(op.errors)) {
       output.push("  errors: {")
       appendErrorGroup(output, "clientErrors", op.errors.clientErrors)
@@ -411,6 +414,88 @@ function isRequestMethod(method: string): method is RequestMethod {
 }
 
 /**
+ * Content-type priority mapping for response type inference.
+ */
+const CONTENT_TYPE_MAP: Record<string, string> = {
+  "application/json": "unknown", // Will use schema when available
+  "text/csv": "string",
+  "text/plain": "string",
+  // Binary/ambiguous types default to unknown for cross-platform compatibility
+  "application/octet-stream": "unknown",
+  "image/*": "unknown",
+  "application/pdf": "unknown",
+}
+
+/**
+ * Finds the most appropriate content type from available options.
+ * Prefers JSON first, then uses content-type mapping, otherwise takes first available.
+ */
+function findContentType(content: Record<string, any>): string {
+  const contentTypes = Object.keys(content)
+
+  // Prefer JSON
+  if (contentTypes.includes("application/json")) {
+    return "application/json"
+  }
+
+  // Use first content type that has a mapping
+  for (const contentType of contentTypes) {
+    if (contentType in CONTENT_TYPE_MAP) {
+      return contentType
+    }
+  }
+
+  // Default to first available
+  return contentTypes[0] || ""
+}
+
+/**
+ * Infers the TypeScript type for a response based on content type and status code.
+ */
+function inferResponseType(
+  contentType: string,
+  statusCode: string
+): string | undefined {
+  // Handle NoContent and redirects
+  if (statusCode === "204" || /^3\d\d$/.test(statusCode)) {
+    return "undefined"
+  }
+
+  // Use content-type mapping
+  if (contentType in CONTENT_TYPE_MAP) {
+    return CONTENT_TYPE_MAP[contentType]
+  }
+
+  // Default to unknown for unrecognized types
+  return "unknown"
+}
+
+/**
+ * Generates TypeScript type for response headers.
+ */
+function generateResponseHeadersType(headers: any): string {
+  const headerEntries: string[] = []
+
+  for (const [headerName, headerDef] of Object.entries(headers)) {
+    const schema = (headerDef as any)?.schema
+    if (!schema) continue
+
+    const type = mapHeaderType({
+      name: headerName,
+      schema: schema,
+    })
+    const propertyKey = formatPropertyName(headerName)
+    headerEntries.push(`${propertyKey}: ${type}`)
+  }
+
+  if (headerEntries.length === 0) {
+    return `Record<string, unknown>`
+  }
+
+  return `{ ${headerEntries.join("; ")} }`
+}
+
+/**
  * Collects operation metadata from an OpenAPI spec for operations that declare an `operationId` and use a supported HTTP method.
  *
  * @param spec - The OpenAPI specification to parse.
@@ -427,7 +512,7 @@ function parseOperations(spec: OpenAPISpec): Operation[] {
 
       const pathParams = extractPathParams(path)
       const requestType = getRequestType(operation)
-      const { successResponse, errors } = getResponseTypes(
+      const { successResponse, errors, responseHeaders } = getResponseTypes(
         operation,
         (operation as any).operationId
       )
@@ -444,6 +529,7 @@ function parseOperations(spec: OpenAPISpec): Operation[] {
         requestType,
         responseType: successResponse,
         requestHeaders,
+        responseHeaders,
         errors,
       })
     }
@@ -510,13 +596,14 @@ function appendHelperTypesImport(
       buffer.push("  otherErrors?: TOther;")
       buffer.push("};")
       buffer.push(
-        "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
+        "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined, TResponseHeaders extends Record<string, unknown> | undefined = undefined> = {"
       )
       buffer.push("  method: TMethod;")
       buffer.push("  path: TPath;")
       buffer.push("  request?: TRequest;")
       buffer.push("  response?: TResponse;")
       buffer.push("  headers?: THeaders;")
+      buffer.push("  responseHeaders?: TResponseHeaders;")
       buffer.push("  errors?: TErrors;")
       buffer.push("};")
       return
@@ -547,6 +634,9 @@ function generateOperationTypes(
     const headerType = op.requestHeaders?.length
       ? `typeof headers.${op.operationId}`
       : "undefined"
+    const responseHeadersType = op.responseHeaders
+      ? op.responseHeaders
+      : "undefined"
     const requestType = wrapTypeReference(op.requestType)
     const responseType = wrapTypeReference(op.responseType)
     const errorsType = buildOperationErrorsType(op.errors)
@@ -559,7 +649,8 @@ function generateOperationTypes(
     buffer.push(`  ${requestType},`)
     buffer.push(`  ${responseType},`)
     buffer.push(`  ${headerType},`)
-    buffer.push(`  ${errorsType}`)
+    buffer.push(`  ${errorsType},`)
+    buffer.push(`  ${responseHeadersType}`)
     buffer.push(`>;`)
     buffer.push("")
   }
@@ -708,15 +799,52 @@ function getRequestType(operation: any): string | undefined {
 function getResponseTypes(
   operation: any,
   operationId: string
-): { successResponse?: string; errors?: OperationErrorGroup } {
+): {
+  successResponse?: string
+  errors?: OperationErrorGroup
+  responseHeaders?: string
+} {
   const responses = operation.responses ?? {}
   const successCodes = new Map<string, string>()
   const errorEntries: Array<{ code: string; schema: any }> = []
+  let responseHeaders: string | undefined
 
   for (const [statusCode, response] of Object.entries(responses)) {
-    const resolvedSchema = (response as any)?.content?.["application/json"]
-      ?.schema
-    if (!resolvedSchema) continue
+    // Extract response headers
+    const headers = (response as any)?.headers
+    if (headers && Object.keys(headers).length > 0) {
+      responseHeaders = generateResponseHeadersType(headers)
+    }
+
+    // Handle content types
+    const content = (response as any)?.content
+    if (!content || Object.keys(content).length === 0) {
+      // No content - handle based on status code
+      if (statusCode === "204" || /^3\d\d$/.test(statusCode)) {
+        successCodes.set(statusCode, "undefined")
+      }
+      continue
+    }
+
+    // Find the appropriate content type
+    const contentType = findContentType(content)
+    const resolvedSchema = content[contentType]?.schema
+
+    if (!resolvedSchema) {
+      // No schema - infer from content type
+      const inferredType = inferResponseType(contentType, statusCode)
+      if (inferredType) {
+        if (isErrorStatus(statusCode)) {
+          errorEntries.push({
+            code: statusCode,
+            schema: { type: inferredType },
+          })
+        } else if (/^2\d\d$/.test(statusCode) || statusCode === "default") {
+          successCodes.set(statusCode, inferredType)
+        }
+      }
+      continue
+    }
 
     if (isErrorStatus(statusCode)) {
       errorEntries.push({ code: statusCode, schema: resolvedSchema })
@@ -731,7 +859,7 @@ function getResponseTypes(
   const successResponse = selectSuccessResponse(successCodes, operationId)
   const errors = buildErrorGroups(errorEntries, operationId)
 
-  return { successResponse, errors }
+  return { successResponse, errors, responseHeaders }
 }
 
 function selectSuccessResponse(
@@ -744,6 +872,10 @@ function selectSuccessResponse(
   for (const code of preferredOrder) {
     const schema = responses.get(code)
     if (schema) {
+      if (typeof schema === "string") {
+        // Direct type (e.g., "undefined", "string", "unknown")
+        return schema
+      }
       return resolveResponseType(
         schema,
         `${capitalize(operationId)}Response${code}`
@@ -753,6 +885,11 @@ function selectSuccessResponse(
 
   const [firstCode, firstSchema] = responses.entries().next().value ?? []
   if (!firstSchema) return undefined
+
+  if (typeof firstSchema === "string") {
+    return firstSchema
+  }
+
   return resolveResponseType(
     firstSchema,
     `${capitalize(operationId)}Response${firstCode ?? "Default"}`

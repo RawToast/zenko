@@ -43,7 +43,8 @@ export type GetTestOperation = OperationDefinition<
   undefined,
   undefined,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 "
 `;
@@ -89,12 +90,13 @@ type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, T
   defaultErrors?: TDefault;
   otherErrors?: TOther;
 };
-type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {
+type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined, TResponseHeaders extends Record<string, unknown> | undefined = undefined> = {
   method: TMethod;
   path: TPath;
   request?: TRequest;
   response?: TResponse;
   headers?: THeaders;
+  responseHeaders?: TResponseHeaders;
   errors?: TErrors;
 };
 
@@ -145,6 +147,7 @@ export const listPets = {
   method: "get",
   path: paths.listPets,
   response: Pets,
+  responseHeaders: { "x-next": string },
   errors: {
     defaultErrors: {
       defaultError: Error,
@@ -181,7 +184,8 @@ export type ListPetsOperation = OperationDefinition<
   undefined,
   typeof Pets,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>,
+  { "x-next": string }
 >;
 
 export type CreatePetsOperation = OperationDefinition<
@@ -190,7 +194,8 @@ export type CreatePetsOperation = OperationDefinition<
   typeof Pet,
   undefined,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>,
+  undefined
 >;
 
 export type ShowPetByIdOperation = OperationDefinition<
@@ -199,7 +204,8 @@ export type ShowPetByIdOperation = OperationDefinition<
   undefined,
   typeof Pet,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>,
+  undefined
 >;
 "
 `;
