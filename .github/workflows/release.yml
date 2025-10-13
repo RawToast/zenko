@@ -34,7 +34,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Ensure sufficient npm version for trusted publish
-        run: npm install -g npm@10.9.2
+        run: npm install -g npm@11.6.2
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
