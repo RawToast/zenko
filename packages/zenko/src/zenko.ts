@@ -5,6 +5,7 @@ import {
   isErrorStatus,
   mapStatusToIdentifier,
 } from "./utils/http-status"
+import type { RequestMethod } from "./types"
 
 export type OpenAPISpec = {
   openapi: string
@@ -45,7 +46,7 @@ type QueryParam = {
 type Operation = {
   operationId: string
   path: string
-  method: string
+  method: RequestMethod
   pathParams: PathParam[]
   queryParams: QueryParam[]
   requestType?: string
@@ -68,6 +69,13 @@ type RequestHeader = {
   required?: boolean
 }
 
+/**
+ * Generate TypeScript source that contains Zod schemas, path/header helpers, and operation objects/types from an OpenAPI spec.
+ *
+ * @param spec - The OpenAPI specification to generate code from.
+ * @param options - Generation options (e.g., strictDates, strictNumeric, types) that adjust emitted schemas and helper types.
+ * @returns The complete generated TypeScript source as a single string.
+ */
 export function generate(
   spec: OpenAPISpec,
   options: GenerateOptions = {}
@@ -315,6 +323,7 @@ export function generate(
   output.push("// Operation Objects")
   for (const op of operations) {
     output.push(`export const ${op.operationId} = {`)
+    output.push(`  method: "${op.method}",`)
     output.push(`  path: paths.${op.operationId},`)
 
     appendOperationField(output, "request", op.requestType)
@@ -364,6 +373,12 @@ function appendErrorGroup(
   buffer.push("    },")
 }
 
+/**
+ * Determines whether any error bucket in an operation error group contains entries.
+ *
+ * @param group - The operation error group to inspect (client, server, default, other buckets)
+ * @returns `true` if at least one bucket has one or more entries, `false` otherwise.
+ */
 function hasAnyErrors(group: OperationErrorGroup): boolean {
   return [
     group.clientErrors,
@@ -373,11 +388,41 @@ function hasAnyErrors(group: OperationErrorGroup): boolean {
   ].some((bucket) => bucket && Object.keys(bucket).length > 0)
 }
 
+/**
+ * Determines whether a given string is one of the supported HTTP request methods.
+ *
+ * @param method - The HTTP method name to check (expected in lowercase).
+ * @returns `true` if `method` is one of `"get"`, `"put"`, `"post"`, `"delete"`, `"options"`, `"head"`, `"patch"`, or `"trace"`, `false` otherwise.
+ */
+function isRequestMethod(method: string): method is RequestMethod {
+  switch (method) {
+    case "get":
+    case "put":
+    case "post":
+    case "delete":
+    case "options":
+    case "head":
+    case "patch":
+    case "trace":
+      return true
+    default:
+      return false
+  }
+}
+
+/**
+ * Collects operation metadata from an OpenAPI spec for operations that declare an `operationId` and use a supported HTTP method.
+ *
+ * @param spec - The OpenAPI specification to parse.
+ * @returns An array of Operation objects describing each discovered operation (operationId, path, lowercase `method`, path and query parameters, request/response type names, request headers, and categorized errors).
+ */
 function parseOperations(spec: OpenAPISpec): Operation[] {
   const operations: Operation[] = []
 
   for (const [path, pathItem] of Object.entries(spec.paths)) {
     for (const [method, operation] of Object.entries(pathItem)) {
+      const normalizedMethod = method.toLowerCase()
+      if (!isRequestMethod(normalizedMethod)) continue
       if (!(operation as any).operationId) continue
 
       const pathParams = extractPathParams(path)
@@ -393,7 +438,7 @@ function parseOperations(spec: OpenAPISpec): Operation[] {
       operations.push({
         operationId: (operation as any).operationId,
         path,
-        method: method.toLowerCase(),
+        method: normalizedMethod,
         pathParams,
         queryParams,
         requestType,
@@ -423,6 +468,12 @@ type NormalizedTypesConfig = {
   helpersOutput: string
 }
 
+/**
+ * Appends helper type import or inline type declarations to the output buffer according to the types configuration.
+ *
+ * @param buffer - The output string buffer to which import lines or inline type declarations will be appended.
+ * @param config - Normalized types configuration that controls whether to emit helpers and which helper mode to use (`package`, `file`, or `inline`). When `config.emit` is false no content is appended.
+ */
 function appendHelperTypesImport(
   buffer: string[],
   config: NormalizedTypesConfig
@@ -445,6 +496,9 @@ function appendHelperTypesImport(
         "type PathFn<TArgs extends unknown[] = []> = (...args: TArgs) => string;"
       )
       buffer.push(
+        'type RequestMethod = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";'
+      )
+      buffer.push(
         "type HeaderFn<TArgs extends unknown[] = [], TResult = Record<string, unknown> | Record<string, never>> = (...args: TArgs) => TResult;"
       )
       buffer.push(
@@ -456,8 +510,9 @@ function appendHelperTypesImport(
       buffer.push("  otherErrors?: Record<string, TOther>;")
       buffer.push("};")
       buffer.push(
-        "type OperationDefinition<TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
+        "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
       )
+      buffer.push("  method: TMethod;")
       buffer.push("  path: TPath;")
       buffer.push("  request?: TRequest;")
       buffer.push("  response?: TResponse;")
@@ -468,6 +523,17 @@ function appendHelperTypesImport(
   }
 }
 
+/**
+ * Appends TypeScript operation type definitions to the output buffer.
+ *
+ * For each operation, emits an `export type <OperationId>Operation = OperationDefinition<...>` declaration
+ * (including the HTTP method literal, path fn, request/response types, headers type, and errors type)
+ * into the provided `buffer` when `config.emit` is true.
+ *
+ * @param buffer - Mutable array of output lines to append the generated type declarations to
+ * @param operations - Array of operations to generate operation-type exports for
+ * @param config - Normalized types configuration; generation is skipped when `config.emit` is false
+ */
 function generateOperationTypes(
   buffer: string[],
   operations: Operation[],
@@ -488,6 +554,7 @@ function generateOperationTypes(
     buffer.push(
       `export type ${capitalize(op.operationId)}Operation = OperationDefinition<`
     )
+    buffer.push(`  "${op.method}",`)
     buffer.push(`  typeof paths.${op.operationId},`)
     buffer.push(`  ${requestType},`)
     buffer.push(`  ${responseType},`)

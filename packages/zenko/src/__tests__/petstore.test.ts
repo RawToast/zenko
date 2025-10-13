@@ -113,6 +113,8 @@ describe("Petstore", () => {
     expect(result).toContain("export const listPets =")
     expect(result).toContain("export const createPets =")
     expect(result).toContain("export const showPetById =")
+    expect(result).toContain('method: "get"')
+    expect(result).toContain('method: "post"')
   })
 
   test("supports strict options", () => {

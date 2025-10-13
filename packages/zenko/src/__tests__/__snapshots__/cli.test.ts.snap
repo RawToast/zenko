@@ -48,6 +48,7 @@ export const headers = {
 
 // Operation Objects
 export const listPets = {
+  method: "get",
   path: paths.listPets,
   response: Pets,
   errors: {
@@ -58,6 +59,7 @@ export const listPets = {
 } as const;
 
 export const createPets = {
+  method: "post",
   path: paths.createPets,
   request: Pet,
   errors: {
@@ -68,6 +70,7 @@ export const createPets = {
 } as const;
 
 export const showPetById = {
+  method: "get",
   path: paths.showPetById,
   response: Pet,
   errors: {
@@ -79,6 +82,7 @@ export const showPetById = {
 
 // Operation Types
 export type ListPetsOperation = OperationDefinition<
+  "get",
   typeof paths.listPets,
   undefined,
   typeof Pets,
@@ -87,6 +91,7 @@ export type ListPetsOperation = OperationDefinition<
 >;
 
 export type CreatePetsOperation = OperationDefinition<
+  "post",
   typeof paths.createPets,
   typeof Pet,
   undefined,
@@ -95,6 +100,7 @@ export type CreatePetsOperation = OperationDefinition<
 >;
 
 export type ShowPetByIdOperation = OperationDefinition<
+  "get",
   typeof paths.showPetById,
   undefined,
   typeof Pet,
