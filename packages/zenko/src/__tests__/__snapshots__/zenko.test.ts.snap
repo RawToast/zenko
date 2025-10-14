@@ -2,7 +2,7 @@
 
 exports[`generate Edge cases handles empty spec: empty-spec-output 1`] = `
 "import { z } from "zod";
-import type { PathFn, HeaderFn, OperationDefinition, OperationErrors, OperationError } from "zenko";
+import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
 
 // Path Functions
 export const paths = {
@@ -18,7 +18,7 @@ export const headers = {
 
 exports[`generate Edge cases handles spec with no components: no-components-spec-output 1`] = `
 "import { z } from "zod";
-import type { PathFn, HeaderFn, OperationDefinition, OperationErrors, OperationError } from "zenko";
+import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
 
 // Path Functions
 export const paths = {
@@ -89,8 +89,6 @@ type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, T
   defaultErrors?: TDefault;
   otherErrors?: TOther;
 };
-type ValuesOf<T> = T extends object ? T[keyof T] : never;
-type OperationError<T> = T extends { clientErrors?: infer TClient; serverErrors?: infer TServer; defaultErrors?: infer TDefault; otherErrors?: infer TOther } ? ValuesOf<TClient> | ValuesOf<TServer> | ValuesOf<TDefault> | ValuesOf<TOther> : never;
 type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {
   method: TMethod;
   path: TPath;

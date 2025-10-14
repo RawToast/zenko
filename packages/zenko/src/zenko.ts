@@ -483,12 +483,12 @@ function appendHelperTypesImport(
   switch (config.helpers) {
     case "package":
       buffer.push(
-        'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors, OperationError } from "zenko";'
+        'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";'
       )
       return
     case "file":
       buffer.push(
-        `import type { PathFn, HeaderFn, OperationDefinition, OperationErrors, OperationError } from "${config.helpersOutput}";`
+        `import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "${config.helpersOutput}";`
       )
       return
     case "inline":
@@ -509,10 +509,6 @@ function appendHelperTypesImport(
       buffer.push("  defaultErrors?: TDefault;")
       buffer.push("  otherErrors?: TOther;")
       buffer.push("};")
-      buffer.push("type ValuesOf<T> = T extends object ? T[keyof T] : never;")
-      buffer.push(
-        "type OperationError<T> = T extends OperationErrors<infer TClient, infer TServer, infer TDefault, infer TOther> ? ValuesOf<TClient> | ValuesOf<TServer> | ValuesOf<TDefault> | ValuesOf<TOther> : T extends { clientErrors?: infer TClient; serverErrors?: infer TServer; defaultErrors?: infer TDefault; otherErrors?: infer TOther } ? ValuesOf<TClient> | ValuesOf<TServer> | ValuesOf<TDefault> | ValuesOf<TOther> : never;"
-      )
       buffer.push(
         "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
       )
