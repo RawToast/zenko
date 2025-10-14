@@ -84,10 +84,10 @@ type PathFn<TArgs extends unknown[] = []> = (...args: TArgs) => string;
 type RequestMethod = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 type HeaderFn<TArgs extends unknown[] = [], TResult = Record<string, unknown> | Record<string, never>> = (...args: TArgs) => TResult;
 type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {
-  clientErrors?: Record<string, TClient>;
-  serverErrors?: Record<string, TServer>;
-  defaultErrors?: Record<string, TDefault>;
-  otherErrors?: Record<string, TOther>;
+  clientErrors?: TClient;
+  serverErrors?: TServer;
+  defaultErrors?: TDefault;
+  otherErrors?: TOther;
 };
 type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {
   method: TMethod;

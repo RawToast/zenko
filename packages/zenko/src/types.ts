@@ -21,10 +21,10 @@ export type OperationErrors<
   TDefault = unknown,
   TOther = unknown,
 > = {
-  clientErrors?: Record<string, TClient>
-  serverErrors?: Record<string, TServer>
-  defaultErrors?: Record<string, TDefault>
-  otherErrors?: Record<string, TOther>
+  clientErrors?: TClient
+  serverErrors?: TServer
+  defaultErrors?: TDefault
+  otherErrors?: TOther
 }
 
 export type OperationDefinition<
