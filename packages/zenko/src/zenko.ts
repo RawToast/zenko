@@ -419,7 +419,6 @@ const CONTENT_TYPE_MAP: Record<string, string> = {
   "text/plain": "string",
   // Binary/ambiguous types default to unknown for cross-platform compatibility
   "application/octet-stream": "unknown",
-  "image/*": "unknown",
   "application/pdf": "unknown",
 }
 
