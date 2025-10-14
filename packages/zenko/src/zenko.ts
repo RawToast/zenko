@@ -451,7 +451,7 @@ function findContentType(content: Record<string, any>): string {
 function inferResponseType(
   contentType: string,
   statusCode: string
-): string | undefined {
+): string {
   // Handle NoContent and redirects
   if (statusCode === "204" || /^3\d\d$/.test(statusCode)) {
     return "undefined"
