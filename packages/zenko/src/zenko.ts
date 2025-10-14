@@ -504,10 +504,10 @@ function appendHelperTypesImport(
       buffer.push(
         "type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {"
       )
-      buffer.push("  clientErrors?: Record<string, TClient>;")
-      buffer.push("  serverErrors?: Record<string, TServer>;")
-      buffer.push("  defaultErrors?: Record<string, TDefault>;")
-      buffer.push("  otherErrors?: Record<string, TOther>;")
+      buffer.push("  clientErrors?: TClient;")
+      buffer.push("  serverErrors?: TServer;")
+      buffer.push("  defaultErrors?: TDefault;")
+      buffer.push("  otherErrors?: TOther;")
       buffer.push("};")
       buffer.push(
         "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
