@@ -765,6 +765,13 @@ function getRequestType(operation: any): string | undefined {
   return typeName
 }
 
+/**
+ * Resolves success and error response typings for an operation.
+ *
+ * @param operation - The OpenAPI operation node to inspect.
+ * @param operationId - The operation identifier used for synthesized names.
+ * @returns The preferred success response type and categorized error groups.
+ */
 function getResponseTypes(
   operation: any,
   operationId: string
@@ -798,7 +805,7 @@ function getResponseTypes(
         if (isErrorStatus(statusCode)) {
           errorEntries.push({
             code: statusCode,
-            schema: { type: inferredType },
+            schema: inferredType,
           })
         } else if (/^2\d\d$/.test(statusCode) || statusCode === "default") {
           successCodes.set(statusCode, inferredType)
@@ -823,6 +830,17 @@ function getResponseTypes(
   return { successResponse, errors }
 }
 
+/**
+ * Picks the most representative success response type from available candidates.
+ *
+ * Prefers 200/201/204 responses, falling back to the first declared status code.
+ * When a schema is provided as a literal type string the literal is returned
+ * directly; otherwise a synthetic type name is generated via `resolveResponseType`.
+ *
+ * @param responses - Map of status codes to resolved schemas or inferred literals.
+ * @param operationId - Operation identifier used to construct synthetic names.
+ * @returns The chosen TypeScript type name, or `undefined` when no success response exists.
+ */
 function selectSuccessResponse(
   responses: Map<string, any>,
   operationId: string
@@ -857,6 +875,13 @@ function selectSuccessResponse(
   )
 }
 
+/**
+ * Buckets error responses by status-class and maps them to concrete type names.
+ *
+ * @param errors - Collection of HTTP status codes paired with schemas or literals.
+ * @param operationId - Operation identifier used when synthesizing fallback names.
+ * @returns Structured error groups keyed by client/server/default/other categories.
+ */
 function buildErrorGroups(
   errors: Array<{ code: string; schema: any }> = [],
   operationId: string
@@ -896,7 +921,17 @@ function buildErrorGroups(
   return group
 }
 
+/**
+ * Resolves the emitted TypeScript identifier for a response schema.
+ *
+ * @param schema - Schema object or inferred literal type returned by inference.
+ * @param fallbackName - Synthetic name to use when the schema lacks a `$ref`.
+ * @returns Reference name, literal type, or the provided fallback.
+ */
 function resolveResponseType(schema: any, fallbackName: string): string {
+  if (typeof schema === "string") {
+    return schema
+  }
   if (schema.$ref) {
     return extractRefName(schema.$ref)
   }
