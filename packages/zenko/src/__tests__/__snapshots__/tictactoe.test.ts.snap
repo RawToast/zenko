@@ -84,8 +84,7 @@ export type Get-boardOperation = OperationDefinition<
   undefined,
   typeof status,
   undefined,
-  OperationErrors,
-  undefined
+  OperationErrors
 >;
 
 export type Get-squareOperation = OperationDefinition<
@@ -94,8 +93,7 @@ export type Get-squareOperation = OperationDefinition<
   undefined,
   typeof mark,
   undefined,
-  OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>,
-  undefined
+  OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>
 >;
 
 export type Put-squareOperation = OperationDefinition<
@@ -104,8 +102,7 @@ export type Put-squareOperation = OperationDefinition<
   typeof mark,
   typeof status,
   undefined,
-  OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>,
-  undefined
+  OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>
 >;
 "
 `;
@@ -194,8 +191,7 @@ export type Get-boardOperation = OperationDefinition<
   undefined,
   typeof status,
   undefined,
-  OperationErrors,
-  undefined
+  OperationErrors
 >;
 
 export type Get-squareOperation = OperationDefinition<
@@ -204,8 +200,7 @@ export type Get-squareOperation = OperationDefinition<
   undefined,
   typeof mark,
   undefined,
-  OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>,
-  undefined
+  OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>
 >;
 
 export type Put-squareOperation = OperationDefinition<
@@ -214,8 +209,7 @@ export type Put-squareOperation = OperationDefinition<
   typeof mark,
   typeof status,
   undefined,
-  OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>,
-  undefined
+  OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>
 >;
 "
 `;

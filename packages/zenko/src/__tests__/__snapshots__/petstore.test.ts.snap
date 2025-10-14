@@ -51,7 +51,6 @@ export const listPets = {
   method: "get",
   path: paths.listPets,
   response: Pets,
-  responseHeaders: { "x-next": string },
   errors: {
     defaultErrors: {
       defaultError: Error,
@@ -88,8 +87,7 @@ export type ListPetsOperation = OperationDefinition<
   undefined,
   typeof Pets,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>,
-  { "x-next": string }
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
 
 export type CreatePetsOperation = OperationDefinition<
@@ -98,8 +96,7 @@ export type CreatePetsOperation = OperationDefinition<
   typeof Pet,
   undefined,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>,
-  undefined
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
 
 export type ShowPetByIdOperation = OperationDefinition<
@@ -108,8 +105,7 @@ export type ShowPetByIdOperation = OperationDefinition<
   undefined,
   typeof Pet,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>,
-  undefined
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
 "
 `;
@@ -165,7 +161,6 @@ export const listPets = {
   method: "get",
   path: paths.listPets,
   response: Pets,
-  responseHeaders: { "x-next": string },
   errors: {
     defaultErrors: {
       defaultError: Error,
@@ -202,8 +197,7 @@ export type ListPetsOperation = OperationDefinition<
   undefined,
   typeof Pets,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>,
-  { "x-next": string }
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
 
 export type CreatePetsOperation = OperationDefinition<
@@ -212,8 +206,7 @@ export type CreatePetsOperation = OperationDefinition<
   typeof Pet,
   undefined,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>,
-  undefined
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
 
 export type ShowPetByIdOperation = OperationDefinition<
@@ -222,8 +215,7 @@ export type ShowPetByIdOperation = OperationDefinition<
   undefined,
   typeof Pet,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>,
-  undefined
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
 "
 `;
@@ -279,7 +271,6 @@ export const listPets = {
   method: "get",
   path: paths.listPets,
   response: Pets,
-  responseHeaders: { "x-next": string },
   errors: {
     defaultErrors: {
       defaultError: Error,
@@ -316,8 +307,7 @@ export type ListPetsOperation = OperationDefinition<
   undefined,
   typeof Pets,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>,
-  { "x-next": string }
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
 
 export type CreatePetsOperation = OperationDefinition<
@@ -326,8 +316,7 @@ export type CreatePetsOperation = OperationDefinition<
   typeof Pet,
   undefined,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>,
-  undefined
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
 
 export type ShowPetByIdOperation = OperationDefinition<
@@ -336,8 +325,7 @@ export type ShowPetByIdOperation = OperationDefinition<
   undefined,
   typeof Pet,
   undefined,
-  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>,
-  undefined
+  OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
 "
 `;

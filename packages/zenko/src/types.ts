@@ -34,13 +34,11 @@ export type OperationDefinition<
   TResponse = undefined,
   THeaders extends HeaderFn | undefined = undefined,
   TErrors extends OperationErrors | undefined = undefined,
-  TResponseHeaders extends Record<string, unknown> | undefined = undefined,
 > = {
   method: TMethod
   path: TPath
   request?: TRequest
   response?: TResponse
   headers?: THeaders
-  responseHeaders?: TResponseHeaders
   errors?: TErrors
 }

@@ -52,7 +52,6 @@ type Operation = {
   requestType?: string
   responseType?: string
   requestHeaders?: RequestHeader[]
-  responseHeaders?: string
   errors?: OperationErrorGroup
 }
 type OperationErrorGroup = {
@@ -334,8 +333,6 @@ export function generate(
       output.push(`  headers: headers.${op.operationId},`)
     }
 
-    appendOperationField(output, "responseHeaders", op.responseHeaders)
-
     if (op.errors && hasAnyErrors(op.errors)) {
       output.push("  errors: {")
       appendErrorGroup(output, "clientErrors", op.errors.clientErrors)
@@ -473,28 +470,6 @@ function inferResponseType(
 /**
  * Generates TypeScript type for response headers.
  */
-function generateResponseHeadersType(headers: any): string {
-  const headerEntries: string[] = []
-
-  for (const [headerName, headerDef] of Object.entries(headers)) {
-    const schema = (headerDef as any)?.schema
-    if (!schema) continue
-
-    const type = mapHeaderType({
-      name: headerName,
-      schema: schema,
-    })
-    const propertyKey = formatPropertyName(headerName)
-    headerEntries.push(`${propertyKey}: ${type}`)
-  }
-
-  if (headerEntries.length === 0) {
-    return `Record<string, unknown>`
-  }
-
-  return `{ ${headerEntries.join("; ")} }`
-}
-
 /**
  * Collects operation metadata from an OpenAPI spec for operations that declare an `operationId` and use a supported HTTP method.
  *
@@ -512,7 +487,7 @@ function parseOperations(spec: OpenAPISpec): Operation[] {
 
       const pathParams = extractPathParams(path)
       const requestType = getRequestType(operation)
-      const { successResponse, errors, responseHeaders } = getResponseTypes(
+      const { successResponse, errors } = getResponseTypes(
         operation,
         (operation as any).operationId
       )
@@ -529,7 +504,6 @@ function parseOperations(spec: OpenAPISpec): Operation[] {
         requestType,
         responseType: successResponse,
         requestHeaders,
-        responseHeaders,
         errors,
       })
     }
@@ -596,14 +570,13 @@ function appendHelperTypesImport(
       buffer.push("  otherErrors?: TOther;")
       buffer.push("};")
       buffer.push(
-        "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined, TResponseHeaders extends Record<string, unknown> | undefined = undefined> = {"
+        "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
       )
       buffer.push("  method: TMethod;")
       buffer.push("  path: TPath;")
       buffer.push("  request?: TRequest;")
       buffer.push("  response?: TResponse;")
       buffer.push("  headers?: THeaders;")
-      buffer.push("  responseHeaders?: TResponseHeaders;")
       buffer.push("  errors?: TErrors;")
       buffer.push("};")
       return
@@ -634,9 +607,6 @@ function generateOperationTypes(
     const headerType = op.requestHeaders?.length
       ? `typeof headers.${op.operationId}`
       : "undefined"
-    const responseHeadersType = op.responseHeaders
-      ? op.responseHeaders
-      : "undefined"
     const requestType = wrapTypeReference(op.requestType)
     const responseType = wrapTypeReference(op.responseType)
     const errorsType = buildOperationErrorsType(op.errors)
@@ -649,8 +619,7 @@ function generateOperationTypes(
     buffer.push(`  ${requestType},`)
     buffer.push(`  ${responseType},`)
     buffer.push(`  ${headerType},`)
-    buffer.push(`  ${errorsType},`)
-    buffer.push(`  ${responseHeadersType}`)
+    buffer.push(`  ${errorsType}`)
     buffer.push(`>;`)
     buffer.push("")
   }
@@ -802,20 +771,12 @@ function getResponseTypes(
 ): {
   successResponse?: string
   errors?: OperationErrorGroup
-  responseHeaders?: string
 } {
   const responses = operation.responses ?? {}
   const successCodes = new Map<string, string>()
   const errorEntries: Array<{ code: string; schema: any }> = []
-  let responseHeaders: string | undefined
 
   for (const [statusCode, response] of Object.entries(responses)) {
-    // Extract response headers
-    const headers = (response as any)?.headers
-    if (headers && Object.keys(headers).length > 0) {
-      responseHeaders = generateResponseHeadersType(headers)
-    }
-
     // Handle content types
     const content = (response as any)?.content
     if (!content || Object.keys(content).length === 0) {
@@ -859,7 +820,7 @@ function getResponseTypes(
   const successResponse = selectSuccessResponse(successCodes, operationId)
   const errors = buildErrorGroups(errorEntries, operationId)
 
-  return { successResponse, errors, responseHeaders }
+  return { successResponse, errors }
 }
 
 function selectSuccessResponse(
