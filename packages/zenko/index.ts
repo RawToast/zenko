@@ -8,5 +8,6 @@ export {
   type PathFn,
   type HeaderFn,
   type OperationErrors,
+  type OperationError,
   type OperationDefinition,
 } from "./src/types"

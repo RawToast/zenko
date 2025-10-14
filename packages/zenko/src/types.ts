@@ -26,6 +26,19 @@ export type OperationErrors<
   defaultErrors?: TDefault
   otherErrors?: TOther
 }
+type ValuesOf<T> = T extends object ? T[keyof T] : never
+
+export type OperationError<T> =
+  T extends OperationErrors<infer TClient, infer TServer, infer TDefault, infer TOther>
+    ? ValuesOf<TClient> | ValuesOf<TServer> | ValuesOf<TDefault> | ValuesOf<TOther>
+    : T extends {
+        clientErrors?: infer TClient
+        serverErrors?: infer TServer
+        defaultErrors?: infer TDefault
+        otherErrors?: infer TOther
+      }
+    ? ValuesOf<TClient> | ValuesOf<TServer> | ValuesOf<TDefault> | ValuesOf<TOther>
+    : never
 
 export type OperationDefinition<
   TMethod extends RequestMethod,

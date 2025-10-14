@@ -202,7 +202,7 @@ describe("generate", () => {
       const result = generate(petstoreSpec)
 
       expect(result).toContain(
-        'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";'
+        'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors, OperationError } from "zenko";'
       )
       expect(result).toContain("// Operation Types")
       expect(result).toContain(
@@ -233,7 +233,7 @@ describe("generate", () => {
       })
 
       expect(result).toContain(
-        'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "./custom-types";'
+        'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors, OperationError } from "./custom-types";'
       )
       expect(result).toContain("// Operation Types")
       expect(result).toContain(
