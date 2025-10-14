@@ -467,8 +467,6 @@ function inferResponseType(
 }
 
 /**
-  * Collects operation metadata from an OpenAPI spec for operations that declare an `operationId` and use a supported HTTP method.
-/**
  * Collects operation metadata from an OpenAPI spec for operations that declare an `operationId` and use a supported HTTP method.
  *
  * @param spec - The OpenAPI specification to parse.
