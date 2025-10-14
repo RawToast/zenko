@@ -803,7 +803,7 @@ function getResponseTypes(
             code: statusCode,
             schema: inferredType,
           })
-        } else if (/^2\d\d$/.test(statusCode) || statusCode === "default") {
+        } else if (/^2\d\d$/.test(statusCode)) {
           successCodes.set(statusCode, inferredType)
         }
       }
@@ -815,7 +815,7 @@ function getResponseTypes(
       continue
     }
 
-    if (/^2\d\d$/.test(statusCode) || statusCode === "default") {
+    if (/^2\d\d$/.test(statusCode)) {
       successCodes.set(statusCode, resolvedSchema)
     }
   }
