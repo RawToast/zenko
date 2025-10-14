@@ -2,5 +2,5 @@
 "zenko": patch
 ---
 
-Fixes the generated type defintions for OperationErrors
+Fixes the generated type definitions for OperationErrors
 Adds RequestMethod to generated operations
