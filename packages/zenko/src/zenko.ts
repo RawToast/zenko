@@ -914,6 +914,11 @@ function resolveResponseType(schema: any, fallbackName: string): string {
   if (schema.$ref) {
     return extractRefName(schema.$ref)
   }
+  // Handle array schemas with $ref items
+  if (schema.type === "array" && schema.items?.$ref) {
+    const itemRef = extractRefName(schema.items.$ref)
+    return `z.ZodArray<typeof ${itemRef}>`
+  }
   return fallbackName
 }
 
