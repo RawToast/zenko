@@ -9,6 +9,11 @@ export const paths = {
   PutSomething: () => "/data",
 } as const;
 
+// Header Schemas
+export const headerSchemas = {
+  PutSomething: z.object({}),
+} as const;
+
 // Header Functions
 export const headers = {
   PutSomething: () => ({}),

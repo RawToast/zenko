@@ -9,19 +9,21 @@ export const paths = {
   createMatrix: () => "/matrix",
 } as const;
 
+// Header Schemas
+export const headerSchemas = {
+  createMatrix: z.object({
+    Agent: z.string().optional(),
+    Test: z.boolean(),
+    MagicalNumber: z.number().optional(),
+    Token: z.string(),
+  }),
+} as const;
+
 // Header Functions
 export const headers = {
-  createMatrix: (params: { Agent?: string, Test?: number, Token: string }) => {
-    const headers = {
-      Token: params.Token,
-    }
-    if (params.Agent !== undefined) {
-      headers.Agent = params.Agent
-    }
-    if (params.Test !== undefined) {
-      headers.Test = params.Test
-    }
-    return headers
+  createMatrix: (params: z.input<typeof headerSchemas.createMatrix>) => {
+    const result = headerSchemas.createMatrix.parse(params)
+    return result
   },
 } as const;
 

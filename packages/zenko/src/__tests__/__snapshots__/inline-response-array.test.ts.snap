@@ -9,6 +9,11 @@ export const paths = {
   bySource: () => "/logs",
 } as const;
 
+// Header Schemas
+export const headerSchemas = {
+  bySource: z.object({}),
+} as const;
+
 // Header Functions
 export const headers = {
   bySource: () => ({}),

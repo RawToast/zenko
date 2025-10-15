@@ -39,6 +39,13 @@ export const paths = {
   showPetById: ({ petId }: { petId: string }) => \`/pets/\${petId}\`,
 } as const;
 
+// Header Schemas
+export const headerSchemas = {
+  listPets: z.object({}),
+  createPets: z.object({}),
+  showPetById: z.object({}),
+} as const;
+
 // Header Functions
 export const headers = {
   listPets: () => ({}),
@@ -149,6 +156,13 @@ export const paths = {
   showPetById: ({ petId }: { petId: string }) => \`/pets/\${petId}\`,
 } as const;
 
+// Header Schemas
+export const headerSchemas = {
+  listPets: z.object({}),
+  createPets: z.object({}),
+  showPetById: z.object({}),
+} as const;
+
 // Header Functions
 export const headers = {
   listPets: () => ({}),
@@ -257,6 +271,13 @@ export const paths = {
   },
   createPets: () => "/pets",
   showPetById: ({ petId }: { petId: string }) => \`/pets/\${petId}\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  listPets: z.object({}),
+  createPets: z.object({}),
+  showPetById: z.object({}),
 } as const;
 
 // Header Functions

@@ -54,7 +54,7 @@
   "scripts": {
     "build": "tsup",
     "build:watch": "tsup --watch",
-    "test": "bun test",
+    "test": "bun test --watch",
     "coverage": "bun test --coverage",
     "prepublishOnly": "bun run build",
     "check-types": "tsc --noEmit"

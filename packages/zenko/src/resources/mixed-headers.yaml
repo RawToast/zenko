@@ -31,7 +31,7 @@ components:
         type: boolean
       example: true
     MagicalNumberHeader:
-      name: Test
+      name: MagicalNumber
       in: header
       required: false
       schema:

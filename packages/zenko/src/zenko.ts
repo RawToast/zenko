@@ -219,7 +219,33 @@ export function generate(
   output.push("} as const;")
   output.push("")
 
-  // Generate header functions
+  // Generate header schemas
+  output.push("// Header Schemas")
+  output.push("export const headerSchemas = {")
+
+  for (const op of operations) {
+    if (!op.requestHeaders || op.requestHeaders.length === 0) {
+      output.push(`  ${op.operationId}: z.object({}),`)
+      continue
+    }
+
+    const schemaFields = op.requestHeaders
+      .map((header) => {
+        const zodType = mapHeaderToZodType(header)
+        const optional = header.required ? "" : ".optional()"
+        return `    ${formatPropertyName(header.name)}: ${zodType}${optional},`
+      })
+      .join("\n")
+
+    output.push(`  ${op.operationId}: z.object({`)
+    output.push(schemaFields)
+    output.push("  }),")
+  }
+
+  output.push("} as const;")
+  output.push("")
+
+  // Generate header functions using Zod schemas
   output.push("// Header Functions")
   output.push("export const headers = {")
 
@@ -229,90 +255,13 @@ export function generate(
       continue
     }
 
-    const typeEntries = op.requestHeaders
-      .map(
-        (header) =>
-          `${formatPropertyName(header.name)}${header.required ? "" : "?"}: ${mapHeaderType(
-            header
-          )}`
-      )
-      .join(", ")
-
-    const requiredHeaders = op.requestHeaders.filter(
-      (header) => header.required
+    output.push(
+      `  ${op.operationId}: (params: z.input<typeof headerSchemas.${op.operationId}>) => {`
     )
-    const optionalHeaders = op.requestHeaders.filter(
-      (header) => !header.required
+    output.push(
+      `    const result = headerSchemas.${op.operationId}.parse(params)`
     )
-    const hasRequired = requiredHeaders.length > 0
-    const signature = hasRequired
-      ? `(params: { ${typeEntries} })`
-      : `(params: { ${typeEntries} } = {})`
-
-    if (optionalHeaders.length === 0) {
-      output.push(`  ${op.operationId}: ${signature} => ({`)
-
-      for (const header of requiredHeaders) {
-        const propertyKey = formatPropertyName(header.name)
-        const accessor = isValidJSIdentifier(header.name)
-          ? `params.${header.name}`
-          : `params[${propertyKey}]`
-        output.push(`    ${propertyKey}: ${accessor},`)
-      }
-
-      output.push("  }),")
-      continue
-    }
-
-    if (!hasRequired && optionalHeaders.length === 1 && optionalHeaders[0]) {
-      const header = optionalHeaders[0]
-      const propertyKey = formatPropertyName(header.name)
-      const accessor = isValidJSIdentifier(header.name)
-        ? `params.${header.name}`
-        : `params[${propertyKey}]`
-
-      output.push(`  ${op.operationId}: ${signature} =>`)
-      output.push(
-        `    ${accessor} !== undefined ? { ${propertyKey}: ${accessor} } : {},`
-      )
-      continue
-    }
-
-    const valueTypes = Array.from(
-      new Set(optionalHeaders.map((header) => mapHeaderType(header)))
-    ).join(" | ")
-
-    output.push(`  ${op.operationId}: ${signature} => {`)
-
-    if (hasRequired) {
-      output.push("    const headers = {")
-      for (const header of requiredHeaders) {
-        const propertyKey = formatPropertyName(header.name)
-        const accessor = isValidJSIdentifier(header.name)
-          ? `params.${header.name}`
-          : `params[${propertyKey}]`
-        output.push(`      ${propertyKey}: ${accessor},`)
-      }
-      output.push("    }")
-    } else {
-      output.push(`    const headers: Record<string, ${valueTypes}> = {}`)
-    }
-
-    for (const header of optionalHeaders) {
-      const propertyKey = formatPropertyName(header.name)
-      const accessor = isValidJSIdentifier(header.name)
-        ? `params.${header.name}`
-        : `params[${propertyKey}]`
-      const assignment = isValidJSIdentifier(header.name)
-        ? `headers.${header.name}`
-        : `headers[${propertyKey}]`
-
-      output.push(`    if (${accessor} !== undefined) {`)
-      output.push(`      ${assignment} = ${accessor}`)
-      output.push("    }")
-    }
-
-    output.push("    return headers")
+    output.push("    return result")
     output.push("  },")
   }
 
@@ -968,16 +917,16 @@ function getQueryParams(parameters: any[]): QueryParam[] {
   return queryParams
 }
 
-function mapHeaderType(header: RequestHeader): string {
+function mapHeaderToZodType(header: RequestHeader): string {
   const schemaType = header.schema?.type
   switch (schemaType) {
     case "integer":
     case "number":
-      return "number"
+      return "z.number()"
     case "boolean":
-      return "boolean"
+      return "z.boolean()"
     default:
-      return "string"
+      return "z.string()"
   }
 }
 

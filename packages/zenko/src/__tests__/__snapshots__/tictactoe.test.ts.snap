@@ -40,6 +40,13 @@ export const paths = {
   put-square: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
 } as const;
 
+// Header Schemas
+export const headerSchemas = {
+  get-board: z.object({}),
+  get-square: z.object({}),
+  put-square: z.object({}),
+} as const;
+
 // Header Functions
 export const headers = {
   get-board: () => ({}),
@@ -145,6 +152,13 @@ export const paths = {
   get-board: () => "/board",
   get-square: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
   put-square: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  get-board: z.object({}),
+  get-square: z.object({}),
+  put-square: z.object({}),
 } as const;
 
 // Header Functions

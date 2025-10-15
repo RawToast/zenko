@@ -76,7 +76,10 @@ describe("TicTacToe", () => {
 
     // Should generate proper header function with parameters
     expect(result).toContain(
-      "createMatrix: (params: { Agent?: string } = {}) =>\n    params.Agent !== undefined ? { Agent: params.Agent } : {},"
+      "createMatrix: (params: z.input<typeof headerSchemas.createMatrix>) => {"
+    )
+    expect(result).toContain(
+      "const result = headerSchemas.createMatrix.parse(params)"
     )
   })
 

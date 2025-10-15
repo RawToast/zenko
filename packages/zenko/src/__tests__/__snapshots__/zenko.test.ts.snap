@@ -8,6 +8,10 @@ import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zen
 export const paths = {
 } as const;
 
+// Header Schemas
+export const headerSchemas = {
+} as const;
+
 // Header Functions
 export const headers = {
 } as const;
@@ -23,6 +27,11 @@ import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zen
 // Path Functions
 export const paths = {
   getTest: () => "/test",
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  getTest: z.object({}),
 } as const;
 
 // Header Functions
@@ -70,6 +79,10 @@ export type A = z.infer<typeof A>;
 export const paths = {
 } as const;
 
+// Header Schemas
+export const headerSchemas = {
+} as const;
+
 // Header Functions
 export const headers = {
 } as const;
@@ -85,6 +98,11 @@ import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zen
 // Path Functions
 export const paths = {
   getErrorWithoutSchema: () => "/error",
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  getErrorWithoutSchema: z.object({}),
 } as const;
 
 // Header Functions
@@ -169,6 +187,13 @@ export const paths = {
   },
   createPets: () => "/pets",
   showPetById: ({ petId }: { petId: string }) => \`/pets/\${petId}\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  listPets: z.object({}),
+  createPets: z.object({}),
+  showPetById: z.object({}),
 } as const;
 
 // Header Functions
