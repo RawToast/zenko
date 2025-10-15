@@ -763,6 +763,12 @@ function getResponseTypes(
       // No content - handle based on status code
       if (statusCode === "204" || /^3\d\d$/.test(statusCode)) {
         successCodes.set(statusCode, "undefined")
+      } else if (isErrorStatus(statusCode)) {
+        // Include error responses even without content
+        errorEntries.push({
+          code: statusCode,
+          schema: "undefined",
+        })
       }
       continue
     }
