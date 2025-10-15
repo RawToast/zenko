@@ -448,7 +448,10 @@ function findContentType(content: Record<string, any>): string {
 /**
  * Infers the TypeScript type for a response based on content type and status code.
  */
-function inferResponseType(contentType: string, statusCode: string): string {
+function inferResponseType(
+  contentType: string,
+  statusCode: string
+): string | undefined {
   // Handle NoContent and redirects
   if (statusCode === "204" || /^3\d\d$/.test(statusCode)) {
     return "undefined"
