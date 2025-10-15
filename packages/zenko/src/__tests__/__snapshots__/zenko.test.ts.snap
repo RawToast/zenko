@@ -78,6 +78,44 @@ export const headers = {
 // Operation Types"
 `;
 
+exports[`generate Response inference infers string error responses without schemas: error-response-inference 1`] = `
+"import { z } from "zod";
+import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
+
+// Path Functions
+export const paths = {
+  getErrorWithoutSchema: () => "/error",
+} as const;
+
+// Header Functions
+export const headers = {
+  getErrorWithoutSchema: () => ({}),
+} as const;
+
+// Operation Objects
+export const getErrorWithoutSchema = {
+  method: "get",
+  path: paths.getErrorWithoutSchema,
+  response: GetErrorWithoutSchemaResponse200,
+  errors: {
+    serverErrors: {
+      internalServerError: string,
+    },
+  },
+} as const;
+
+// Operation Types
+export type GetErrorWithoutSchemaOperation = OperationDefinition<
+  "get",
+  typeof paths.getErrorWithoutSchema,
+  undefined,
+  typeof GetErrorWithoutSchemaResponse200,
+  undefined,
+  OperationErrors<unknown, { internalServerError: string }, unknown, unknown>
+>;
+"
+`;
+
 exports[`generate Type helpers generates complete inline output: petstore-inline-helpers-output 1`] = `
 "import { z } from "zod";
 type PathFn<TArgs extends unknown[] = []> = (...args: TArgs) => string;

@@ -411,6 +411,62 @@ function isRequestMethod(method: string): method is RequestMethod {
 }
 
 /**
+ * Content-type priority mapping for response type inference.
+ */
+const CONTENT_TYPE_MAP: Record<string, string> = {
+  "application/json": "unknown", // Will use schema when available
+  "text/csv": "string",
+  "text/plain": "string",
+  // Binary/ambiguous types default to unknown for cross-platform compatibility
+  "application/octet-stream": "unknown",
+  "application/pdf": "unknown",
+}
+
+/**
+ * Finds the most appropriate content type from available options.
+ * Prefers JSON first, then uses content-type mapping, otherwise takes first available.
+ */
+function findContentType(content: Record<string, any>): string {
+  const contentTypes = Object.keys(content)
+
+  // Prefer JSON
+  if (contentTypes.includes("application/json")) {
+    return "application/json"
+  }
+
+  // Use first content type that has a mapping
+  for (const contentType of contentTypes) {
+    if (contentType in CONTENT_TYPE_MAP) {
+      return contentType
+    }
+  }
+
+  // Default to first available
+  return contentTypes[0] || ""
+}
+
+/**
+ * Infers the TypeScript type for a response based on content type and status code.
+ */
+function inferResponseType(
+  contentType: string,
+  statusCode: string
+): string | undefined {
+  // Handle NoContent and redirects
+  if (statusCode === "204" || /^3\d\d$/.test(statusCode)) {
+    return "undefined"
+  }
+
+  // Use content-type mapping
+  if (contentType in CONTENT_TYPE_MAP) {
+    return CONTENT_TYPE_MAP[contentType]
+  }
+
+  // Default to unknown for unrecognized types
+  return "unknown"
+}
+
+/**
  * Collects operation metadata from an OpenAPI spec for operations that declare an `operationId` and use a supported HTTP method.
  *
  * @param spec - The OpenAPI specification to parse.
@@ -705,25 +761,61 @@ function getRequestType(operation: any): string | undefined {
   return typeName
 }
 
+/**
+ * Resolves success and error response typings for an operation.
+ *
+ * @param operation - The OpenAPI operation node to inspect.
+ * @param operationId - The operation identifier used for synthesized names.
+ * @returns The preferred success response type and categorized error groups.
+ */
 function getResponseTypes(
   operation: any,
   operationId: string
-): { successResponse?: string; errors?: OperationErrorGroup } {
+): {
+  successResponse?: string
+  errors?: OperationErrorGroup
+} {
   const responses = operation.responses ?? {}
   const successCodes = new Map<string, string>()
   const errorEntries: Array<{ code: string; schema: any }> = []
 
   for (const [statusCode, response] of Object.entries(responses)) {
-    const resolvedSchema = (response as any)?.content?.["application/json"]
-      ?.schema
-    if (!resolvedSchema) continue
+    // Handle content types
+    const content = (response as any)?.content
+    if (!content || Object.keys(content).length === 0) {
+      // No content - handle based on status code
+      if (statusCode === "204" || /^3\d\d$/.test(statusCode)) {
+        successCodes.set(statusCode, "undefined")
+      }
+      continue
+    }
+
+    // Find the appropriate content type
+    const contentType = findContentType(content)
+    const resolvedSchema = content[contentType]?.schema
+
+    if (!resolvedSchema) {
+      // No schema - infer from content type
+      const inferredType = inferResponseType(contentType, statusCode)
+      if (inferredType) {
+        if (isErrorStatus(statusCode)) {
+          errorEntries.push({
+            code: statusCode,
+            schema: inferredType,
+          })
+        } else if (/^2\d\d$/.test(statusCode)) {
+          successCodes.set(statusCode, inferredType)
+        }
+      }
+      continue
+    }
 
     if (isErrorStatus(statusCode)) {
       errorEntries.push({ code: statusCode, schema: resolvedSchema })
       continue
     }
 
-    if (/^2\d\d$/.test(statusCode) || statusCode === "default") {
+    if (/^2\d\d$/.test(statusCode)) {
       successCodes.set(statusCode, resolvedSchema)
     }
   }
@@ -734,6 +826,17 @@ function getResponseTypes(
   return { successResponse, errors }
 }
 
+/**
+ * Picks the most representative success response type from available candidates.
+ *
+ * Prefers 200/201/204 responses, falling back to the first declared status code.
+ * When a schema is provided as a literal type string the literal is returned
+ * directly; otherwise a synthetic type name is generated via `resolveResponseType`.
+ *
+ * @param responses - Map of status codes to resolved schemas or inferred literals.
+ * @param operationId - Operation identifier used to construct synthetic names.
+ * @returns The chosen TypeScript type name, or `undefined` when no success response exists.
+ */
 function selectSuccessResponse(
   responses: Map<string, any>,
   operationId: string
@@ -744,6 +847,10 @@ function selectSuccessResponse(
   for (const code of preferredOrder) {
     const schema = responses.get(code)
     if (schema) {
+      if (typeof schema === "string") {
+        // Direct type (e.g., "undefined", "string", "unknown")
+        return schema
+      }
       return resolveResponseType(
         schema,
         `${capitalize(operationId)}Response${code}`
@@ -753,12 +860,24 @@ function selectSuccessResponse(
 
   const [firstCode, firstSchema] = responses.entries().next().value ?? []
   if (!firstSchema) return undefined
+
+  if (typeof firstSchema === "string") {
+    return firstSchema
+  }
+
   return resolveResponseType(
     firstSchema,
     `${capitalize(operationId)}Response${firstCode ?? "Default"}`
   )
 }
 
+/**
+ * Buckets error responses by status-class and maps them to concrete type names.
+ *
+ * @param errors - Collection of HTTP status codes paired with schemas or literals.
+ * @param operationId - Operation identifier used when synthesizing fallback names.
+ * @returns Structured error groups keyed by client/server/default/other categories.
+ */
 function buildErrorGroups(
   errors: Array<{ code: string; schema: any }> = [],
   operationId: string
@@ -798,7 +917,17 @@ function buildErrorGroups(
   return group
 }
 
+/**
+ * Resolves the emitted TypeScript identifier for a response schema.
+ *
+ * @param schema - Schema object or inferred literal type returned by inference.
+ * @param fallbackName - Synthetic name to use when the schema lacks a `$ref`.
+ * @returns Reference name, literal type, or the provided fallback.
+ */
 function resolveResponseType(schema: any, fallbackName: string): string {
+  if (typeof schema === "string") {
+    return schema
+  }
   if (schema.$ref) {
     return extractRefName(schema.$ref)
   }

@@ -182,6 +182,49 @@ describe("generate", () => {
     })
   })
 
+  describe("Response inference", () => {
+    test("infers string error responses without schemas", () => {
+      const spec: OpenAPISpec = {
+        openapi: "3.0.0",
+        info: { title: "Error without schema", version: "1.0.0" },
+        paths: {
+          "/error": {
+            get: {
+              operationId: "getErrorWithoutSchema",
+              responses: {
+                "200": {
+                  description: "OK",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        required: ["message"],
+                        properties: {
+                          message: { type: "string" },
+                        },
+                      },
+                    },
+                  },
+                },
+                "500": {
+                  description: "Server error",
+                  content: {
+                    "text/plain": {},
+                  },
+                },
+              },
+            },
+          },
+        },
+      }
+
+      const result = generate(spec)
+
+      expect(result).toContain("getErrorWithoutSchema")
+      expect(result).toMatchSnapshot("error-response-inference")
+    })
+  })
+
   describe("Type helpers", () => {
     const petstoreSpec = jsYaml.load(
       fs.readFileSync("src/resources/petstore.yaml", "utf8")
