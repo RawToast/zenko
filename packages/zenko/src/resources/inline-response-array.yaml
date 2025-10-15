@@ -1,0 +1,33 @@
+openapi: 3.0.1
+info:
+  title: Inline Response Array
+  version: 1.0.0
+paths:
+  /logs:
+    get:
+      tags:
+        - logs
+      description: Get logs by source
+      operationId: bySource
+      parameters:
+        - $ref: '#/components/parameters/LogTypeQuery'
+        - $ref: '#/components/parameters/TestHeader'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminLog'
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Service Unavailable

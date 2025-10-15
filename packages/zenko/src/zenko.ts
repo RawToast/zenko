@@ -124,9 +124,12 @@ export function generate(
     const pathParamNames = op.pathParams.map((p) => p.name)
     const hasPathParams = pathParamNames.length > 0
     const hasQueryParams = op.queryParams.length > 0
+    const camelCaseOperationId = toCamelCase(op.operationId)
 
     if (!hasPathParams && !hasQueryParams) {
-      output.push(`  ${op.operationId}: () => "${op.path}",`)
+      output.push(
+        `  ${formatPropertyName(camelCaseOperationId)}: () => "${op.path}",`
+      )
       continue
     }
 
@@ -159,12 +162,14 @@ export function generate(
 
     if (!hasQueryParams) {
       output.push(
-        `  ${op.operationId}: (${signature}) => \`${pathWithParams}\`,`
+        `  ${formatPropertyName(camelCaseOperationId)}: (${signature}) => \`${pathWithParams}\`,`
       )
       continue
     }
 
-    output.push(`  ${op.operationId}: (${signature}) => {`)
+    output.push(
+      `  ${formatPropertyName(camelCaseOperationId)}: (${signature}) => {`
+    )
 
     output.push("    const params = new URLSearchParams()")
     for (const param of op.queryParams) {
@@ -219,100 +224,66 @@ export function generate(
   output.push("} as const;")
   output.push("")
 
-  // Generate header functions
+  // Generate header schemas
+  output.push("// Header Schemas")
+  output.push("export const headerSchemas = {")
+
+  for (const op of operations) {
+    const camelCaseOperationId = toCamelCase(op.operationId)
+    if (!op.requestHeaders || op.requestHeaders.length === 0) {
+      output.push(
+        `  ${formatPropertyName(camelCaseOperationId)}: z.object({}),`
+      )
+      continue
+    }
+
+    const schemaFields = op.requestHeaders
+      .map((header) => {
+        const zodType = mapHeaderToZodType(header)
+        const optional = header.required ? "" : ".optional()"
+        return `    ${formatPropertyName(header.name)}: ${zodType}${optional},`
+      })
+      .join("\n")
+
+    output.push(`  ${formatPropertyName(camelCaseOperationId)}: z.object({`)
+    output.push(schemaFields)
+    output.push("  }),")
+  }
+
+  output.push("} as const;")
+  output.push("")
+
+  // Generate header functions using Zod schemas
   output.push("// Header Functions")
   output.push("export const headers = {")
 
   for (const op of operations) {
+    const camelCaseOperationId = toCamelCase(op.operationId)
     if (!op.requestHeaders || op.requestHeaders.length === 0) {
-      output.push(`  ${op.operationId}: () => ({}),`)
-      continue
-    }
-
-    const typeEntries = op.requestHeaders
-      .map(
-        (header) =>
-          `${formatPropertyName(header.name)}${header.required ? "" : "?"}: ${mapHeaderType(
-            header
-          )}`
-      )
-      .join(", ")
-
-    const requiredHeaders = op.requestHeaders.filter(
-      (header) => header.required
-    )
-    const optionalHeaders = op.requestHeaders.filter(
-      (header) => !header.required
-    )
-    const hasRequired = requiredHeaders.length > 0
-    const signature = hasRequired
-      ? `(params: { ${typeEntries} })`
-      : `(params: { ${typeEntries} } = {})`
-
-    if (optionalHeaders.length === 0) {
-      output.push(`  ${op.operationId}: ${signature} => ({`)
-
-      for (const header of requiredHeaders) {
-        const propertyKey = formatPropertyName(header.name)
-        const accessor = isValidJSIdentifier(header.name)
-          ? `params.${header.name}`
-          : `params[${propertyKey}]`
-        output.push(`    ${propertyKey}: ${accessor},`)
-      }
-
-      output.push("  }),")
-      continue
-    }
-
-    if (!hasRequired && optionalHeaders.length === 1 && optionalHeaders[0]) {
-      const header = optionalHeaders[0]
-      const propertyKey = formatPropertyName(header.name)
-      const accessor = isValidJSIdentifier(header.name)
-        ? `params.${header.name}`
-        : `params[${propertyKey}]`
-
-      output.push(`  ${op.operationId}: ${signature} =>`)
       output.push(
-        `    ${accessor} !== undefined ? { ${propertyKey}: ${accessor} } : {},`
+        `  ${formatPropertyName(camelCaseOperationId)}: () => ${
+          isValidJSIdentifier(camelCaseOperationId)
+            ? `headerSchemas.${camelCaseOperationId}`
+            : `headerSchemas[${formatPropertyName(camelCaseOperationId)}]`
+        }.parse({}),`
       )
       continue
     }
 
-    const valueTypes = Array.from(
-      new Set(optionalHeaders.map((header) => mapHeaderType(header)))
-    ).join(" | ")
-
-    output.push(`  ${op.operationId}: ${signature} => {`)
-
-    if (hasRequired) {
-      output.push("    const headers = {")
-      for (const header of requiredHeaders) {
-        const propertyKey = formatPropertyName(header.name)
-        const accessor = isValidJSIdentifier(header.name)
-          ? `params.${header.name}`
-          : `params[${propertyKey}]`
-        output.push(`      ${propertyKey}: ${accessor},`)
-      }
-      output.push("    }")
-    } else {
-      output.push(`    const headers: Record<string, ${valueTypes}> = {}`)
-    }
-
-    for (const header of optionalHeaders) {
-      const propertyKey = formatPropertyName(header.name)
-      const accessor = isValidJSIdentifier(header.name)
-        ? `params.${header.name}`
-        : `params[${propertyKey}]`
-      const assignment = isValidJSIdentifier(header.name)
-        ? `headers.${header.name}`
-        : `headers[${propertyKey}]`
-
-      output.push(`    if (${accessor} !== undefined) {`)
-      output.push(`      ${assignment} = ${accessor}`)
-      output.push("    }")
-    }
-
-    output.push("    return headers")
+    output.push(
+      `  ${formatPropertyName(camelCaseOperationId)}: (params: z.input<${
+        isValidJSIdentifier(camelCaseOperationId)
+          ? `typeof headerSchemas.${camelCaseOperationId}`
+          : `(typeof headerSchemas)[${formatPropertyName(camelCaseOperationId)}]`
+      }>) => {`
+    )
+    output.push(
+      `    return ${
+        isValidJSIdentifier(camelCaseOperationId)
+          ? `headerSchemas.${camelCaseOperationId}`
+          : `headerSchemas[${formatPropertyName(camelCaseOperationId)}]`
+      }.parse(params)`
+    )
     output.push("  },")
   }
 
@@ -322,15 +293,16 @@ export function generate(
   // Generate operation objects
   output.push("// Operation Objects")
   for (const op of operations) {
-    output.push(`export const ${op.operationId} = {`)
+    const camelCaseOperationId = toCamelCase(op.operationId)
+    output.push(`export const ${camelCaseOperationId} = {`)
     output.push(`  method: "${op.method}",`)
-    output.push(`  path: paths.${op.operationId},`)
+    output.push(`  path: paths.${camelCaseOperationId},`)
 
     appendOperationField(output, "request", op.requestType)
     appendOperationField(output, "response", op.responseType)
 
     if (op.requestHeaders && op.requestHeaders.length > 0) {
-      output.push(`  headers: headers.${op.operationId},`)
+      output.push(`  headers: headers.${camelCaseOperationId},`)
     }
 
     if (op.errors && hasAnyErrors(op.errors)) {
@@ -600,18 +572,23 @@ function generateOperationTypes(
   buffer.push("// Operation Types")
 
   for (const op of operations) {
+    const camelCaseOperationId = toCamelCase(op.operationId)
     const headerType = op.requestHeaders?.length
-      ? `typeof headers.${op.operationId}`
+      ? isValidJSIdentifier(camelCaseOperationId)
+        ? `typeof headers.${camelCaseOperationId}`
+        : `(typeof headers)[${formatPropertyName(camelCaseOperationId)}]`
       : "undefined"
     const requestType = wrapTypeReference(op.requestType)
     const responseType = wrapTypeReference(op.responseType)
     const errorsType = buildOperationErrorsType(op.errors)
 
     buffer.push(
-      `export type ${capitalize(op.operationId)}Operation = OperationDefinition<`
+      `export type ${capitalize(camelCaseOperationId)}Operation = OperationDefinition<`
     )
     buffer.push(`  "${op.method}",`)
-    buffer.push(`  typeof paths.${op.operationId},`)
+    buffer.push(
+      `  ${isValidJSIdentifier(camelCaseOperationId) ? `typeof paths.${camelCaseOperationId}` : `(typeof paths)[${formatPropertyName(camelCaseOperationId)}]`},`
+    )
     buffer.push(`  ${requestType},`)
     buffer.push(`  ${responseType},`)
     buffer.push(`  ${headerType},`)
@@ -968,16 +945,29 @@ function getQueryParams(parameters: any[]): QueryParam[] {
   return queryParams
 }
 
-function mapHeaderType(header: RequestHeader): string {
-  const schemaType = header.schema?.type
+function mapHeaderToZodType(header: RequestHeader): string {
+  const schema = header.schema ?? {}
+  const schemaType = schema.type
   switch (schemaType) {
     case "integer":
     case "number":
-      return "number"
+      // Accept numeric header values provided as strings
+      return "z.coerce.number()"
     case "boolean":
-      return "boolean"
+      // Accept boolean header values provided as strings
+      return "z.coerce.boolean()"
+    case "array": {
+      const items = schema.items ?? { type: "string" }
+      const itemType =
+        items.type === "integer" || items.type === "number"
+          ? "z.coerce.number()"
+          : items.type === "boolean"
+            ? "z.coerce.boolean()"
+            : "z.string()"
+      return `z.array(${itemType})`
+    }
     default:
-      return "string"
+      return "z.string()"
   }
 }
 
@@ -1234,6 +1224,10 @@ function applyNumericBounds(schema: any, builder: string): string {
   }
 
   return builder
+}
+
+function toCamelCase(str: string): string {
+  return str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
 }
 
 function capitalize(str: string): string {

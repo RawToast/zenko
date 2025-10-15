@@ -1,0 +1,46 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Mixed Headers generates complete TypeScript output: mixed-headers-complete-output 1`] = `
+"import { z } from "zod";
+import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
+
+// Path Functions
+export const paths = {
+  createMatrix: () => "/matrix",
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  createMatrix: z.object({
+    Agent: z.string().optional(),
+    Test: z.coerce.boolean(),
+    MagicalNumber: z.coerce.number().optional(),
+    Token: z.string(),
+  }),
+} as const;
+
+// Header Functions
+export const headers = {
+  createMatrix: (params: z.input<typeof headerSchemas.createMatrix>) => {
+    return headerSchemas.createMatrix.parse(params)
+  },
+} as const;
+
+// Operation Objects
+export const createMatrix = {
+  method: "post",
+  path: paths.createMatrix,
+  headers: headers.createMatrix,
+} as const;
+
+// Operation Types
+export type CreateMatrixOperation = OperationDefinition<
+  "post",
+  typeof paths.createMatrix,
+  undefined,
+  undefined,
+  typeof headers.createMatrix,
+  OperationErrors
+>;
+"
+`;
