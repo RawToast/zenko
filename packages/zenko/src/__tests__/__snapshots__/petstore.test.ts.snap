@@ -48,9 +48,9 @@ export const headerSchemas = {
 
 // Header Functions
 export const headers = {
-  listPets: () => ({}),
-  createPets: () => ({}),
-  showPetById: () => ({}),
+  listPets: () => headerSchemas.listPets.parse({}),
+  createPets: () => headerSchemas.createPets.parse({}),
+  showPetById: () => headerSchemas.showPetById.parse({}),
 } as const;
 
 // Operation Objects
@@ -165,9 +165,9 @@ export const headerSchemas = {
 
 // Header Functions
 export const headers = {
-  listPets: () => ({}),
-  createPets: () => ({}),
-  showPetById: () => ({}),
+  listPets: () => headerSchemas.listPets.parse({}),
+  createPets: () => headerSchemas.createPets.parse({}),
+  showPetById: () => headerSchemas.showPetById.parse({}),
 } as const;
 
 // Operation Objects
@@ -282,9 +282,9 @@ export const headerSchemas = {
 
 // Header Functions
 export const headers = {
-  listPets: () => ({}),
-  createPets: () => ({}),
-  showPetById: () => ({}),
+  listPets: () => headerSchemas.listPets.parse({}),
+  createPets: () => headerSchemas.createPets.parse({}),
+  showPetById: () => headerSchemas.showPetById.parse({}),
 } as const;
 
 // Operation Objects

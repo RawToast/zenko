@@ -124,9 +124,12 @@ export function generate(
     const pathParamNames = op.pathParams.map((p) => p.name)
     const hasPathParams = pathParamNames.length > 0
     const hasQueryParams = op.queryParams.length > 0
+    const camelCaseOperationId = toCamelCase(op.operationId)
 
     if (!hasPathParams && !hasQueryParams) {
-      output.push(`  ${op.operationId}: () => "${op.path}",`)
+      output.push(
+        `  ${formatPropertyName(camelCaseOperationId)}: () => "${op.path}",`
+      )
       continue
     }
 
@@ -159,12 +162,14 @@ export function generate(
 
     if (!hasQueryParams) {
       output.push(
-        `  ${op.operationId}: (${signature}) => \`${pathWithParams}\`,`
+        `  ${formatPropertyName(camelCaseOperationId)}: (${signature}) => \`${pathWithParams}\`,`
       )
       continue
     }
 
-    output.push(`  ${op.operationId}: (${signature}) => {`)
+    output.push(
+      `  ${formatPropertyName(camelCaseOperationId)}: (${signature}) => {`
+    )
 
     output.push("    const params = new URLSearchParams()")
     for (const param of op.queryParams) {
@@ -224,8 +229,11 @@ export function generate(
   output.push("export const headerSchemas = {")
 
   for (const op of operations) {
+    const camelCaseOperationId = toCamelCase(op.operationId)
     if (!op.requestHeaders || op.requestHeaders.length === 0) {
-      output.push(`  ${op.operationId}: z.object({}),`)
+      output.push(
+        `  ${formatPropertyName(camelCaseOperationId)}: z.object({}),`
+      )
       continue
     }
 
@@ -237,7 +245,7 @@ export function generate(
       })
       .join("\n")
 
-    output.push(`  ${op.operationId}: z.object({`)
+    output.push(`  ${formatPropertyName(camelCaseOperationId)}: z.object({`)
     output.push(schemaFields)
     output.push("  }),")
   }
@@ -250,18 +258,32 @@ export function generate(
   output.push("export const headers = {")
 
   for (const op of operations) {
+    const camelCaseOperationId = toCamelCase(op.operationId)
     if (!op.requestHeaders || op.requestHeaders.length === 0) {
-      output.push(`  ${op.operationId}: () => ({}),`)
+      output.push(
+        `  ${formatPropertyName(camelCaseOperationId)}: () => ${
+          isValidJSIdentifier(camelCaseOperationId)
+            ? `headerSchemas.${camelCaseOperationId}`
+            : `headerSchemas[${formatPropertyName(camelCaseOperationId)}]`
+        }.parse({}),`
+      )
       continue
     }
 
     output.push(
-      `  ${op.operationId}: (params: z.input<typeof headerSchemas.${op.operationId}>) => {`
+      `  ${formatPropertyName(camelCaseOperationId)}: (params: z.input<${
+        isValidJSIdentifier(camelCaseOperationId)
+          ? `typeof headerSchemas.${camelCaseOperationId}`
+          : `(typeof headerSchemas)[${formatPropertyName(camelCaseOperationId)}]`
+      }>) => {`
     )
     output.push(
-      `    const result = headerSchemas.${op.operationId}.parse(params)`
+      `    return ${
+        isValidJSIdentifier(camelCaseOperationId)
+          ? `headerSchemas.${camelCaseOperationId}`
+          : `headerSchemas[${formatPropertyName(camelCaseOperationId)}]`
+      }.parse(params)`
     )
-    output.push("    return result")
     output.push("  },")
   }
 
@@ -271,15 +293,16 @@ export function generate(
   // Generate operation objects
   output.push("// Operation Objects")
   for (const op of operations) {
-    output.push(`export const ${op.operationId} = {`)
+    const camelCaseOperationId = toCamelCase(op.operationId)
+    output.push(`export const ${camelCaseOperationId} = {`)
     output.push(`  method: "${op.method}",`)
-    output.push(`  path: paths.${op.operationId},`)
+    output.push(`  path: paths.${camelCaseOperationId},`)
 
     appendOperationField(output, "request", op.requestType)
     appendOperationField(output, "response", op.responseType)
 
     if (op.requestHeaders && op.requestHeaders.length > 0) {
-      output.push(`  headers: headers.${op.operationId},`)
+      output.push(`  headers: headers.${camelCaseOperationId},`)
     }
 
     if (op.errors && hasAnyErrors(op.errors)) {
@@ -549,18 +572,23 @@ function generateOperationTypes(
   buffer.push("// Operation Types")
 
   for (const op of operations) {
+    const camelCaseOperationId = toCamelCase(op.operationId)
     const headerType = op.requestHeaders?.length
-      ? `typeof headers.${op.operationId}`
+      ? isValidJSIdentifier(camelCaseOperationId)
+        ? `typeof headers.${camelCaseOperationId}`
+        : `(typeof headers)[${formatPropertyName(camelCaseOperationId)}]`
       : "undefined"
     const requestType = wrapTypeReference(op.requestType)
     const responseType = wrapTypeReference(op.responseType)
     const errorsType = buildOperationErrorsType(op.errors)
 
     buffer.push(
-      `export type ${capitalize(op.operationId)}Operation = OperationDefinition<`
+      `export type ${capitalize(camelCaseOperationId)}Operation = OperationDefinition<`
     )
     buffer.push(`  "${op.method}",`)
-    buffer.push(`  typeof paths.${op.operationId},`)
+    buffer.push(
+      `  ${isValidJSIdentifier(camelCaseOperationId) ? `typeof paths.${camelCaseOperationId}` : `(typeof paths)[${formatPropertyName(camelCaseOperationId)}]`},`
+    )
     buffer.push(`  ${requestType},`)
     buffer.push(`  ${responseType},`)
     buffer.push(`  ${headerType},`)
@@ -918,13 +946,26 @@ function getQueryParams(parameters: any[]): QueryParam[] {
 }
 
 function mapHeaderToZodType(header: RequestHeader): string {
-  const schemaType = header.schema?.type
+  const schema = header.schema ?? {}
+  const schemaType = schema.type
   switch (schemaType) {
     case "integer":
     case "number":
-      return "z.number()"
+      // Accept numeric header values provided as strings
+      return "z.coerce.number()"
     case "boolean":
-      return "z.boolean()"
+      // Accept boolean header values provided as strings
+      return "z.coerce.boolean()"
+    case "array": {
+      const items = schema.items ?? { type: "string" }
+      const itemType =
+        items.type === "integer" || items.type === "number"
+          ? "z.coerce.number()"
+          : items.type === "boolean"
+            ? "z.coerce.boolean()"
+            : "z.string()"
+      return `z.array(${itemType})`
+    }
     default:
       return "z.string()"
   }
@@ -1183,6 +1224,10 @@ function applyNumericBounds(schema: any, builder: string): string {
   }
 
   return builder
+}
+
+function toCamelCase(str: string): string {
+  return str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
 }
 
 function capitalize(str: string): string {

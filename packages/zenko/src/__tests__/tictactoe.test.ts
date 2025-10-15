@@ -57,10 +57,16 @@ describe("TicTacToe", () => {
     // Should generate header functions
     expect(result).toContain("export const headers = {")
 
-    // TicTacToe has no request headers, so functions should be empty
-    expect(result).toContain("get-board: () => ({}),")
-    expect(result).toContain("get-square: () => ({}),")
-    expect(result).toContain("put-square: () => ({}),")
+    // TicTacToe has no request headers, so functions should parse empty objects
+    expect(result).toContain(
+      "getBoard: () => headerSchemas.getBoard.parse({}),"
+    )
+    expect(result).toContain(
+      "getSquare: () => headerSchemas.getSquare.parse({}),"
+    )
+    expect(result).toContain(
+      "putSquare: () => headerSchemas.putSquare.parse({}),"
+    )
   })
 
   test("includes headers in operation objects when request headers exist", () => {
@@ -78,9 +84,7 @@ describe("TicTacToe", () => {
     expect(result).toContain(
       "createMatrix: (params: z.input<typeof headerSchemas.createMatrix>) => {"
     )
-    expect(result).toContain(
-      "const result = headerSchemas.createMatrix.parse(params)"
-    )
+    expect(result).toContain("return headerSchemas.createMatrix.parse(params)")
   })
 
   test("generates all expected schemas with proper types", () => {
@@ -118,12 +122,12 @@ describe("TicTacToe", () => {
 
     // Should generate path functions
     expect(result).toContain("export const paths = {")
-    expect(result).toContain('get-board: () => "/board",')
+    expect(result).toContain('getBoard: () => "/board",')
     expect(result).toContain(
-      "get-square: ({ row, column }: { row: string, column: string }) =>"
+      "getSquare: ({ row, column }: { row: string, column: string }) =>"
     )
     expect(result).toContain(
-      "put-square: ({ row, column }: { row: string, column: string }) =>"
+      "putSquare: ({ row, column }: { row: string, column: string }) =>"
     )
   })
 
@@ -136,14 +140,14 @@ describe("TicTacToe", () => {
     const result = generate(specYaml)
 
     // Should generate operation objects
-    expect(result).toContain("export const get-board = {")
-    expect(result).toContain("export const get-square = {")
-    expect(result).toContain("export const put-square = {")
+    expect(result).toContain("export const getBoard = {")
+    expect(result).toContain("export const getSquare = {")
+    expect(result).toContain("export const putSquare = {")
 
     // Should include correct properties
-    expect(result).toContain("path: paths.get-board,")
-    expect(result).toContain("path: paths.get-square,")
-    expect(result).toContain("path: paths.put-square,")
+    expect(result).toContain("path: paths.getBoard,")
+    expect(result).toContain("path: paths.getSquare,")
+    expect(result).toContain("path: paths.putSquare,")
 
     // Should include response types
     expect(result).toContain("response: status,")

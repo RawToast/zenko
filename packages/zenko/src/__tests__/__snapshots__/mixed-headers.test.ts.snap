@@ -13,8 +13,8 @@ export const paths = {
 export const headerSchemas = {
   createMatrix: z.object({
     Agent: z.string().optional(),
-    Test: z.boolean(),
-    MagicalNumber: z.number().optional(),
+    Test: z.coerce.boolean(),
+    MagicalNumber: z.coerce.number().optional(),
     Token: z.string(),
   }),
 } as const;
@@ -22,8 +22,7 @@ export const headerSchemas = {
 // Header Functions
 export const headers = {
   createMatrix: (params: z.input<typeof headerSchemas.createMatrix>) => {
-    const result = headerSchemas.createMatrix.parse(params)
-    return result
+    return headerSchemas.createMatrix.parse(params)
   },
 } as const;
 

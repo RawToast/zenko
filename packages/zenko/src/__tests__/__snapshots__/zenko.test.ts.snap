@@ -36,7 +36,7 @@ export const headerSchemas = {
 
 // Header Functions
 export const headers = {
-  getTest: () => ({}),
+  getTest: () => headerSchemas.getTest.parse({}),
 } as const;
 
 // Operation Objects
@@ -107,7 +107,7 @@ export const headerSchemas = {
 
 // Header Functions
 export const headers = {
-  getErrorWithoutSchema: () => ({}),
+  getErrorWithoutSchema: () => headerSchemas.getErrorWithoutSchema.parse({}),
 } as const;
 
 // Operation Objects
@@ -198,9 +198,9 @@ export const headerSchemas = {
 
 // Header Functions
 export const headers = {
-  listPets: () => ({}),
-  createPets: () => ({}),
-  showPetById: () => ({}),
+  listPets: () => headerSchemas.listPets.parse({}),
+  createPets: () => headerSchemas.createPets.parse({}),
+  showPetById: () => headerSchemas.showPetById.parse({}),
 } as const;
 
 // Operation Objects

@@ -35,35 +35,35 @@ export type status = z.infer<typeof status>;
 
 // Path Functions
 export const paths = {
-  get-board: () => "/board",
-  get-square: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
-  put-square: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+  getBoard: () => "/board",
+  getSquare: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+  putSquare: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
 } as const;
 
 // Header Schemas
 export const headerSchemas = {
-  get-board: z.object({}),
-  get-square: z.object({}),
-  put-square: z.object({}),
+  getBoard: z.object({}),
+  getSquare: z.object({}),
+  putSquare: z.object({}),
 } as const;
 
 // Header Functions
 export const headers = {
-  get-board: () => ({}),
-  get-square: () => ({}),
-  put-square: () => ({}),
+  getBoard: () => headerSchemas.getBoard.parse({}),
+  getSquare: () => headerSchemas.getSquare.parse({}),
+  putSquare: () => headerSchemas.putSquare.parse({}),
 } as const;
 
 // Operation Objects
-export const get-board = {
+export const getBoard = {
   method: "get",
-  path: paths.get-board,
+  path: paths.getBoard,
   response: status,
 } as const;
 
-export const get-square = {
+export const getSquare = {
   method: "get",
-  path: paths.get-square,
+  path: paths.getSquare,
   response: mark,
   errors: {
     clientErrors: {
@@ -72,9 +72,9 @@ export const get-square = {
   },
 } as const;
 
-export const put-square = {
+export const putSquare = {
   method: "put",
-  path: paths.put-square,
+  path: paths.putSquare,
   request: mark,
   response: status,
   errors: {
@@ -85,27 +85,27 @@ export const put-square = {
 } as const;
 
 // Operation Types
-export type Get-boardOperation = OperationDefinition<
+export type GetBoardOperation = OperationDefinition<
   "get",
-  typeof paths.get-board,
+  typeof paths.getBoard,
   undefined,
   typeof status,
   undefined,
   OperationErrors
 >;
 
-export type Get-squareOperation = OperationDefinition<
+export type GetSquareOperation = OperationDefinition<
   "get",
-  typeof paths.get-square,
+  typeof paths.getSquare,
   undefined,
   typeof mark,
   undefined,
   OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>
 >;
 
-export type Put-squareOperation = OperationDefinition<
+export type PutSquareOperation = OperationDefinition<
   "put",
-  typeof paths.put-square,
+  typeof paths.putSquare,
   typeof mark,
   typeof status,
   undefined,
@@ -149,35 +149,35 @@ export type status = z.infer<typeof status>;
 
 // Path Functions
 export const paths = {
-  get-board: () => "/board",
-  get-square: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
-  put-square: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+  getBoard: () => "/board",
+  getSquare: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+  putSquare: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
 } as const;
 
 // Header Schemas
 export const headerSchemas = {
-  get-board: z.object({}),
-  get-square: z.object({}),
-  put-square: z.object({}),
+  getBoard: z.object({}),
+  getSquare: z.object({}),
+  putSquare: z.object({}),
 } as const;
 
 // Header Functions
 export const headers = {
-  get-board: () => ({}),
-  get-square: () => ({}),
-  put-square: () => ({}),
+  getBoard: () => headerSchemas.getBoard.parse({}),
+  getSquare: () => headerSchemas.getSquare.parse({}),
+  putSquare: () => headerSchemas.putSquare.parse({}),
 } as const;
 
 // Operation Objects
-export const get-board = {
+export const getBoard = {
   method: "get",
-  path: paths.get-board,
+  path: paths.getBoard,
   response: status,
 } as const;
 
-export const get-square = {
+export const getSquare = {
   method: "get",
-  path: paths.get-square,
+  path: paths.getSquare,
   response: mark,
   errors: {
     clientErrors: {
@@ -186,9 +186,9 @@ export const get-square = {
   },
 } as const;
 
-export const put-square = {
+export const putSquare = {
   method: "put",
-  path: paths.put-square,
+  path: paths.putSquare,
   request: mark,
   response: status,
   errors: {
@@ -199,27 +199,27 @@ export const put-square = {
 } as const;
 
 // Operation Types
-export type Get-boardOperation = OperationDefinition<
+export type GetBoardOperation = OperationDefinition<
   "get",
-  typeof paths.get-board,
+  typeof paths.getBoard,
   undefined,
   typeof status,
   undefined,
   OperationErrors
 >;
 
-export type Get-squareOperation = OperationDefinition<
+export type GetSquareOperation = OperationDefinition<
   "get",
-  typeof paths.get-square,
+  typeof paths.getSquare,
   undefined,
   typeof mark,
   undefined,
   OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>
 >;
 
-export type Put-squareOperation = OperationDefinition<
+export type PutSquareOperation = OperationDefinition<
   "put",
-  typeof paths.put-square,
+  typeof paths.putSquare,
   typeof mark,
   typeof status,
   undefined,

@@ -16,7 +16,7 @@ export const headerSchemas = {
 
 // Header Functions
 export const headers = {
-  PutSomething: () => ({}),
+  PutSomething: () => headerSchemas.PutSomething.parse({}),
 } as const;
 
 // Operation Objects

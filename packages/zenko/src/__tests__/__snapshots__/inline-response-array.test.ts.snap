@@ -16,7 +16,7 @@ export const headerSchemas = {
 
 // Header Functions
 export const headers = {
-  bySource: () => ({}),
+  bySource: () => headerSchemas.bySource.parse({}),
 } as const;
 
 // Operation Objects
