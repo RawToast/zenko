@@ -10,15 +10,15 @@ paths:
       description: Put something
       operationId: PutSomething
       responses:
-        '204':
+        "204":
           description: No Content
-        '400':
+        "400":
           description: Bad Request
-        '403':
+        "403":
           description: Forbidden
-        '404':
+        "404":
           description: Not Found
-        '500':
+        "500":
           description: Internal Server Error
-        '503':
+        "503":
           description: Service Unavailable

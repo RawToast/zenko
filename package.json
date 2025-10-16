@@ -11,8 +11,8 @@
     "node": ">=18"
   },
   "scripts": {
-    "format": "prettier --write '**/*'{js,ts,tsx,json} --experimental-cli",
-    "format:check": "prettier --check '**/*'{js,ts,tsx,json} --experimental-cli",
+    "format": "prettier --write '**/*'{js,ts,tsx,json,yaml} --experimental-cli",
+    "format:check": "prettier --check '**/*'{js,ts,tsx,json,yaml} --experimental-cli",
     "lint": "oxlint packages/*/src --fix --max-warnings=0",
     "lint:check": "oxlint packages/*/src --max-warnings=0",
     "check": "turbo lint format check-types",
