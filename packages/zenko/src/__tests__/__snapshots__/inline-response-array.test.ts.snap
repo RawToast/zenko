@@ -4,6 +4,16 @@ exports[`Inline Response Array generates complete TypeScript output: inline-resp
 "import { z } from "zod";
 import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
 
+// Generated Zod Schemas
+
+export const AdminLog = z.object({
+  id: z.string().optional(),
+  message: z.string().optional(),
+  timestamp: z.string().optional(),
+});
+
+export type AdminLog = z.infer<typeof AdminLog>;
+
 // Path Functions
 export const paths = {
   bySource: () => "/logs",
@@ -23,7 +33,7 @@ export const headers = {
 export const bySource = {
   method: "get",
   path: paths.bySource,
-  response: BySourceResponse200,
+  response: z.ZodArray<typeof AdminLog>,
   errors: {
     clientErrors: {
       badRequest: undefined,
@@ -42,7 +52,7 @@ export type BySourceOperation = OperationDefinition<
   "get",
   typeof paths.bySource,
   undefined,
-  typeof BySourceResponse200,
+  z.ZodArray<typeof AdminLog>,
   undefined,
   OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined }, { internalServerError: undefined; serviceUnavailable: undefined }, unknown, unknown>
 >;
