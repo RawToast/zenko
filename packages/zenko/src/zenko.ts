@@ -530,6 +530,9 @@ function appendHelperTypesImport(
         "type HeaderFn<TArgs extends unknown[] = [], TResult = Record<string, unknown> | Record<string, never>> = (...args: TArgs) => TResult;"
       )
       buffer.push(
+        "type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown);"
+      )
+      buffer.push(
         "type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {"
       )
       buffer.push("  clientErrors?: TClient;")
@@ -538,7 +541,7 @@ function appendHelperTypesImport(
       buffer.push("  otherErrors?: TOther;")
       buffer.push("};")
       buffer.push(
-        "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends HeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
+        "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
       )
       buffer.push("  method: TMethod;")
       buffer.push("  path: TPath;")
@@ -639,30 +642,42 @@ const TYPE_KEYWORDS = new Set([
   "bigint",
   "symbol",
 ])
+const IDENTIFIER_PATTERN = /^[A-Za-z_$][A-Za-z0-9_$]*$/
 
 function wrapTypeReference(typeName?: string): string {
   if (!typeName) return "undefined"
-  if (typeName === "undefined") return "undefined"
-  if (TYPE_KEYWORDS.has(typeName)) return typeName
-  if (typeName.startsWith("typeof ")) return typeName
+  const normalized = typeName.trim()
+  if (normalized === "undefined") return "undefined"
+  if (TYPE_KEYWORDS.has(normalized)) return normalized
+  if (normalized.startsWith("typeof ")) return normalized
 
-  const identifierPattern = /^[A-Za-z_$][A-Za-z0-9_$]*$/
-  if (identifierPattern.test(typeName)) {
-    return `typeof ${typeName}`
+  const arrayMatch = normalized.match(/^z\.array\((.+)\)$/)
+  if (arrayMatch) {
+    return `z.ZodArray<${wrapTypeReference(arrayMatch[1])}>`
   }
 
-  return typeName
+  if (IDENTIFIER_PATTERN.test(normalized)) {
+    return `typeof ${normalized}`
+  }
+
+  return normalized
 }
 
 function wrapErrorValueType(typeName?: string): string {
   if (!typeName) return "unknown"
-  if (TYPE_KEYWORDS.has(typeName)) return typeName
-  if (typeName.startsWith("typeof ")) return typeName
-  const identifierPattern = /^[A-Za-z_$][A-Za-z0-9_$]*$/
-  if (identifierPattern.test(typeName)) {
-    return `typeof ${typeName}`
+  const normalized = typeName.trim()
+  if (TYPE_KEYWORDS.has(normalized)) return normalized
+  if (normalized.startsWith("typeof ")) return normalized
+
+  const arrayMatch = normalized.match(/^z\.array\((.+)\)$/)
+  if (arrayMatch) {
+    return `z.ZodArray<${wrapErrorValueType(arrayMatch[1])}>`
   }
-  return typeName
+
+  if (IDENTIFIER_PATTERN.test(normalized)) {
+    return `typeof ${normalized}`
+  }
+  return normalized
 }
 
 function collectParameters(
@@ -917,7 +932,7 @@ function resolveResponseType(schema: any, fallbackName: string): string {
   // Handle array schemas with $ref items
   if (schema.type === "array" && schema.items?.$ref) {
     const itemRef = extractRefName(schema.items.$ref)
-    return `z.ZodArray<typeof ${itemRef}>`
+    return `z.array(${itemRef})`
   }
   return fallbackName
 }

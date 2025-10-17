@@ -15,6 +15,8 @@ export type HeaderFn<
   TResult = Record<string, unknown> | Record<string, never>,
 > = (...args: TArgs) => TResult
 
+export type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown)
+
 export type OperationErrors<
   TClient = unknown,
   TServer = unknown,
@@ -32,7 +34,7 @@ export type OperationDefinition<
   TPath extends (...args: any[]) => string,
   TRequest = undefined,
   TResponse = undefined,
-  THeaders extends HeaderFn | undefined = undefined,
+  THeaders extends AnyHeaderFn | undefined = undefined,
   TErrors extends OperationErrors | undefined = undefined,
 > = {
   method: TMethod
