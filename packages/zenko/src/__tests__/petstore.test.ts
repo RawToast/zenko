@@ -110,9 +110,9 @@ describe("Petstore", () => {
     const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
     const result = generate(specYaml)
 
-    expect(result).toContain("export const listPets =")
-    expect(result).toContain("export const createPets =")
-    expect(result).toContain("export const showPetById =")
+    expect(result).toContain("export const listPets: ListPetsOperation =")
+    expect(result).toContain("export const createPets: CreatePetsOperation =")
+    expect(result).toContain("export const showPetById: ShowPetByIdOperation =")
     expect(result).toContain('method: "get"')
     expect(result).toContain('method: "post"')
   })

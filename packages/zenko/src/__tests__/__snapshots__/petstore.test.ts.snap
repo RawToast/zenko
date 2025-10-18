@@ -53,40 +53,6 @@ export const headers = {
   showPetById: () => headerSchemas.showPetById.parse({}),
 } as const;
 
-// Operation Objects
-export const listPets = {
-  method: "get",
-  path: paths.listPets,
-  response: Pets,
-  errors: {
-    defaultErrors: {
-      defaultError: Error,
-    },
-  },
-} as const;
-
-export const createPets = {
-  method: "post",
-  path: paths.createPets,
-  request: Pet,
-  errors: {
-    defaultErrors: {
-      defaultError: Error,
-    },
-  },
-} as const;
-
-export const showPetById = {
-  method: "get",
-  path: paths.showPetById,
-  response: Pet,
-  errors: {
-    defaultErrors: {
-      defaultError: Error,
-    },
-  },
-} as const;
-
 // Operation Types
 export type ListPetsOperation = OperationDefinition<
   "get",
@@ -114,6 +80,40 @@ export type ShowPetByIdOperation = OperationDefinition<
   undefined,
   OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
+
+// Operation Objects
+export const listPets: ListPetsOperation = {
+  method: "get",
+  path: paths.listPets,
+  response: Pets,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
+
+export const createPets: CreatePetsOperation = {
+  method: "post",
+  path: paths.createPets,
+  request: Pet,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
+
+export const showPetById: ShowPetByIdOperation = {
+  method: "get",
+  path: paths.showPetById,
+  response: Pet,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
 "
 `;
 
@@ -170,40 +170,6 @@ export const headers = {
   showPetById: () => headerSchemas.showPetById.parse({}),
 } as const;
 
-// Operation Objects
-export const listPets = {
-  method: "get",
-  path: paths.listPets,
-  response: Pets,
-  errors: {
-    defaultErrors: {
-      defaultError: Error,
-    },
-  },
-} as const;
-
-export const createPets = {
-  method: "post",
-  path: paths.createPets,
-  request: Pet,
-  errors: {
-    defaultErrors: {
-      defaultError: Error,
-    },
-  },
-} as const;
-
-export const showPetById = {
-  method: "get",
-  path: paths.showPetById,
-  response: Pet,
-  errors: {
-    defaultErrors: {
-      defaultError: Error,
-    },
-  },
-} as const;
-
 // Operation Types
 export type ListPetsOperation = OperationDefinition<
   "get",
@@ -231,6 +197,40 @@ export type ShowPetByIdOperation = OperationDefinition<
   undefined,
   OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
+
+// Operation Objects
+export const listPets: ListPetsOperation = {
+  method: "get",
+  path: paths.listPets,
+  response: Pets,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
+
+export const createPets: CreatePetsOperation = {
+  method: "post",
+  path: paths.createPets,
+  request: Pet,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
+
+export const showPetById: ShowPetByIdOperation = {
+  method: "get",
+  path: paths.showPetById,
+  response: Pet,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
 "
 `;
 
@@ -287,40 +287,6 @@ export const headers = {
   showPetById: () => headerSchemas.showPetById.parse({}),
 } as const;
 
-// Operation Objects
-export const listPets = {
-  method: "get",
-  path: paths.listPets,
-  response: Pets,
-  errors: {
-    defaultErrors: {
-      defaultError: Error,
-    },
-  },
-} as const;
-
-export const createPets = {
-  method: "post",
-  path: paths.createPets,
-  request: Pet,
-  errors: {
-    defaultErrors: {
-      defaultError: Error,
-    },
-  },
-} as const;
-
-export const showPetById = {
-  method: "get",
-  path: paths.showPetById,
-  response: Pet,
-  errors: {
-    defaultErrors: {
-      defaultError: Error,
-    },
-  },
-} as const;
-
 // Operation Types
 export type ListPetsOperation = OperationDefinition<
   "get",
@@ -348,5 +314,39 @@ export type ShowPetByIdOperation = OperationDefinition<
   undefined,
   OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
+
+// Operation Objects
+export const listPets: ListPetsOperation = {
+  method: "get",
+  path: paths.listPets,
+  response: Pets,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
+
+export const createPets: CreatePetsOperation = {
+  method: "post",
+  path: paths.createPets,
+  request: Pet,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
+
+export const showPetById: ShowPetByIdOperation = {
+  method: "get",
+  path: paths.showPetById,
+  response: Pet,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
 "
 `;

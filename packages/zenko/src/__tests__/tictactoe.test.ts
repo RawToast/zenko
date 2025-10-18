@@ -139,10 +139,10 @@ describe("TicTacToe", () => {
     const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
     const result = generate(specYaml)
 
-    // Should generate operation objects
-    expect(result).toContain("export const getBoard = {")
-    expect(result).toContain("export const getSquare = {")
-    expect(result).toContain("export const putSquare = {")
+    // Should generate operation objects with type annotations
+    expect(result).toContain("export const getBoard: GetBoardOperation = {")
+    expect(result).toContain("export const getSquare: GetSquareOperation = {")
+    expect(result).toContain("export const putSquare: PutSquareOperation = {")
 
     // Should include correct properties
     expect(result).toContain("path: paths.getBoard,")
@@ -155,5 +155,24 @@ describe("TicTacToe", () => {
 
     // Should include request type where applicable
     expect(result).toContain("request: mark,")
+  })
+
+  test("generates operation objects without type annotations when types disabled", () => {
+    const tictactoeContent = fs.readFileSync(
+      "src/resources/tictactoe.yaml",
+      "utf8"
+    )
+    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const result = generate(specYaml, { types: { emit: false } })
+
+    // Should generate operation objects without type annotations
+    expect(result).toContain("export const getBoard = {")
+    expect(result).toContain("export const getSquare = {")
+    expect(result).toContain("export const putSquare = {")
+
+    // Should not include operation types
+    expect(result).not.toContain("export type GetBoardOperation =")
+    expect(result).not.toContain("export type GetSquareOperation =")
+    expect(result).not.toContain("export type PutSquareOperation =")
   })
 })
