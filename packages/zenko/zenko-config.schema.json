@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "zenko-config.schema.json",
+  "title": "Zenko Configuration Schema",
+  "description": "Configuration schema for Zenko OpenAPI code generation",
+  "type": "object",
+  "required": ["schemas"],
+  "additionalProperties": false,
+  "properties": {
+    "types": {
+      "$ref": "#/definitions/TypesConfig",
+      "description": "Global type generation configuration applied to all schemas unless overridden per-schema"
+    },
+    "schemas": {
+      "type": "array",
+      "description": "Array of OpenAPI schemas to generate TypeScript from",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/SchemaEntry"
+      }
+    }
+  },
+  "definitions": {
+    "TypesConfig": {
+      "type": "object",
+      "description": "Controls how helper types are generated and imported",
+      "additionalProperties": false,
+      "properties": {
+        "emit": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to generate operation type definitions and helper type imports"
+        },
+        "helpers": {
+          "type": "string",
+          "enum": ["package", "inline", "file"],
+          "default": "package",
+          "description": "How to provide helper types: 'package' (import from zenko), 'inline' (write definitions in generated file), or 'file' (import from custom file)"
+        },
+        "helpersOutput": {
+          "type": "string",
+          "default": "./zenko-types",
+          "description": "Path for helper types file when helpers='file'. Can be relative to output file or absolute. Automatically generated."
+        }
+      }
+    },
+    "SchemaEntry": {
+      "type": "object",
+      "required": ["input", "output"],
+      "additionalProperties": false,
+      "properties": {
+        "input": {
+          "type": "string",
+          "description": "Path to OpenAPI specification file (YAML or JSON). Relative to config file directory."
+        },
+        "output": {
+          "type": "string",
+          "description": "Path for generated TypeScript output file. Relative to config file directory."
+        },
+        "strictDates": {
+          "type": "boolean",
+          "description": "Enable strict ISO 8601 date/time format validation in Zod schemas. Overrides global setting."
+        },
+        "strictNumeric": {
+          "type": "boolean",
+          "description": "Enable numeric constraint validation (min/max, string length, patterns). Overrides global setting."
+        },
+        "types": {
+          "$ref": "#/definitions/TypesConfig",
+          "description": "Per-schema type generation configuration. Overrides global types config."
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "title": "Basic Configuration",
+      "value": {
+        "types": {
+          "emit": true,
+          "helpers": "package"
+        },
+        "schemas": [
+          {
+            "input": "api.yaml",
+            "output": "api.gen.ts"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Multiple Schemas with Different Options",
+      "value": {
+        "types": {
+          "emit": true,
+          "helpers": "package"
+        },
+        "schemas": [
+          {
+            "input": "api-v1.yaml",
+            "output": "api-v1.gen.ts"
+          },
+          {
+            "input": "api-v2.yaml",
+            "output": "api-v2.gen.ts",
+            "strictDates": true,
+            "strictNumeric": true,
+            "types": {
+              "helpers": "inline"
+            }
+          },
+          {
+            "input": "api-v3.yaml",
+            "output": "api-v3.gen.ts",
+            "strictDates": true,
+            "strictNumeric": true,
+            "types": {
+              "helpers": "file",
+              "helpersOutput": "./api-types.gen.ts"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "title": "Monorepo with Shared Helper Types",
+      "value": {
+        "types": {
+          "emit": true,
+          "helpers": "file",
+          "helpersOutput": "./shared/api-helpers.ts"
+        },
+        "schemas": [
+          {
+            "input": "microservices/auth/openapi.yaml",
+            "output": "generated/auth.gen.ts"
+          },
+          {
+            "input": "microservices/users/openapi.yaml",
+            "output": "generated/users.gen.ts"
+          },
+          {
+            "input": "microservices/products/openapi.yaml",
+            "output": "generated/products.gen.ts"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Strict Validation Across All Schemas",
+      "value": {
+        "types": {
+          "emit": true,
+          "helpers": "package"
+        },
+        "schemas": [
+          {
+            "input": "api.yaml",
+            "output": "api.gen.ts",
+            "strictDates": true,
+            "strictNumeric": true
+          },
+          {
+            "input": "webhooks.yaml",
+            "output": "webhooks.gen.ts",
+            "strictDates": true,
+            "strictNumeric": true
+          }
+        ]
+      }
+    }
+  ]
+}

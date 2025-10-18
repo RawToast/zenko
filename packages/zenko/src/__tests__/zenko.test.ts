@@ -1,5 +1,10 @@
 import { describe, test, expect } from "bun:test"
-import { generate, type OpenAPISpec } from "../zenko"
+import {
+  generate,
+  generateWithMetadata,
+  generateHelperFile,
+  type OpenAPISpec,
+} from "../zenko"
 import * as fs from "fs"
 import jsYaml from "js-yaml"
 
@@ -291,6 +296,83 @@ describe("generate", () => {
       })
 
       expect(result).toMatchSnapshot("petstore-inline-helpers-output")
+    })
+  })
+
+  describe("Helper file generation", () => {
+    const petstoreSpec = jsYaml.load(
+      fs.readFileSync("src/resources/petstore.yaml", "utf8")
+    ) as OpenAPISpec
+
+    test("generateHelperFile produces valid TypeScript", () => {
+      const helperContent = generateHelperFile()
+
+      // Should contain all required exports
+      expect(helperContent).toContain("export type PathFn")
+      expect(helperContent).toContain("export type RequestMethod")
+      expect(helperContent).toContain("export type HeaderFn")
+      expect(helperContent).toContain("export type AnyHeaderFn")
+      expect(helperContent).toContain("export type OperationErrors")
+      expect(helperContent).toContain("export type OperationDefinition")
+
+      // Should have proper structure
+      expect(helperContent).toContain("// Generated helper types for Zenko")
+      expect(helperContent).toMatchSnapshot("helper-file-content")
+    })
+
+    test("generateWithMetadata returns helper file info when using file mode", () => {
+      const result = generateWithMetadata(petstoreSpec, {
+        types: { helpers: "file", helpersOutput: "./api-types.ts" },
+      })
+
+      // Should include helper file information
+      expect(result.helperFile).toBeDefined()
+      expect(result.helperFile?.path).toBe("./api-types.ts")
+      expect(result.helperFile?.content).toContain("export type PathFn")
+      expect(result.helperFile?.content).toContain(
+        "export type OperationDefinition"
+      )
+
+      // Main output should import from the helper file
+      expect(result.output).toContain(
+        'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "./api-types.ts";'
+      )
+    })
+
+    test("generateWithMetadata does not return helper file for package mode", () => {
+      const result = generateWithMetadata(petstoreSpec, {
+        types: { helpers: "package" },
+      })
+
+      expect(result.helperFile).toBeUndefined()
+      expect(result.output).toContain('from "zenko"')
+    })
+
+    test("generateWithMetadata does not return helper file for inline mode", () => {
+      const result = generateWithMetadata(petstoreSpec, {
+        types: { helpers: "inline" },
+      })
+
+      expect(result.helperFile).toBeUndefined()
+      expect(result.output).toContain("type PathFn<")
+    })
+
+    test("generateWithMetadata does not return helper file when emit is false", () => {
+      const result = generateWithMetadata(petstoreSpec, {
+        types: { emit: false, helpers: "file", helpersOutput: "./types.ts" },
+      })
+
+      expect(result.helperFile).toBeUndefined()
+    })
+
+    test("generate function maintains backward compatibility", () => {
+      const result = generate(petstoreSpec, {
+        types: { helpers: "file", helpersOutput: "./api-types.ts" },
+      })
+
+      // Should return just the string output
+      expect(typeof result).toBe("string")
+      expect(result).toContain('from "./api-types.ts"')
     })
   })
 })
