@@ -298,11 +298,17 @@ export function generateWithMetadata(
   output.push("} as const;")
   output.push("")
 
+  // Generate operation types first (needed for type annotations)
+  generateOperationTypes(output, operations, typesConfig)
+
   // Generate operation objects
   output.push("// Operation Objects")
   for (const op of operations) {
     const camelCaseOperationId = toCamelCase(op.operationId)
-    output.push(`export const ${camelCaseOperationId} = {`)
+    const typeAnnotation = typesConfig.emit
+      ? `: ${capitalize(camelCaseOperationId)}Operation`
+      : ""
+    output.push(`export const ${camelCaseOperationId}${typeAnnotation} = {`)
     output.push(`  method: "${op.method}",`)
     output.push(`  path: paths.${camelCaseOperationId},`)
 
@@ -325,8 +331,6 @@ export function generateWithMetadata(
     output.push("} as const;")
     output.push("")
   }
-
-  generateOperationTypes(output, operations, typesConfig)
 
   const result: GenerateResult = {
     output: output.join("\n"),

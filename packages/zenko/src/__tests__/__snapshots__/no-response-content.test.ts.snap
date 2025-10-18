@@ -19,8 +19,18 @@ export const headers = {
   PutSomething: () => headerSchemas.PutSomething.parse({}),
 } as const;
 
+// Operation Types
+export type PutSomethingOperation = OperationDefinition<
+  "put",
+  typeof paths.PutSomething,
+  undefined,
+  undefined,
+  undefined,
+  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined }, { internalServerError: undefined; serviceUnavailable: undefined }, unknown, unknown>
+>;
+
 // Operation Objects
-export const PutSomething = {
+export const PutSomething: PutSomethingOperation = {
   method: "put",
   path: paths.PutSomething,
   response: undefined,
@@ -36,15 +46,5 @@ export const PutSomething = {
     },
   },
 } as const;
-
-// Operation Types
-export type PutSomethingOperation = OperationDefinition<
-  "put",
-  typeof paths.PutSomething,
-  undefined,
-  undefined,
-  undefined,
-  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined }, { internalServerError: undefined; serviceUnavailable: undefined }, unknown, unknown>
->;
 "
 `;

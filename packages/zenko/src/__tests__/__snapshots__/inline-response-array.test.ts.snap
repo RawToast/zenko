@@ -29,8 +29,18 @@ export const headers = {
   bySource: () => headerSchemas.bySource.parse({}),
 } as const;
 
+// Operation Types
+export type BySourceOperation = OperationDefinition<
+  "get",
+  typeof paths.bySource,
+  undefined,
+  z.ZodArray<typeof AdminLog>,
+  undefined,
+  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined }, { internalServerError: undefined; serviceUnavailable: undefined }, unknown, unknown>
+>;
+
 // Operation Objects
-export const bySource = {
+export const bySource: BySourceOperation = {
   method: "get",
   path: paths.bySource,
   response: z.array(AdminLog),
@@ -46,15 +56,5 @@ export const bySource = {
     },
   },
 } as const;
-
-// Operation Types
-export type BySourceOperation = OperationDefinition<
-  "get",
-  typeof paths.bySource,
-  undefined,
-  z.ZodArray<typeof AdminLog>,
-  undefined,
-  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined }, { internalServerError: undefined; serviceUnavailable: undefined }, unknown, unknown>
->;
 "
 `;

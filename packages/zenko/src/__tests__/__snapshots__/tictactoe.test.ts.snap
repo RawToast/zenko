@@ -54,36 +54,6 @@ export const headers = {
   putSquare: () => headerSchemas.putSquare.parse({}),
 } as const;
 
-// Operation Objects
-export const getBoard = {
-  method: "get",
-  path: paths.getBoard,
-  response: status,
-} as const;
-
-export const getSquare = {
-  method: "get",
-  path: paths.getSquare,
-  response: mark,
-  errors: {
-    clientErrors: {
-      badRequest: errorMessage,
-    },
-  },
-} as const;
-
-export const putSquare = {
-  method: "put",
-  path: paths.putSquare,
-  request: mark,
-  response: status,
-  errors: {
-    clientErrors: {
-      badRequest: errorMessage,
-    },
-  },
-} as const;
-
 // Operation Types
 export type GetBoardOperation = OperationDefinition<
   "get",
@@ -111,6 +81,36 @@ export type PutSquareOperation = OperationDefinition<
   undefined,
   OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>
 >;
+
+// Operation Objects
+export const getBoard: GetBoardOperation = {
+  method: "get",
+  path: paths.getBoard,
+  response: status,
+} as const;
+
+export const getSquare: GetSquareOperation = {
+  method: "get",
+  path: paths.getSquare,
+  response: mark,
+  errors: {
+    clientErrors: {
+      badRequest: errorMessage,
+    },
+  },
+} as const;
+
+export const putSquare: PutSquareOperation = {
+  method: "put",
+  path: paths.putSquare,
+  request: mark,
+  response: status,
+  errors: {
+    clientErrors: {
+      badRequest: errorMessage,
+    },
+  },
+} as const;
 "
 `;
 
@@ -168,36 +168,6 @@ export const headers = {
   putSquare: () => headerSchemas.putSquare.parse({}),
 } as const;
 
-// Operation Objects
-export const getBoard = {
-  method: "get",
-  path: paths.getBoard,
-  response: status,
-} as const;
-
-export const getSquare = {
-  method: "get",
-  path: paths.getSquare,
-  response: mark,
-  errors: {
-    clientErrors: {
-      badRequest: errorMessage,
-    },
-  },
-} as const;
-
-export const putSquare = {
-  method: "put",
-  path: paths.putSquare,
-  request: mark,
-  response: status,
-  errors: {
-    clientErrors: {
-      badRequest: errorMessage,
-    },
-  },
-} as const;
-
 // Operation Types
 export type GetBoardOperation = OperationDefinition<
   "get",
@@ -225,5 +195,35 @@ export type PutSquareOperation = OperationDefinition<
   undefined,
   OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>
 >;
+
+// Operation Objects
+export const getBoard: GetBoardOperation = {
+  method: "get",
+  path: paths.getBoard,
+  response: status,
+} as const;
+
+export const getSquare: GetSquareOperation = {
+  method: "get",
+  path: paths.getSquare,
+  response: mark,
+  errors: {
+    clientErrors: {
+      badRequest: errorMessage,
+    },
+  },
+} as const;
+
+export const putSquare: PutSquareOperation = {
+  method: "put",
+  path: paths.putSquare,
+  request: mark,
+  response: status,
+  errors: {
+    clientErrors: {
+      badRequest: errorMessage,
+    },
+  },
+} as const;
 "
 `;

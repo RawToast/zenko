@@ -16,8 +16,8 @@ export const headerSchemas = {
 export const headers = {
 } as const;
 
-// Operation Objects
-// Operation Types"
+// Operation Types
+// Operation Objects"
 `;
 
 exports[`generate Edge cases handles spec with no components: no-components-spec-output 1`] = `
@@ -39,12 +39,6 @@ export const headers = {
   getTest: () => headerSchemas.getTest.parse({}),
 } as const;
 
-// Operation Objects
-export const getTest = {
-  method: "get",
-  path: paths.getTest,
-} as const;
-
 // Operation Types
 export type GetTestOperation = OperationDefinition<
   "get",
@@ -54,6 +48,12 @@ export type GetTestOperation = OperationDefinition<
   undefined,
   OperationErrors
 >;
+
+// Operation Objects
+export const getTest: GetTestOperation = {
+  method: "get",
+  path: paths.getTest,
+} as const;
 "
 `;
 
@@ -87,8 +87,8 @@ export const headerSchemas = {
 export const headers = {
 } as const;
 
-// Operation Objects
-// Operation Types"
+// Operation Types
+// Operation Objects"
 `;
 
 exports[`generate Response inference infers string error responses without schemas: error-response-inference 1`] = `
@@ -110,18 +110,6 @@ export const headers = {
   getErrorWithoutSchema: () => headerSchemas.getErrorWithoutSchema.parse({}),
 } as const;
 
-// Operation Objects
-export const getErrorWithoutSchema = {
-  method: "get",
-  path: paths.getErrorWithoutSchema,
-  response: GetErrorWithoutSchemaResponse200,
-  errors: {
-    serverErrors: {
-      internalServerError: string,
-    },
-  },
-} as const;
-
 // Operation Types
 export type GetErrorWithoutSchemaOperation = OperationDefinition<
   "get",
@@ -131,6 +119,18 @@ export type GetErrorWithoutSchemaOperation = OperationDefinition<
   undefined,
   OperationErrors<unknown, { internalServerError: string }, unknown, unknown>
 >;
+
+// Operation Objects
+export const getErrorWithoutSchema: GetErrorWithoutSchemaOperation = {
+  method: "get",
+  path: paths.getErrorWithoutSchema,
+  response: GetErrorWithoutSchemaResponse200,
+  errors: {
+    serverErrors: {
+      internalServerError: string,
+    },
+  },
+} as const;
 "
 `;
 
@@ -204,40 +204,6 @@ export const headers = {
   showPetById: () => headerSchemas.showPetById.parse({}),
 } as const;
 
-// Operation Objects
-export const listPets = {
-  method: "get",
-  path: paths.listPets,
-  response: Pets,
-  errors: {
-    defaultErrors: {
-      defaultError: Error,
-    },
-  },
-} as const;
-
-export const createPets = {
-  method: "post",
-  path: paths.createPets,
-  request: Pet,
-  errors: {
-    defaultErrors: {
-      defaultError: Error,
-    },
-  },
-} as const;
-
-export const showPetById = {
-  method: "get",
-  path: paths.showPetById,
-  response: Pet,
-  errors: {
-    defaultErrors: {
-      defaultError: Error,
-    },
-  },
-} as const;
-
 // Operation Types
 export type ListPetsOperation = OperationDefinition<
   "get",
@@ -265,6 +231,40 @@ export type ShowPetByIdOperation = OperationDefinition<
   undefined,
   OperationErrors<unknown, unknown, { defaultError: typeof Error }, unknown>
 >;
+
+// Operation Objects
+export const listPets: ListPetsOperation = {
+  method: "get",
+  path: paths.listPets,
+  response: Pets,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
+
+export const createPets: CreatePetsOperation = {
+  method: "post",
+  path: paths.createPets,
+  request: Pet,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
+
+export const showPetById: ShowPetByIdOperation = {
+  method: "get",
+  path: paths.showPetById,
+  response: Pet,
+  errors: {
+    defaultErrors: {
+      defaultError: Error,
+    },
+  },
+} as const;
 "
 `;
 
