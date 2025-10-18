@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "zenko-config.schema.json",
   "title": "Zenko Configuration Schema",
   "description": "Configuration schema for Zenko OpenAPI code generation",
@@ -7,6 +7,10 @@
   "required": ["schemas"],
   "additionalProperties": false,
   "properties": {
+    "$schema": {
+      "type": "string",
+      "default": "zenko-config.schema.json"
+    },
     "types": {
       "$ref": "#/definitions/TypesConfig",
       "description": "Global type generation configuration applied to all schemas unless overridden per-schema"
