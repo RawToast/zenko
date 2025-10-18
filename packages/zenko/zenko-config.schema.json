@@ -7,6 +7,10 @@
   "required": ["schemas"],
   "additionalProperties": false,
   "properties": {
+    "$schema": {
+      "type": "string",
+      "default": "zenko-config.schema.json"
+    },
     "types": {
       "$ref": "#/definitions/TypesConfig",
       "description": "Global type generation configuration applied to all schemas unless overridden per-schema"
