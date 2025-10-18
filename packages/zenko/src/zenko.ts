@@ -31,6 +31,14 @@ export type GenerateOptions = {
   types?: TypesConfig
 }
 
+export type GenerateResult = {
+  output: string
+  helperFile?: {
+    path: string
+    content: string
+  }
+}
+
 type PathParam = {
   name: string
   type: string
@@ -70,16 +78,16 @@ type RequestHeader = {
 }
 
 /**
- * Generate TypeScript source that contains Zod schemas, path/header helpers, and operation objects/types from an OpenAPI spec.
+ * Generate TypeScript source with additional metadata about helper files.
  *
  * @param spec - The OpenAPI specification to generate code from.
  * @param options - Generation options (e.g., strictDates, strictNumeric, types) that adjust emitted schemas and helper types.
- * @returns The complete generated TypeScript source as a single string.
+ * @returns Object containing the generated output and optional helper file information.
  */
-export function generate(
+export function generateWithMetadata(
   spec: OpenAPISpec,
   options: GenerateOptions = {}
-): string {
+): GenerateResult {
   const output: string[] = []
   const generatedTypes = new Set<string>()
   const { strictDates = false, strictNumeric = false } = options
@@ -320,7 +328,37 @@ export function generate(
 
   generateOperationTypes(output, operations, typesConfig)
 
-  return output.join("\n")
+  const result: GenerateResult = {
+    output: output.join("\n"),
+  }
+
+  // If using file-based helpers, include helper file information
+  if (
+    typesConfig.emit &&
+    typesConfig.helpers === "file" &&
+    typesConfig.helpersOutput
+  ) {
+    result.helperFile = {
+      path: typesConfig.helpersOutput,
+      content: generateHelperFile(),
+    }
+  }
+
+  return result
+}
+
+/**
+ * Generate TypeScript source that contains Zod schemas, path/header helpers, and operation objects/types from an OpenAPI spec.
+ *
+ * @param spec - The OpenAPI specification to generate code from.
+ * @param options - Generation options (e.g., strictDates, strictNumeric, types) that adjust emitted schemas and helper types.
+ * @returns The complete generated TypeScript source as a single string.
+ */
+export function generate(
+  spec: OpenAPISpec,
+  options: GenerateOptions = {}
+): string {
+  return generateWithMetadata(spec, options).output
 }
 
 function appendOperationField(
@@ -1250,6 +1288,59 @@ function applyNumericBounds(schema: any, builder: string): string {
   }
 
   return builder
+}
+
+/**
+ * Generate a standalone helper types file for use with `helpers: "file"` mode.
+ *
+ * @returns TypeScript source containing PathFn, HeaderFn, OperationDefinition, and OperationErrors type definitions.
+ */
+export function generateHelperFile(): string {
+  const output: string[] = []
+
+  output.push("// Generated helper types for Zenko")
+  output.push(
+    "// This file provides type definitions for operation objects and path functions"
+  )
+  output.push("")
+  output.push(
+    "export type PathFn<TArgs extends unknown[] = []> = (...args: TArgs) => string"
+  )
+  output.push("")
+  output.push(
+    'export type RequestMethod = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"'
+  )
+  output.push("")
+  output.push(
+    "export type HeaderFn<TArgs extends unknown[] = [], TResult = Record<string, unknown> | Record<string, never>> = (...args: TArgs) => TResult"
+  )
+  output.push("")
+  output.push(
+    "export type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown)"
+  )
+  output.push("")
+  output.push(
+    "export type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {"
+  )
+  output.push("  clientErrors?: TClient")
+  output.push("  serverErrors?: TServer")
+  output.push("  defaultErrors?: TDefault")
+  output.push("  otherErrors?: TOther")
+  output.push("}")
+  output.push("")
+  output.push(
+    "export type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
+  )
+  output.push("  method: TMethod")
+  output.push("  path: TPath")
+  output.push("  request?: TRequest")
+  output.push("  response?: TResponse")
+  output.push("  headers?: THeaders")
+  output.push("  errors?: TErrors")
+  output.push("}")
+  output.push("")
+
+  return output.join("\n")
 }
 
 function toCamelCase(str: string): string {

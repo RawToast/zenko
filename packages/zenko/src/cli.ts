@@ -4,7 +4,11 @@ import * as fs from "fs"
 import * as path from "path"
 import { pathToFileURL } from "url"
 import { load } from "js-yaml"
-import { generate, type OpenAPISpec, type TypesConfig } from "./zenko.js"
+import {
+  generateWithMetadata,
+  type OpenAPISpec,
+  type TypesConfig,
+} from "./zenko.js"
 
 type CliConfigEntry = {
   input: string
@@ -222,17 +226,29 @@ async function generateSingle(options: {
   const resolvedOutput = path.resolve(outputFile)
 
   const spec = readSpec(resolvedInput)
-  const output = generate(spec, {
+  const result = generateWithMetadata(spec, {
     strictDates,
     strictNumeric,
     types: typesConfig,
   })
 
   fs.mkdirSync(path.dirname(resolvedOutput), { recursive: true })
-  fs.writeFileSync(resolvedOutput, output)
+  fs.writeFileSync(resolvedOutput, result.output)
 
   console.log(`✅ Generated TypeScript types in ${resolvedOutput}`)
   console.log(`📄 Processed ${Object.keys(spec.paths).length} paths`)
+
+  // Write helper file if needed
+  if (result.helperFile) {
+    const helperPath = path.isAbsolute(result.helperFile.path)
+      ? result.helperFile.path
+      : path.resolve(path.dirname(resolvedOutput), result.helperFile.path)
+
+    fs.mkdirSync(path.dirname(helperPath), { recursive: true })
+    fs.writeFileSync(helperPath, result.helperFile.content)
+
+    console.log(`📦 Generated helper types in ${helperPath}`)
+  }
 }
 
 function readSpec(filePath: string): OpenAPISpec {

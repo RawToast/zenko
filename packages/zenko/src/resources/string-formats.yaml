@@ -1,0 +1,209 @@
+openapi: 3.0.0
+info:
+  title: String Formats Test API
+  version: 1.0.0
+  description: Test API for various string formats and validation options
+
+paths:
+  /users:
+    post:
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /users/{userId}:
+    get:
+      operationId: getUserById
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /contact:
+    post:
+      operationId: sendContact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactForm"
+      responses:
+        "200":
+          description: Contact sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactResponse"
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        website:
+          type: string
+          format: uri
+        avatar:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        birthDate:
+          type: string
+          format: date
+        lastLoginTime:
+          type: string
+          format: time
+        sessionDuration:
+          type: string
+          format: duration
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+          pattern: "^[a-zA-Z0-9_]+$"
+        phoneNumber:
+          type: string
+          pattern: '^\\+?[1-9]\\d{1,14}$'
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+        tags:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 10
+          uniqueItems: true
+        scores:
+          type: array
+          items:
+            type: number
+            minimum: 0
+            maximum: 100
+          minItems: 1
+          maxItems: 5
+        age:
+          type: integer
+          minimum: 0
+          maximum: 150
+        balance:
+          type: number
+          minimum: 0
+          exclusiveMaximum: 1000000
+        priority:
+          type: integer
+          minimum: 1
+          maximum: 10
+          multipleOf: 1
+
+    ContactForm:
+      type: object
+      required:
+        - email
+        - message
+        - website
+      properties:
+        email:
+          type: string
+          format: email
+        message:
+          type: string
+          minLength: 10
+          maxLength: 1000
+        website:
+          type: string
+          format: uri
+        subject:
+          type: string
+          minLength: 5
+          maxLength: 100
+        attachments:
+          type: array
+          items:
+            type: string
+            format: uri
+          maxItems: 5
+
+    ContactResponse:
+      type: object
+      required:
+        - id
+        - status
+        - timestamp
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: ["sent", "failed", "pending"]
+        timestamp:
+          type: string
+          format: date-time
+        message:
+          type: string
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          format: uuid
+        message:
+          type: string
+        details:
+          type: string
