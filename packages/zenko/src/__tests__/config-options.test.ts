@@ -171,8 +171,8 @@ describe("Configuration Options", () => {
 
       // Should use gt() for exclusiveMinimum
       expect(result).toContain("balance: z.number().min(0)")
-      // Note: exclusiveMaximum should use lt() but our test schema uses exclusiveMaximum: 1000000
-      // The actual implementation would need to be checked, but this tests the concept
+      // Should use lt() for exclusiveMaximum: true
+      expect(result).toContain("balance: z.number().min(0).lt(1000000)")
     })
 
     test("multipleOf constraint", () => {

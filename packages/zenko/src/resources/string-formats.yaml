@@ -140,7 +140,8 @@ components:
         balance:
           type: number
           minimum: 0
-          exclusiveMaximum: 1000000
+          maximum: 1000000
+          exclusiveMaximum: true
         priority:
           type: integer
           minimum: 1

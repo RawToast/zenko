@@ -244,8 +244,22 @@ async function generateSingle(options: {
       ? result.helperFile.path
       : path.resolve(path.dirname(resolvedOutput), result.helperFile.path)
 
+    // Resolve both paths to absolute paths for comparison
+    const absoluteResolvedOutput = path.resolve(resolvedOutput)
+    const absoluteHelperPath = path.resolve(helperPath)
+
+    // Check if helper file would overwrite the main output
+    if (absoluteResolvedOutput === absoluteHelperPath) {
+      console.warn(
+        `⚠️  Skipping helper file generation: would overwrite main output at ${absoluteResolvedOutput}`
+      )
+      return
+    }
+
     fs.mkdirSync(path.dirname(helperPath), { recursive: true })
-    fs.writeFileSync(helperPath, result.helperFile.content)
+    fs.writeFileSync(helperPath, result.helperFile.content, {
+      encoding: "utf8",
+    })
 
     console.log(`📦 Generated helper types in ${helperPath}`)
   }
