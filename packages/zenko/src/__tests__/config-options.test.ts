@@ -155,7 +155,7 @@ describe("Configuration Options", () => {
         'username: z.string().min(3).max(20).regex(new RegExp("^[a-zA-Z0-9_]+$"))'
       )
       expect(result).toContain(
-        'phoneNumber: z.string().regex(new RegExp("^\\\\+?[1-9]\\\\d{1,14}$"))'
+        'phoneNumber: z.string().regex(new RegExp("^\\\\\\\\+?[1-9]\\\\\\\\d{1,14}$"))'
       )
 
       // Array constraints (note: tags is optional so constraints may not be applied)
