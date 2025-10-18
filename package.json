@@ -24,7 +24,7 @@
     "@socketsecurity/bun-security-scanner": "1.1.0",
     "oxlint": "1.11.2",
     "prettier": "3.6.2",
-    "turbo": "2.5.8",
-    "typescript": "5.9.3"
+    "turbo": "^2.5.8",
+    "typescript": "^5.9.3"
   }
 }
