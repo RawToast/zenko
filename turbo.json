@@ -1,7 +1,7 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "tasks": {
-    "generate": {
+    "codegen": {
       "outputs": ["src/**/*.gen.ts"],
       "inputs": ["resources/**/*.yaml", "generate.js"]
     },
@@ -14,7 +14,7 @@
     "//#format": {},
     "//#format:check": {},
     "check-types": {
-      "dependsOn": ["generate", "^check-types"],
+      "dependsOn": ["codegen", "^check-types"],
       "inputs": ["**/*.{ts,tsx}"]
     },
     "test": {

@@ -1,11 +1,17 @@
-import { describe, it, expect, beforeEach } from "bun:test"
+import { describe, it, expect, beforeEach, afterEach } from "bun:test"
 import { PetstoreClient } from "../petstore-client"
 
 describe("PetstoreClient", () => {
   let client: PetstoreClient
+  let originalFetch: typeof global.fetch
 
   beforeEach(() => {
     client = new PetstoreClient("https://api.test.com")
+    originalFetch = global.fetch
+  })
+
+  afterEach(() => {
+    global.fetch = originalFetch
   })
 
   describe("listPets", () => {

@@ -1,15 +1,45 @@
-import { readFileSync, writeFileSync } from "fs"
+import { readFileSync, writeFileSync, mkdirSync } from "fs"
+import { dirname, resolve } from "path"
 import { load } from "js-yaml"
 import { generate } from "zenko"
 
-// Read the petstore YAML file
-const specContent = readFileSync("./resources/petstore.yaml", "utf8")
-const spec = load(specContent)
+try {
+  // Resolve input and output paths
+  const inputPath = resolve("./resources/petstore.yaml")
+  const outputPath = resolve("./src/schema/petstore.gen.ts")
+  const outputDir = dirname(outputPath)
 
-// Generate TypeScript code
-const output = generate(spec)
+  // Read the petstore YAML file
+  const specContent = readFileSync(inputPath, "utf8")
 
-// Write to schema directory
-writeFileSync("./src/schema/petstore.gen.ts", output)
+  // Validate input before processing
+  if (!specContent || specContent.trim().length === 0) {
+    throw new Error("Spec file is empty or could not be read")
+  }
 
-console.log("✅ Generated petstore.gen.ts in src/schema/")
+  const spec = load(specContent)
+
+  // Validate parsed spec
+  if (!spec || typeof spec !== "object") {
+    throw new Error("Failed to parse YAML spec or invalid spec format")
+  }
+
+  // Generate TypeScript code
+  const output = generate(spec)
+
+  // Validate output
+  if (!output || typeof output !== "string") {
+    throw new Error("Failed to generate TypeScript code")
+  }
+
+  // Ensure output directory exists (mkdir -p behavior)
+  mkdirSync(outputDir, { recursive: true })
+
+  // Write to schema directory
+  writeFileSync(outputPath, output)
+
+  console.log("✅ Generated petstore.gen.ts in src/schema/")
+} catch (error) {
+  console.error("❌ Error during code generation:", error.message)
+  process.exit(1)
+}

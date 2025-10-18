@@ -5,8 +5,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "generate": "bun run --bun generate.js",
-    "prebuild": "bun run --bun generate",
+    "codegen": "bun run --bun generate.js",
     "test": "bun test",
     "coverage": "bun test --coverage",
     "check-types": "tsc --noEmit"
