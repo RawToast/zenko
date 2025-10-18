@@ -18,7 +18,7 @@
     "check": "turbo lint format check-types",
     "dev": "turbo watch lint format check-types test",
     "zenko": "bun run --cwd packages/zenko",
-    "nuke": "rimraf --glob '**/node_modules, **/dist, **/coverage, packages/examples/*.gen.ts'"
+    "nuke": "rimraf --glob '**/node_modules' --glob '**/dist' --glob '**/coverage' --glob 'packages/examples/*.gen.ts'"
   },
   "devDependencies": {
     "@prettier/plugin-oxc": "0.0.4",

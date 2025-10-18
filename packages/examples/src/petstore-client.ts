@@ -1,5 +1,7 @@
 import { paths, Pet, Pets, Error as ErrorSchema } from "./schema/petstore.gen"
 
+type ZodSchema<T = any> = { parse: (json: unknown) => T }
+
 export class PetstoreClient {
   private baseUrl: string
 
@@ -9,13 +11,26 @@ export class PetstoreClient {
 
   private async request<T>(
     path: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+    responseSchema: ZodSchema<T>,
+    options?: RequestInit
+  ): Promise<T>
+
+  private async request(
+    path: string,
+    responseSchema: undefined,
+    options?: RequestInit
+  ): Promise<void>
+
+  private async request<T>(
+    path: string,
+    responseSchema: ZodSchema<T> | undefined,
+    options?: RequestInit
+  ): Promise<T | undefined> {
     const url = `${this.baseUrl}${path}`
     const response = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
-        ...options.headers,
+        ...options?.headers,
       },
       ...options,
     })
@@ -30,20 +45,25 @@ export class PetstoreClient {
     }
 
     if (response.status === 204) {
-      return undefined as T
+      return
     }
 
-    return response.json()
+    if (responseSchema === undefined) {
+      return
+    }
+
+    const json = await response.json()
+    return responseSchema.parse(json)
   }
 
   async listPets(limit?: number): Promise<Pets> {
     const path = paths.listPets({ limit })
-    return this.request<Pets>(path)
+    return this.request(path, Pets)
   }
 
   async createPets(pet: Omit<Pet, "id">): Promise<void> {
     const path = paths.createPets()
-    await this.request<void>(path, {
+    await this.request(path, undefined, {
       method: "POST",
       body: JSON.stringify(pet),
     })
@@ -51,6 +71,6 @@ export class PetstoreClient {
 
   async showPetById(petId: string): Promise<Pet> {
     const path = paths.showPetById({ petId })
-    return this.request<Pet>(path)
+    return this.request(path, Pet)
   }
 }

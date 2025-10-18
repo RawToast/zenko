@@ -15,7 +15,7 @@
     "verbatimModuleSyntax": true,
     "noEmit": true,
 
-    // Best practicescd
+    // Best practices
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,

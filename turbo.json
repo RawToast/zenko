@@ -3,7 +3,7 @@
   "tasks": {
     "generate": {
       "outputs": ["src/**/*.gen.ts"],
-      "inputs": ["resources/**/*.yaml"]
+      "inputs": ["resources/**/*.yaml", "generate.js"]
     },
     "build": {
       "outputs": ["dist/**"],

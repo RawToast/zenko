@@ -16,11 +16,13 @@
   ],
   "exports": {
     ".": {
+      "bun": "./src/zenko.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
     "./types": {
+      "bun": "./src/types.ts",
       "types": "./dist/types.d.ts",
       "import": "./dist/types.mjs",
       "require": "./dist/types.cjs"

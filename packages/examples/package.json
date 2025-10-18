@@ -1,11 +1,12 @@
 {
-  "name": "zenko/examples",
+  "name": "@zenko/examples",
   "version": "0.0.1",
   "description": "Basic client and generation examples",
   "type": "module",
+  "private": true,
   "scripts": {
-    "generate": "node generate.js",
-    "prebuild": "bun run generate",
+    "generate": "bun run --bun generate.js",
+    "prebuild": "bun run --bun generate",
     "test": "bun test",
     "coverage": "bun test --coverage",
     "check-types": "tsc --noEmit"
