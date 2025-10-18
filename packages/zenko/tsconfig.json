@@ -11,6 +11,8 @@
 
     // Bundler mode
     "moduleResolution": "bundler",
+    "types": ["bun", "node"],
+    "customConditions": ["development"],
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
