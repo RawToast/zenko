@@ -17,7 +17,8 @@
     "lint:check": "oxlint packages/*/src --max-warnings=0",
     "check": "turbo lint format check-types",
     "dev": "turbo watch lint format check-types test",
-    "zenko": "bun run --cwd packages/zenko"
+    "zenko": "bun run --cwd packages/zenko",
+    "nuke": "rimraf --glob '**/node_modules, **/dist, **/coverage, packages/examples/*.gen.ts'"
   },
   "devDependencies": {
     "@prettier/plugin-oxc": "0.0.4",

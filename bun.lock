@@ -12,9 +12,22 @@
         "typescript": "5.9.3",
       },
     },
+    "packages/examples": {
+      "name": "zenko/examples",
+      "version": "0.0.1",
+      "dependencies": {
+        "js-yaml": "4.1.0",
+        "zod": "4.1.12",
+      },
+      "devDependencies": {
+        "@types/bun": "1.3.0",
+        "typescript": "5.9.3",
+        "zenko": "workspace:*",
+      },
+    },
     "packages/zenko": {
       "name": "zenko",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "bin": {
         "zenko": "dist/cli.cjs",
       },
@@ -415,6 +428,8 @@
     "wrap-ansi-cjs": ["wrap-ansi@7.0.0", "", { "dependencies": { "ansi-styles": "^4.0.0", "string-width": "^4.1.0", "strip-ansi": "^6.0.0" } }, "sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q=="],
 
     "zenko": ["zenko@workspace:packages/zenko"],
+
+    "zenko/examples": ["zenko/examples@workspace:packages/examples"],
 
     "zod": ["zod@4.1.12", "", {}, "sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ=="],
 

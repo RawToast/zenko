@@ -120,5 +120,5 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": []
+  "ignorePatterns": ["packages/examples/**/*.gen.ts"]
 }
