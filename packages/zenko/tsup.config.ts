@@ -27,13 +27,13 @@ export default defineConfig({
   splitting: false,
 
   // Target Node.js environment
-  target: "node18",
+  target: "node20",
 
   // Enable shims for better CJS/ESM compatibility
   shims: true,
 
   // External dependencies (don't bundle them)
-  external: ["fs", "js-yaml", "zod"],
+  external: ["fs", "js-yaml"],
 
   // CJS interop for better compatibility
   cjsInterop: true,
