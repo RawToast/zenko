@@ -68,7 +68,9 @@ describe("PetstoreClient", () => {
         })
       )
 
-      expect(client.listPets()).rejects.toThrow("API Error: Bad Request (400)")
+      await expect(client.listPets()).rejects.toThrow(
+        "API Error: Bad Request (400)"
+      )
 
       expect(fetchMock).toHaveBeenCalledTimes(1)
       expect(fetchMock).toHaveBeenCalledWith(
@@ -92,7 +94,7 @@ describe("PetstoreClient", () => {
         })
       )
 
-      expect(client.listPets()).rejects.toThrow(
+      await expect(client.listPets()).rejects.toThrow(
         "HTTP Error: 500 Internal Server Error"
       )
 
@@ -148,13 +150,14 @@ describe("PetstoreClient", () => {
         )
       )
 
-      expect(client.createPets(newPet)).rejects.toThrow(
+      await expect(client.createPets(newPet)).rejects.toThrow(
         "API Error: Unprocessable Entity (422)"
       )
 
       expect(fetchMock).toHaveBeenCalledTimes(1)
       expect(fetchMock).toHaveBeenCalledWith(
         "https://api.test.com/pets",
+
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify(newPet),
@@ -199,7 +202,7 @@ describe("PetstoreClient", () => {
         })
       )
 
-      expect(client.showPetById("999")).rejects.toThrow(
+      await expect(client.showPetById("999")).rejects.toThrow(
         "API Error: Not Found (404)"
       )
 
