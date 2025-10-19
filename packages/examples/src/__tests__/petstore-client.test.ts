@@ -216,6 +216,6 @@ describe("PetstoreClient", () => {
 
 function setupFetchMock() {
   const fetchMock = mock<typeof fetch>()
-  globalThis.fetch = fetchMock as unknown as typeof fetch
+  global.fetch = fetchMock as unknown as typeof fetch
   return fetchMock
 }
