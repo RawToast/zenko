@@ -20,7 +20,7 @@ try {
   const spec = load(specContent)
 
   // Validate parsed spec
-  if (!spec || typeof spec !== "object") {
+  if (!spec || typeof spec !== "object" || Array.isArray(spec)) {
     throw new Error("Failed to parse YAML spec or invalid spec format")
   }
 
