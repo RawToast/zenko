@@ -27,7 +27,7 @@ export default defineConfig({
   splitting: false,
 
   // Target Node.js environment
-  target: "node18",
+  target: "node20",
 
   // Enable shims for better CJS/ESM compatibility
   shims: true,

@@ -45,7 +45,7 @@
   ],
   "homepage": "https://github.com/RawToast/zenko#readme",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "publishConfig": {
     "access": "public"
