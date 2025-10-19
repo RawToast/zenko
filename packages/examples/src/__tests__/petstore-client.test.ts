@@ -18,14 +18,7 @@ describe("PetstoreClient", () => {
         { id: 2, name: "Rex", tag: "dog" },
       ]
 
-      const mockResponse = {
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(mockPets),
-        headers: new Headers(),
-      } as Response
-
-      fetchMock.mockResolvedValue(mockResponse)
+      fetchMock.mockResolvedValue(new Response(JSON.stringify(mockPets)))
 
       const result = await client.listPets()
 
@@ -48,14 +41,7 @@ describe("PetstoreClient", () => {
       const fetchMock = setupFetchMock()
       const client = new PetstoreClient("https://api.test.com")
 
-      const mockResponse = {
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(mockPets),
-        headers: new Headers(),
-      } as Response
-
-      fetchMock.mockResolvedValue(mockResponse)
+      fetchMock.mockResolvedValue(new Response(JSON.stringify(mockPets)))
 
       const result = await client.listPets(10)
 
@@ -76,14 +62,11 @@ describe("PetstoreClient", () => {
       const fetchMock = setupFetchMock()
       const client = new PetstoreClient("https://api.test.com")
 
-      const mockResponse = {
-        ok: false,
-        status: 400,
-        json: () => Promise.resolve({ code: 400, message: "Bad Request" }),
-        headers: new Headers(),
-      } as Response
-
-      fetchMock.mockResolvedValue(mockResponse)
+      fetchMock.mockResolvedValue(
+        new Response(JSON.stringify({ code: 400, message: "Bad Request" }), {
+          status: 400,
+        })
+      )
 
       expect(client.listPets()).rejects.toThrow("API Error: Bad Request (400)")
 
@@ -102,15 +85,12 @@ describe("PetstoreClient", () => {
       const fetchMock = setupFetchMock()
       const client = new PetstoreClient("https://api.test.com")
 
-      const mockResponse = {
-        ok: false,
-        status: 500,
-        statusText: "Internal Server Error",
-        json: () => Promise.reject(new Error("Invalid JSON")),
-        headers: new Headers(),
-      } as Response
-
-      fetchMock.mockResolvedValue(mockResponse)
+      fetchMock.mockResolvedValue(
+        new Response("Internal Server Error", {
+          status: 500,
+          statusText: "Internal Server Error",
+        })
+      )
 
       expect(client.listPets()).rejects.toThrow(
         "HTTP Error: 500 Internal Server Error"
@@ -135,14 +115,7 @@ describe("PetstoreClient", () => {
 
       const newPet = { name: "Buddy", tag: "dog" }
 
-      const mockResponse = {
-        ok: true,
-        status: 201,
-        json: () => Promise.resolve({}),
-        headers: new Headers(),
-      } as Response
-
-      fetchMock.mockResolvedValue(mockResponse)
+      fetchMock.mockResolvedValue(new Response(null, { status: 201 }))
 
       // Should not throw
       await client.createPets(newPet)
@@ -165,15 +138,14 @@ describe("PetstoreClient", () => {
 
       const newPet = { name: "Buddy", tag: "dog" }
 
-      const mockResponse = {
-        ok: false,
-        status: 422,
-        json: () =>
-          Promise.resolve({ code: 422, message: "Unprocessable Entity" }),
-        headers: new Headers(),
-      } as Response
-
-      fetchMock.mockResolvedValue(mockResponse)
+      fetchMock.mockResolvedValue(
+        new Response(
+          JSON.stringify({ code: 422, message: "Unprocessable Entity" }),
+          {
+            status: 422,
+          }
+        )
+      )
 
       expect(client.createPets(newPet)).rejects.toThrow(
         "API Error: Unprocessable Entity (422)"
@@ -198,14 +170,7 @@ describe("PetstoreClient", () => {
       const fetchMock = setupFetchMock()
       const client = new PetstoreClient("https://api.test.com")
 
-      const mockResponse = {
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(mockPet),
-        headers: new Headers(),
-      } as Response
-
-      fetchMock.mockResolvedValue(mockResponse)
+      fetchMock.mockResolvedValue(new Response(JSON.stringify(mockPet)))
 
       const result = await client.showPetById("1")
 
@@ -226,14 +191,11 @@ describe("PetstoreClient", () => {
       const fetchMock = setupFetchMock()
       const client = new PetstoreClient("https://api.test.com")
 
-      const mockResponse = {
-        ok: false,
-        status: 404,
-        json: () => Promise.resolve({ code: 404, message: "Not Found" }),
-        headers: new Headers(),
-      } as Response
-
-      fetchMock.mockResolvedValue(mockResponse)
+      fetchMock.mockResolvedValue(
+        new Response(JSON.stringify({ code: 404, message: "Not Found" }), {
+          status: 404,
+        })
+      )
 
       expect(client.showPetById("999")).rejects.toThrow(
         "API Error: Not Found (404)"
