@@ -110,6 +110,14 @@ export const headers = {
   getErrorWithoutSchema: () => headerSchemas.getErrorWithoutSchema.parse({}),
 } as const;
 
+// Generated Response Types
+
+export const GetErrorWithoutSchemaResponse200 = z.object({
+  message: z.string(),
+});
+
+export type GetErrorWithoutSchemaResponse200 = z.infer<typeof GetErrorWithoutSchemaResponse200>;
+
 // Operation Types
 export type GetErrorWithoutSchemaOperation = OperationDefinition<
   "get",

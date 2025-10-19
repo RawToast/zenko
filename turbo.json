@@ -3,7 +3,8 @@
   "tasks": {
     "codegen": {
       "outputs": ["src/**/*.gen.ts"],
-      "inputs": ["resources/**/*.yaml", "generate.js"]
+      "inputs": ["**/*.yaml", "generate.js"],
+      "cache": false
     },
     "build": {
       "outputs": ["dist/**"],

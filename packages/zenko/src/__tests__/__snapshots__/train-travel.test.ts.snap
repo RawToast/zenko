@@ -1,0 +1,415 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Train Travel generates complete TypeScript output: train-travel-complete-output 1`] = `
+"import { z } from "zod";
+import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const Station = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  address: z.string(),
+  country_code: z.string(),
+  timezone: z.string().optional(),
+});
+
+export type Station = z.infer<typeof Station>;
+
+export const LinksSelf = z.object({
+  self: z.string().url().optional(),
+});
+
+export type LinksSelf = z.infer<typeof LinksSelf>;
+
+export const LinksDestination = z.object({
+  self: z.string().url().optional(),
+});
+
+export type LinksDestination = z.infer<typeof LinksDestination>;
+
+export const LinksOrigin = z.object({
+  self: z.string().url().optional(),
+});
+
+export type LinksOrigin = z.infer<typeof LinksOrigin>;
+
+export const LinksPagination = z.object({
+  next: z.string().url().optional(),
+  prev: z.string().url().optional(),
+});
+
+export type LinksPagination = z.infer<typeof LinksPagination>;
+
+export const Problem = z.object({
+  type: z.string().optional(),
+  title: z.string().optional(),
+  detail: z.string().optional(),
+  instance: z.string().optional(),
+  status: z.number().int().optional(),
+});
+
+export type Problem = z.infer<typeof Problem>;
+
+export const Trip = z.object({
+  id: z.string().uuid().optional(),
+  origin: z.string().optional(),
+  destination: z.string().optional(),
+  departure_time: z.string().optional(),
+  arrival_time: z.string().optional(),
+  operator: z.string().optional(),
+  price: z.number().optional(),
+  bicycles_allowed: z.boolean().optional(),
+  dogs_allowed: z.boolean().optional(),
+});
+
+export type Trip = z.infer<typeof Trip>;
+
+export const Booking = z.object({
+  id: z.string().uuid().optional(),
+  trip_id: z.string().uuid().optional(),
+  passenger_name: z.string().optional(),
+  has_bicycle: z.boolean().optional(),
+  has_dog: z.boolean().optional(),
+});
+
+export type Booking = z.infer<typeof Booking>;
+
+export const WrapperCollection = z.object({
+  data: z.array(z.object({})).optional(),
+  links: z.object({}).optional(),
+});
+
+export type WrapperCollection = z.infer<typeof WrapperCollection>;
+
+export const BookingPayment = z.object({
+  id: z.string().uuid().optional(),
+  amount: z.number().optional(),
+  currency: z.enum(["bam", "bgn", "chf", "eur", "gbp", "nok", "sek", "try"]).optional(),
+  source: z.object({}).optional(),
+  status: z.enum(["pending", "succeeded", "failed"]).optional(),
+});
+
+export type BookingPayment = z.infer<typeof BookingPayment>;
+
+export const LinksBooking = z.object({
+  booking: z.string().url().optional(),
+});
+
+export type LinksBooking = z.infer<typeof LinksBooking>;
+
+// Path Functions
+export const paths = {
+  getStations: ({ page, limit, coordinates, search, country }: { page?: number, limit?: number, coordinates?: string, search?: string, country?: string } = {}) => {
+    const params = new URLSearchParams()
+    if (page !== undefined) {
+      params.set("page", String(page))
+    }
+    if (limit !== undefined) {
+      params.set("limit", String(limit))
+    }
+    if (coordinates !== undefined) {
+      params.set("coordinates", String(coordinates))
+    }
+    if (search !== undefined) {
+      params.set("search", String(search))
+    }
+    if (country !== undefined) {
+      params.set("country", String(country))
+    }
+    const _searchParams = params.toString()
+    return \`/stations\${_searchParams ? \`?\${_searchParams}\` : ""}\`
+  },
+  getTrips: ({ page, limit, origin, destination, date, bicycles, dogs }: { page?: number, limit?: number, origin: string, destination: string, date: string, bicycles?: boolean, dogs?: boolean }) => {
+    const params = new URLSearchParams()
+    if (page !== undefined) {
+      params.set("page", String(page))
+    }
+    if (limit !== undefined) {
+      params.set("limit", String(limit))
+    }
+    params.set("origin", String(origin))
+    params.set("destination", String(destination))
+    params.set("date", String(date))
+    if (bicycles !== undefined) {
+      params.set("bicycles", bicycles ? "true" : "false")
+    }
+    if (dogs !== undefined) {
+      params.set("dogs", dogs ? "true" : "false")
+    }
+    const _searchParams = params.toString()
+    return \`/trips\${_searchParams ? \`?\${_searchParams}\` : ""}\`
+  },
+  getBookings: ({ page, limit }: { page?: number, limit?: number } = {}) => {
+    const params = new URLSearchParams()
+    if (page !== undefined) {
+      params.set("page", String(page))
+    }
+    if (limit !== undefined) {
+      params.set("limit", String(limit))
+    }
+    const _searchParams = params.toString()
+    return \`/bookings\${_searchParams ? \`?\${_searchParams}\` : ""}\`
+  },
+  createBooking: () => "/bookings",
+  getBooking: ({ bookingId }: { bookingId: string }) => \`/bookings/\${bookingId}\`,
+  deleteBooking: ({ bookingId }: { bookingId: string }) => \`/bookings/\${bookingId}\`,
+  createBookingPayment: ({ bookingId }: { bookingId: string }) => \`/bookings/\${bookingId}/payment\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  getStations: z.object({}),
+  getTrips: z.object({}),
+  getBookings: z.object({}),
+  createBooking: z.object({}),
+  getBooking: z.object({}),
+  deleteBooking: z.object({}),
+  createBookingPayment: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  getStations: () => headerSchemas.getStations.parse({}),
+  getTrips: () => headerSchemas.getTrips.parse({}),
+  getBookings: () => headerSchemas.getBookings.parse({}),
+  createBooking: () => headerSchemas.createBooking.parse({}),
+  getBooking: () => headerSchemas.getBooking.parse({}),
+  deleteBooking: () => headerSchemas.deleteBooking.parse({}),
+  createBookingPayment: () => headerSchemas.createBookingPayment.parse({}),
+} as const;
+
+// Generated Response Types
+
+export const GetStationsResponse200 = WrapperCollection.and(z.object({
+  data: z.array(Station).optional(),
+})).and(z.object({
+  links: LinksSelf.and(LinksPagination).optional(),
+}));
+
+export type GetStationsResponse200 = z.infer<typeof GetStationsResponse200>;
+
+export const GetTripsResponse200 = WrapperCollection.and(z.object({
+  data: z.array(Trip.and(LinksOrigin).and(LinksDestination)).optional(),
+})).and(z.object({
+  links: LinksSelf.and(LinksPagination).optional(),
+}));
+
+export type GetTripsResponse200 = z.infer<typeof GetTripsResponse200>;
+
+export const GetBookingsResponse200 = WrapperCollection.and(z.object({
+  data: z.array(Booking).optional(),
+})).and(z.object({
+  links: LinksSelf.and(LinksPagination).optional(),
+}));
+
+export type GetBookingsResponse200 = z.infer<typeof GetBookingsResponse200>;
+
+export const CreateBookingResponse201 = Booking.and(z.object({
+  links: LinksSelf.optional(),
+}));
+
+export type CreateBookingResponse201 = z.infer<typeof CreateBookingResponse201>;
+
+export const GetBookingResponse200 = Booking.and(z.object({
+  links: LinksSelf.optional(),
+}));
+
+export type GetBookingResponse200 = z.infer<typeof GetBookingResponse200>;
+
+export const CreateBookingPaymentResponse200 = BookingPayment.and(z.object({
+  links: LinksBooking.optional(),
+}));
+
+export type CreateBookingPaymentResponse200 = z.infer<typeof CreateBookingPaymentResponse200>;
+
+// Operation Types
+export type GetStationsOperation = OperationDefinition<
+  "get",
+  typeof paths.getStations,
+  undefined,
+  typeof GetStationsResponse200,
+  undefined,
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+>;
+
+export type GetTripsOperation = OperationDefinition<
+  "get",
+  typeof paths.getTrips,
+  undefined,
+  typeof GetTripsResponse200,
+  undefined,
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+>;
+
+export type GetBookingsOperation = OperationDefinition<
+  "get",
+  typeof paths.getBookings,
+  undefined,
+  typeof GetBookingsResponse200,
+  undefined,
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+>;
+
+export type CreateBookingOperation = OperationDefinition<
+  "post",
+  typeof paths.createBooking,
+  typeof Booking,
+  typeof CreateBookingResponse201,
+  undefined,
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; notFound: undefined; conflict: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+>;
+
+export type GetBookingOperation = OperationDefinition<
+  "get",
+  typeof paths.getBooking,
+  undefined,
+  typeof GetBookingResponse200,
+  undefined,
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; notFound: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+>;
+
+export type DeleteBookingOperation = OperationDefinition<
+  "delete",
+  typeof paths.deleteBooking,
+  undefined,
+  undefined,
+  undefined,
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; notFound: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+>;
+
+export type CreateBookingPaymentOperation = OperationDefinition<
+  "post",
+  typeof paths.createBookingPayment,
+  typeof BookingPayment,
+  typeof CreateBookingPaymentResponse200,
+  undefined,
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+>;
+
+// Operation Objects
+export const getStations: GetStationsOperation = {
+  method: "get",
+  path: paths.getStations,
+  response: GetStationsResponse200,
+  errors: {
+    clientErrors: {
+      badRequest: undefined,
+      unauthorized: undefined,
+      forbidden: undefined,
+      tooManyRequests: undefined,
+    },
+    serverErrors: {
+      internalServerError: undefined,
+    },
+  },
+} as const;
+
+export const getTrips: GetTripsOperation = {
+  method: "get",
+  path: paths.getTrips,
+  response: GetTripsResponse200,
+  errors: {
+    clientErrors: {
+      badRequest: undefined,
+      unauthorized: undefined,
+      forbidden: undefined,
+      tooManyRequests: undefined,
+    },
+    serverErrors: {
+      internalServerError: undefined,
+    },
+  },
+} as const;
+
+export const getBookings: GetBookingsOperation = {
+  method: "get",
+  path: paths.getBookings,
+  response: GetBookingsResponse200,
+  errors: {
+    clientErrors: {
+      badRequest: undefined,
+      unauthorized: undefined,
+      forbidden: undefined,
+      tooManyRequests: undefined,
+    },
+    serverErrors: {
+      internalServerError: undefined,
+    },
+  },
+} as const;
+
+export const createBooking: CreateBookingOperation = {
+  method: "post",
+  path: paths.createBooking,
+  request: Booking,
+  response: CreateBookingResponse201,
+  errors: {
+    clientErrors: {
+      badRequest: undefined,
+      unauthorized: undefined,
+      notFound: undefined,
+      conflict: undefined,
+      tooManyRequests: undefined,
+    },
+    serverErrors: {
+      internalServerError: undefined,
+    },
+  },
+} as const;
+
+export const getBooking: GetBookingOperation = {
+  method: "get",
+  path: paths.getBooking,
+  response: GetBookingResponse200,
+  errors: {
+    clientErrors: {
+      badRequest: undefined,
+      unauthorized: undefined,
+      forbidden: undefined,
+      notFound: undefined,
+      tooManyRequests: undefined,
+    },
+    serverErrors: {
+      internalServerError: undefined,
+    },
+  },
+} as const;
+
+export const deleteBooking: DeleteBookingOperation = {
+  method: "delete",
+  path: paths.deleteBooking,
+  response: undefined,
+  errors: {
+    clientErrors: {
+      badRequest: undefined,
+      unauthorized: undefined,
+      forbidden: undefined,
+      notFound: undefined,
+      tooManyRequests: undefined,
+    },
+    serverErrors: {
+      internalServerError: undefined,
+    },
+  },
+} as const;
+
+export const createBookingPayment: CreateBookingPaymentOperation = {
+  method: "post",
+  path: paths.createBookingPayment,
+  request: BookingPayment,
+  response: CreateBookingPaymentResponse200,
+  errors: {
+    clientErrors: {
+      badRequest: undefined,
+      unauthorized: undefined,
+      forbidden: undefined,
+      tooManyRequests: undefined,
+    },
+    serverErrors: {
+      internalServerError: undefined,
+    },
+  },
+} as const;
+"
+`;

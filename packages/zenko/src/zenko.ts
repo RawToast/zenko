@@ -1,5 +1,6 @@
 import { topologicalSort, extractRefName } from "./utils/topological-sort"
 import { formatPropertyName, isValidJSIdentifier } from "./utils/property-name"
+import { toCamelCase, capitalize } from "./utils/string-utils"
 import {
   getStatusCategory,
   isErrorStatus,
@@ -101,28 +102,45 @@ export function generateWithMetadata(
   appendHelperTypesImport(output, typesConfig)
   output.push("")
 
-  // Generate Zod schemas from components/schemas
+  // Create mapping from original names to sanitized names
+  const nameMap = new Map<string, string>()
   if (spec.components?.schemas) {
-    output.push("// Generated Zod Schemas")
-    output.push("")
+    for (const name of Object.keys(spec.components.schemas)) {
+      nameMap.set(name, toCamelCase(name))
+    }
 
-    // Sort schemas by dependencies (topological sort)
-    const sortedSchemas = topologicalSort(spec.components.schemas)
+    // Generate Zod schemas from components/schemas
+    if (spec.components?.schemas) {
+      output.push("// Generated Zod Schemas")
+      output.push("")
 
-    for (const name of sortedSchemas) {
-      const schema = spec.components.schemas[name]
-      output.push(
-        generateZodSchema(name, schema, generatedTypes, schemaOptions)
-      )
-      output.push("")
-      // Export inferred type
-      output.push(`export type ${name} = z.infer<typeof ${name}>;`)
-      output.push("")
+      // Sort schemas by dependencies (topological sort)
+      const sortedSchemas = topologicalSort(spec.components.schemas)
+
+      for (const name of sortedSchemas) {
+        const schema = spec.components.schemas[name]
+        const sanitizedName = nameMap.get(name)!
+        output.push(
+          generateZodSchema(
+            sanitizedName,
+            schema,
+            generatedTypes,
+            schemaOptions,
+            nameMap
+          )
+        )
+        output.push("")
+        // Export inferred type
+        output.push(
+          `export type ${sanitizedName} = z.infer<typeof ${sanitizedName}>;`
+        )
+        output.push("")
+      }
     }
   }
 
   // Parse all operations
-  const operations = parseOperations(spec)
+  const operations = parseOperations(spec, nameMap)
 
   // Generate path functions
   output.push("// Path Functions")
@@ -298,6 +316,9 @@ export function generateWithMetadata(
   output.push("} as const;")
   output.push("")
 
+  // Generate response types before operation types
+  generateResponseTypes(output, operations, spec, nameMap, schemaOptions)
+
   // Generate operation types first (needed for type annotations)
   generateOperationTypes(output, operations, typesConfig)
 
@@ -352,11 +373,86 @@ export function generateWithMetadata(
 }
 
 /**
- * Generate TypeScript source that contains Zod schemas, path/header helpers, and operation objects/types from an OpenAPI spec.
+ * Generates response type definitions for all operations that need them.
  *
- * @param spec - The OpenAPI specification to generate code from.
- * @param options - Generation options (e.g., strictDates, strictNumeric, types) that adjust emitted schemas and helper types.
- * @returns The complete generated TypeScript source as a single string.
+ * @param output - Output buffer to write the generated types to.
+ * @param operations - Parsed operations from the OpenAPI spec.
+ * @param spec - The OpenAPI specification object.
+ * @param nameMap - Mapping from original schema names to sanitized names.
+ * @param schemaOptions - Options for schema generation.
+ */
+function generateResponseTypes(
+  output: string[],
+  operations: Operation[],
+  spec: OpenAPISpec,
+  nameMap: Map<string, string>,
+  schemaOptions: SchemaOptions
+) {
+  const responseTypesToGenerate = new Map<string, any>()
+
+  // Collect all response types that need to be generated
+  for (const op of operations) {
+    // Find the operation in the spec to get its responses
+    for (const [, pathItem] of Object.entries(spec.paths)) {
+      for (const [, operation] of Object.entries(pathItem)) {
+        if ((operation as any).operationId === op.operationId) {
+          const responses = (operation as any).responses || {}
+
+          for (const [statusCode, response] of Object.entries(responses)) {
+            if (/^2\d\d$/.test(statusCode) && (response as any).content) {
+              const content = (response as any).content as any
+              const jsonContent = content["application/json"]
+
+              if (jsonContent && jsonContent.schema) {
+                const schema = jsonContent.schema
+                const typeName = `${capitalize(toCamelCase(op.operationId))}Response${statusCode}`
+
+                // Generate if it's not a simple $ref (those are already handled)
+                // This includes allOf, oneOf, anyOf, and complex inline schemas
+                if (
+                  !schema.$ref ||
+                  schema.allOf ||
+                  schema.oneOf ||
+                  schema.anyOf
+                ) {
+                  responseTypesToGenerate.set(typeName, schema)
+                }
+              }
+            }
+          }
+          break
+        }
+      }
+    }
+  }
+
+  // Generate the response type definitions
+  if (responseTypesToGenerate.size > 0) {
+    output.push("// Generated Response Types")
+    output.push("")
+
+    for (const [typeName, schema] of responseTypesToGenerate) {
+      const generatedSchema = generateZodSchema(
+        typeName,
+        schema,
+        new Set(),
+        schemaOptions,
+        nameMap
+      )
+      output.push(generatedSchema)
+      output.push("")
+      output.push(`export type ${typeName} = z.infer<typeof ${typeName}>;`)
+      output.push("")
+    }
+  }
+}
+
+/**
+ * Generates TypeScript client code from an OpenAPI specification.
+ *
+ * @param spec - The OpenAPI specification object.
+ * @param options - Configuration options controlling code generation behavior.
+ * @returns Generated TypeScript code as a string.
  */
 export function generate(
   spec: OpenAPISpec,
@@ -486,7 +582,10 @@ function inferResponseType(
  * @param spec - The OpenAPI specification to parse.
  * @returns An array of Operation objects describing each discovered operation (operationId, path, lowercase `method`, path and query parameters, request/response type names, request headers, and categorized errors).
  */
-function parseOperations(spec: OpenAPISpec): Operation[] {
+function parseOperations(
+  spec: OpenAPISpec,
+  nameMap?: Map<string, string>
+): Operation[] {
   const operations: Operation[] = []
 
   for (const [path, pathItem] of Object.entries(spec.paths)) {
@@ -499,7 +598,8 @@ function parseOperations(spec: OpenAPISpec): Operation[] {
       const requestType = getRequestType(operation)
       const { successResponse, errors } = getResponseTypes(
         operation,
-        (operation as any).operationId
+        (operation as any).operationId,
+        nameMap
       )
       const resolvedParameters = collectParameters(pathItem, operation, spec)
       const requestHeaders = getRequestHeaders(resolvedParameters)
@@ -804,7 +904,8 @@ function getRequestType(operation: any): string | undefined {
  */
 function getResponseTypes(
   operation: any,
-  operationId: string
+  operationId: string,
+  nameMap?: Map<string, string>
 ): {
   successResponse?: string
   errors?: OperationErrorGroup
@@ -860,8 +961,12 @@ function getResponseTypes(
     }
   }
 
-  const successResponse = selectSuccessResponse(successCodes, operationId)
-  const errors = buildErrorGroups(errorEntries, operationId)
+  const successResponse = selectSuccessResponse(
+    successCodes,
+    operationId,
+    nameMap
+  )
+  const errors = buildErrorGroups(errorEntries, operationId, nameMap)
 
   return { successResponse, errors }
 }
@@ -879,7 +984,8 @@ function getResponseTypes(
  */
 function selectSuccessResponse(
   responses: Map<string, any>,
-  operationId: string
+  operationId: string,
+  nameMap?: Map<string, string>
 ): string | undefined {
   if (responses.size === 0) return undefined
 
@@ -893,7 +999,8 @@ function selectSuccessResponse(
       }
       return resolveResponseType(
         schema,
-        `${capitalize(operationId)}Response${code}`
+        `${capitalize(toCamelCase(operationId))}Response${code}`,
+        nameMap
       )
     }
   }
@@ -907,7 +1014,8 @@ function selectSuccessResponse(
 
   return resolveResponseType(
     firstSchema,
-    `${capitalize(operationId)}Response${firstCode ?? "Default"}`
+    `${capitalize(toCamelCase(operationId))}Response${firstCode ?? "Default"}`,
+    nameMap
   )
 }
 
@@ -920,7 +1028,8 @@ function selectSuccessResponse(
  */
 function buildErrorGroups(
   errors: Array<{ code: string; schema: any }> = [],
-  operationId: string
+  operationId: string,
+  nameMap?: Map<string, string>
 ): OperationErrorGroup | undefined {
   if (!errors.length) return undefined
 
@@ -931,7 +1040,8 @@ function buildErrorGroups(
     const identifier = mapStatusToIdentifier(code)
     const typeName = resolveResponseType(
       schema,
-      `${capitalize(operationId)}${capitalize(identifier)}`
+      `${capitalize(toCamelCase(operationId))}${capitalize(identifier)}`,
+      nameMap
     )
 
     switch (category) {
@@ -964,17 +1074,27 @@ function buildErrorGroups(
  * @param fallbackName - Synthetic name to use when the schema lacks a `$ref`.
  * @returns Reference name, literal type, or the provided fallback.
  */
-function resolveResponseType(schema: any, fallbackName: string): string {
+function resolveResponseType(
+  schema: any,
+  fallbackName: string,
+  nameMap?: Map<string, string>
+): string {
   if (typeof schema === "string") {
     return schema
   }
   if (schema.$ref) {
-    return extractRefName(schema.$ref)
+    const refName = extractRefName(schema.$ref)
+    return nameMap?.get(refName) || refName
   }
   // Handle array schemas with $ref items
   if (schema.type === "array" && schema.items?.$ref) {
     const itemRef = extractRefName(schema.items.$ref)
-    return `z.array(${itemRef})`
+    const sanitizedItemRef = nameMap?.get(itemRef) || itemRef
+    return `z.array(${sanitizedItemRef})`
+  }
+  // Handle allOf schemas - create synthetic type
+  if (schema.allOf && Array.isArray(schema.allOf)) {
+    return fallbackName
   }
   return fallbackName
 }
@@ -1087,7 +1207,8 @@ function generateZodSchema(
   name: string,
   schema: any,
   generatedTypes: Set<string>,
-  options: SchemaOptions
+  options: SchemaOptions,
+  nameMap?: Map<string, string>
 ): string {
   if (generatedTypes.has(name)) return ""
   generatedTypes.add(name)
@@ -1097,13 +1218,29 @@ function generateZodSchema(
     return `export const ${name} = z.enum([${enumValues}]);`
   }
 
+  // Handle allOf schemas
+  if (schema.allOf && Array.isArray(schema.allOf)) {
+    const allOfParts = schema.allOf.map((part: any) =>
+      getZodTypeFromSchema(part, options, nameMap)
+    )
+    if (allOfParts.length === 0) return `export const ${name} = z.object({});`
+    if (allOfParts.length === 1)
+      return `export const ${name} = ${allOfParts[0]};`
+    const first = allOfParts[0]
+    const rest = allOfParts
+      .slice(1)
+      .map((part: string) => `.and(${part})`)
+      .join("")
+    return `export const ${name} = ${first}${rest};`
+  }
+
   if (schema.type === "object" || schema.properties) {
-    return `export const ${name} = ${buildZodObject(schema, options)};`
+    return `export const ${name} = ${buildZodObject(schema, options, nameMap)};`
   }
 
   if (schema.type === "array") {
     const itemSchema = schema.items ?? { type: "unknown" }
-    const itemType = getZodTypeFromSchema(itemSchema, options)
+    const itemType = getZodTypeFromSchema(itemSchema, options, nameMap)
     const builder = applyStrictArrayBounds(
       schema,
       `z.array(${itemType})`,
@@ -1113,12 +1250,17 @@ function generateZodSchema(
     return `export const ${name} = ${builder};`
   }
 
-  return `export const ${name} = ${getZodTypeFromSchema(schema, options)};`
+  return `export const ${name} = ${getZodTypeFromSchema(schema, options, nameMap)};`
 }
 
-function getZodTypeFromSchema(schema: any, options: SchemaOptions): string {
+function getZodTypeFromSchema(
+  schema: any,
+  options: SchemaOptions,
+  nameMap?: Map<string, string>
+): string {
   if (schema.$ref) {
-    return extractRefName(schema.$ref)
+    const refName = extractRefName(schema.$ref)
+    return nameMap?.get(refName) || refName
   }
 
   if (schema.enum) {
@@ -1126,8 +1268,30 @@ function getZodTypeFromSchema(schema: any, options: SchemaOptions): string {
     return `z.enum([${enumValues}])`
   }
 
-  if (schema.type === "object" || schema.properties) {
-    return buildZodObject(schema, options)
+  // Handle allOf schemas
+  if (schema.allOf && Array.isArray(schema.allOf)) {
+    const allOfParts = schema.allOf.map((part: any) =>
+      getZodTypeFromSchema(part, options, nameMap)
+    )
+    if (allOfParts.length === 0) return "z.object({})"
+    if (allOfParts.length === 1) return allOfParts[0]
+    const first = allOfParts[0]
+    const rest = allOfParts
+      .slice(1)
+      .map((part: string) => `.and(${part})`)
+      .join("")
+    return `${first}${rest}`
+  }
+
+  // Check for object with properties (including those without explicit type)
+  if (
+    schema.type === "object" ||
+    schema.properties ||
+    schema.allOf ||
+    schema.oneOf ||
+    schema.anyOf
+  ) {
+    return buildZodObject(schema, options, nameMap)
   }
 
   switch (schema.type) {
@@ -1138,7 +1302,8 @@ function getZodTypeFromSchema(schema: any, options: SchemaOptions): string {
     case "array":
       return `z.array(${getZodTypeFromSchema(
         schema.items ?? { type: "unknown" },
-        options
+        options,
+        nameMap
       )})`
     case "null":
       return "z.null()"
@@ -1151,14 +1316,18 @@ function getZodTypeFromSchema(schema: any, options: SchemaOptions): string {
   }
 }
 
-function buildZodObject(schema: any, options: SchemaOptions): string {
+function buildZodObject(
+  schema: any,
+  options: SchemaOptions,
+  nameMap?: Map<string, string>
+): string {
   const properties: string[] = []
 
   for (const [propName, propSchema] of Object.entries(
     schema.properties || {}
   )) {
     const isRequired = schema.required?.includes(propName) ?? false
-    const zodType = getZodTypeFromSchema(propSchema as any, options)
+    const zodType = getZodTypeFromSchema(propSchema as any, options, nameMap)
     const finalType = isRequired ? zodType : `${zodType}.optional()`
     properties.push(`  ${formatPropertyName(propName)}: ${finalType},`)
   }
@@ -1345,12 +1514,4 @@ export function generateHelperFile(): string {
   output.push("")
 
   return output.join("\n")
-}
-
-function toCamelCase(str: string): string {
-  return str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
-}
-
-function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1)
 }
