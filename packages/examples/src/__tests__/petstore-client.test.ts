@@ -125,6 +125,7 @@ describe("PetstoreClient", () => {
         "https://api.test.com/pets",
         expect.objectContaining({
           method: "POST",
+          body: JSON.stringify(newPet),
           headers: {
             "Content-Type": "application/json",
           },
@@ -156,6 +157,7 @@ describe("PetstoreClient", () => {
         "https://api.test.com/pets",
         expect.objectContaining({
           method: "POST",
+          body: JSON.stringify(newPet),
           headers: {
             "Content-Type": "application/json",
           },
