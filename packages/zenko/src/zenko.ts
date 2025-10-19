@@ -405,7 +405,7 @@ function generateResponseTypes(
 
               if (jsonContent && jsonContent.schema) {
                 const schema = jsonContent.schema
-                const typeName = `${capitalize(toCamelCase(op.operationId))}Response${statusCode}`
+                const typeName = `${capitalize(toCamelCase(op.operationId))}Response`
 
                 // Generate if it's not a simple $ref (those are already handled)
                 // This includes allOf, oneOf, anyOf, and complex inline schemas
@@ -999,13 +999,13 @@ function selectSuccessResponse(
       }
       return resolveResponseType(
         schema,
-        `${capitalize(toCamelCase(operationId))}Response${code}`,
+        `${capitalize(toCamelCase(operationId))}Response`,
         nameMap
       )
     }
   }
 
-  const [firstCode, firstSchema] = responses.entries().next().value ?? []
+  const [, firstSchema] = responses.entries().next().value ?? []
   if (!firstSchema) return undefined
 
   if (typeof firstSchema === "string") {
@@ -1014,7 +1014,7 @@ function selectSuccessResponse(
 
   return resolveResponseType(
     firstSchema,
-    `${capitalize(toCamelCase(operationId))}Response${firstCode ?? "Default"}`,
+    `${capitalize(toCamelCase(operationId))}Response`,
     nameMap
   )
 }

@@ -181,54 +181,54 @@ export const headers = {
 
 // Generated Response Types
 
-export const GetStationsResponse200 = WrapperCollection.and(z.object({
+export const GetStationsResponse = WrapperCollection.and(z.object({
   data: z.array(Station).optional(),
 })).and(z.object({
   links: LinksSelf.and(LinksPagination).optional(),
 }));
 
-export type GetStationsResponse200 = z.infer<typeof GetStationsResponse200>;
+export type GetStationsResponse = z.infer<typeof GetStationsResponse>;
 
-export const GetTripsResponse200 = WrapperCollection.and(z.object({
+export const GetTripsResponse = WrapperCollection.and(z.object({
   data: z.array(Trip.and(LinksOrigin).and(LinksDestination)).optional(),
 })).and(z.object({
   links: LinksSelf.and(LinksPagination).optional(),
 }));
 
-export type GetTripsResponse200 = z.infer<typeof GetTripsResponse200>;
+export type GetTripsResponse = z.infer<typeof GetTripsResponse>;
 
-export const GetBookingsResponse200 = WrapperCollection.and(z.object({
+export const GetBookingsResponse = WrapperCollection.and(z.object({
   data: z.array(Booking).optional(),
 })).and(z.object({
   links: LinksSelf.and(LinksPagination).optional(),
 }));
 
-export type GetBookingsResponse200 = z.infer<typeof GetBookingsResponse200>;
+export type GetBookingsResponse = z.infer<typeof GetBookingsResponse>;
 
-export const CreateBookingResponse201 = Booking.and(z.object({
+export const CreateBookingResponse = Booking.and(z.object({
   links: LinksSelf.optional(),
 }));
 
-export type CreateBookingResponse201 = z.infer<typeof CreateBookingResponse201>;
+export type CreateBookingResponse = z.infer<typeof CreateBookingResponse>;
 
-export const GetBookingResponse200 = Booking.and(z.object({
+export const GetBookingResponse = Booking.and(z.object({
   links: LinksSelf.optional(),
 }));
 
-export type GetBookingResponse200 = z.infer<typeof GetBookingResponse200>;
+export type GetBookingResponse = z.infer<typeof GetBookingResponse>;
 
-export const CreateBookingPaymentResponse200 = BookingPayment.and(z.object({
+export const CreateBookingPaymentResponse = BookingPayment.and(z.object({
   links: LinksBooking.optional(),
 }));
 
-export type CreateBookingPaymentResponse200 = z.infer<typeof CreateBookingPaymentResponse200>;
+export type CreateBookingPaymentResponse = z.infer<typeof CreateBookingPaymentResponse>;
 
 // Operation Types
 export type GetStationsOperation = OperationDefinition<
   "get",
   typeof paths.getStations,
   undefined,
-  typeof GetStationsResponse200,
+  typeof GetStationsResponse,
   undefined,
   OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
 >;
@@ -237,7 +237,7 @@ export type GetTripsOperation = OperationDefinition<
   "get",
   typeof paths.getTrips,
   undefined,
-  typeof GetTripsResponse200,
+  typeof GetTripsResponse,
   undefined,
   OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
 >;
@@ -246,7 +246,7 @@ export type GetBookingsOperation = OperationDefinition<
   "get",
   typeof paths.getBookings,
   undefined,
-  typeof GetBookingsResponse200,
+  typeof GetBookingsResponse,
   undefined,
   OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
 >;
@@ -255,7 +255,7 @@ export type CreateBookingOperation = OperationDefinition<
   "post",
   typeof paths.createBooking,
   typeof Booking,
-  typeof CreateBookingResponse201,
+  typeof CreateBookingResponse,
   undefined,
   OperationErrors<{ badRequest: undefined; unauthorized: undefined; notFound: undefined; conflict: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
 >;
@@ -264,7 +264,7 @@ export type GetBookingOperation = OperationDefinition<
   "get",
   typeof paths.getBooking,
   undefined,
-  typeof GetBookingResponse200,
+  typeof GetBookingResponse,
   undefined,
   OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; notFound: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
 >;
@@ -282,7 +282,7 @@ export type CreateBookingPaymentOperation = OperationDefinition<
   "post",
   typeof paths.createBookingPayment,
   typeof BookingPayment,
-  typeof CreateBookingPaymentResponse200,
+  typeof CreateBookingPaymentResponse,
   undefined,
   OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
 >;
@@ -291,7 +291,7 @@ export type CreateBookingPaymentOperation = OperationDefinition<
 export const getStations: GetStationsOperation = {
   method: "get",
   path: paths.getStations,
-  response: GetStationsResponse200,
+  response: GetStationsResponse,
   errors: {
     clientErrors: {
       badRequest: undefined,
@@ -308,7 +308,7 @@ export const getStations: GetStationsOperation = {
 export const getTrips: GetTripsOperation = {
   method: "get",
   path: paths.getTrips,
-  response: GetTripsResponse200,
+  response: GetTripsResponse,
   errors: {
     clientErrors: {
       badRequest: undefined,
@@ -325,7 +325,7 @@ export const getTrips: GetTripsOperation = {
 export const getBookings: GetBookingsOperation = {
   method: "get",
   path: paths.getBookings,
-  response: GetBookingsResponse200,
+  response: GetBookingsResponse,
   errors: {
     clientErrors: {
       badRequest: undefined,
@@ -343,7 +343,7 @@ export const createBooking: CreateBookingOperation = {
   method: "post",
   path: paths.createBooking,
   request: Booking,
-  response: CreateBookingResponse201,
+  response: CreateBookingResponse,
   errors: {
     clientErrors: {
       badRequest: undefined,
@@ -361,7 +361,7 @@ export const createBooking: CreateBookingOperation = {
 export const getBooking: GetBookingOperation = {
   method: "get",
   path: paths.getBooking,
-  response: GetBookingResponse200,
+  response: GetBookingResponse,
   errors: {
     clientErrors: {
       badRequest: undefined,
@@ -398,7 +398,7 @@ export const createBookingPayment: CreateBookingPaymentOperation = {
   method: "post",
   path: paths.createBookingPayment,
   request: BookingPayment,
-  response: CreateBookingPaymentResponse200,
+  response: CreateBookingPaymentResponse,
   errors: {
     clientErrors: {
       badRequest: undefined,

@@ -31,9 +31,9 @@ export const headers = {
 
 // Generated Response Types
 
-export const BySourceResponse200 = z.array(AdminLog);
+export const BySourceResponse = z.array(AdminLog);
 
-export type BySourceResponse200 = z.infer<typeof BySourceResponse200>;
+export type BySourceResponse = z.infer<typeof BySourceResponse>;
 
 // Operation Types
 export type BySourceOperation = OperationDefinition<

@@ -112,18 +112,18 @@ export const headers = {
 
 // Generated Response Types
 
-export const GetErrorWithoutSchemaResponse200 = z.object({
+export const GetErrorWithoutSchemaResponse = z.object({
   message: z.string(),
 });
 
-export type GetErrorWithoutSchemaResponse200 = z.infer<typeof GetErrorWithoutSchemaResponse200>;
+export type GetErrorWithoutSchemaResponse = z.infer<typeof GetErrorWithoutSchemaResponse>;
 
 // Operation Types
 export type GetErrorWithoutSchemaOperation = OperationDefinition<
   "get",
   typeof paths.getErrorWithoutSchema,
   undefined,
-  typeof GetErrorWithoutSchemaResponse200,
+  typeof GetErrorWithoutSchemaResponse,
   undefined,
   OperationErrors<unknown, { internalServerError: string }, unknown, unknown>
 >;
@@ -132,7 +132,7 @@ export type GetErrorWithoutSchemaOperation = OperationDefinition<
 export const getErrorWithoutSchema: GetErrorWithoutSchemaOperation = {
   method: "get",
   path: paths.getErrorWithoutSchema,
-  response: GetErrorWithoutSchemaResponse200,
+  response: GetErrorWithoutSchemaResponse,
   errors: {
     serverErrors: {
       internalServerError: string,
