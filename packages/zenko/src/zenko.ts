@@ -133,32 +133,50 @@ export function generateWithMetadata(
       continue
     }
 
-    const allParamNames = [
-      ...pathParamNames,
-      ...op.queryParams.map((p) => p.name),
-    ]
-    const signaturePieces: string[] = []
+    const alias = (n: string) => {
+      if (isValidJSIdentifier(n)) return n
+      let aliased = toCamelCase(n)
+      // If still not valid (e.g., starts with number), prefix with underscore
+      if (!isValidJSIdentifier(aliased)) {
+        aliased = `_${aliased}`
+      }
+      return aliased
+    }
+    const destructPieces: string[] = []
+    const typePieces: string[] = []
     for (const param of op.pathParams) {
-      signaturePieces.push(`${param.name}: string`)
+      destructPieces.push(
+        isValidJSIdentifier(param.name)
+          ? param.name
+          : `${formatPropertyName(param.name)}: ${alias(param.name)}`
+      )
+      typePieces.push(`${formatPropertyName(param.name)}: string`)
     }
     for (const param of op.queryParams) {
-      signaturePieces.push(
-        `${param.name}${param.required ? "" : "?"}: ${mapQueryType(param)}`
+      destructPieces.push(
+        isValidJSIdentifier(param.name)
+          ? param.name
+          : `${formatPropertyName(param.name)}: ${alias(param.name)}`
+      )
+      typePieces.push(
+        `${formatPropertyName(param.name)}${param.required ? "" : "?"}: ${mapQueryType(param)}`
       )
     }
-    const signatureParams = signaturePieces.join(", ")
     const needsDefaultObject =
       !hasPathParams &&
       hasQueryParams &&
       op.queryParams.every((param) => !param.required)
-    const signatureArgs = allParamNames.length
-      ? `{ ${allParamNames.join(", ")} }`
+    const signatureArgs = destructPieces.length
+      ? `{ ${destructPieces.join(", ")} }`
       : "{}"
-    const signature = `${signatureArgs}: { ${signatureParams} }${
+    const signature = `${signatureArgs}: { ${typePieces.join(", ")} }${
       needsDefaultObject ? " = {}" : ""
     }`
 
-    const pathWithParams = op.path.replace(/{([^}]+)}/g, "${$1}")
+    const pathWithParams = op.path.replace(
+      /{([^}]+)}/g,
+      (_m, n) => `\${${alias(n)}}`
+    )
 
     if (!hasQueryParams) {
       output.push(
@@ -173,10 +191,9 @@ export function generateWithMetadata(
 
     output.push("    const params = new URLSearchParams()")
     for (const param of op.queryParams) {
-      const propertyKey = formatPropertyName(param.name)
       const accessor = isValidJSIdentifier(param.name)
         ? param.name
-        : propertyKey
+        : toCamelCase(param.name)
       const schema = param.schema ?? {}
 
       if (schema?.type === "array") {

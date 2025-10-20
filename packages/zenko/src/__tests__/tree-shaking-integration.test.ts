@@ -10,7 +10,7 @@ describe("tree-shaking integration", () => {
         "/test": {
           get: {
             operationId: "getTest",
-            response: {
+            responses: {
               "200": { description: "Success" },
             },
           },

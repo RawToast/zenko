@@ -10,10 +10,10 @@ describe("tree-shaking with train-travel spec", () => {
 
     // Without tree-shaking
     const resultWithoutTreeShake = generate(specYaml, {
-      types: { treeShake: true },
+      types: { treeShake: false },
     })
     expect(resultWithoutTreeShake).toContain(
-      'import type { OperationDefinition, OperationErrors } from "zenko";'
+      'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";'
     )
 
     // With tree-shaking enabled
