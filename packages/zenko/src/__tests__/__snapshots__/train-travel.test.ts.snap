@@ -155,6 +155,7 @@ export const paths = {
   getBooking: ({ bookingId }: { bookingId: string }) => \`/bookings/\${bookingId}\`,
   deleteBooking: ({ bookingId }: { bookingId: string }) => \`/bookings/\${bookingId}\`,
   createBookingPayment: ({ bookingId }: { bookingId: string }) => \`/bookings/\${bookingId}/payment\`,
+  newBooking: () => "newBooking",
 } as const;
 
 // Header Schemas
@@ -166,6 +167,7 @@ export const headerSchemas = {
   getBooking: z.object({}),
   deleteBooking: z.object({}),
   createBookingPayment: z.object({}),
+  newBooking: z.object({}),
 } as const;
 
 // Header Functions
@@ -177,7 +179,16 @@ export const headers = {
   getBooking: () => headerSchemas.getBooking.parse({}),
   deleteBooking: () => headerSchemas.deleteBooking.parse({}),
   createBookingPayment: () => headerSchemas.createBookingPayment.parse({}),
+  newBooking: () => headerSchemas.newBooking.parse({}),
 } as const;
+
+// Generated Request Types
+
+export const NewBookingRequest = Booking.and(z.object({
+  links: LinksSelf.and(LinksPagination).optional(),
+}));
+
+export type NewBookingRequest = z.infer<typeof NewBookingRequest>;
 
 // Generated Response Types
 
@@ -285,6 +296,15 @@ export type CreateBookingPaymentOperation = OperationDefinition<
   typeof CreateBookingPaymentResponse,
   undefined,
   OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+>;
+
+export type NewBookingOperation = OperationDefinition<
+  "post",
+  typeof paths.newBooking,
+  typeof NewBookingRequest,
+  undefined,
+  undefined,
+  OperationErrors
 >;
 
 // Operation Objects
@@ -410,6 +430,12 @@ export const createBookingPayment: CreateBookingPaymentOperation = {
       internalServerError: undefined,
     },
   },
+} as const;
+
+export const newBooking: NewBookingOperation = {
+  method: "post",
+  path: paths.newBooking,
+  request: NewBookingRequest,
 } as const;
 "
 `;
