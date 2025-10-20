@@ -2,7 +2,7 @@
 
 exports[`CLI generates TypeScript from petstore.yaml: cli-petstore-output 1`] = `
 "import { z } from "zod";
-import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
+import type { OperationDefinition, OperationErrors } from "zenko";
 
 // Generated Zod Schemas
 

@@ -2,7 +2,7 @@
 
 exports[`Mixed Headers generates complete TypeScript output: mixed-headers-complete-output 1`] = `
 "import { z } from "zod";
-import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
+import type { HeaderFn, OperationDefinition, OperationErrors } from "zenko";
 
 // Path Functions
 export const paths = {

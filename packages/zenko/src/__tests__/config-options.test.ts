@@ -210,7 +210,9 @@ describe("Configuration Options", () => {
     })
 
     test("emit: true (default) - generates operation types", () => {
-      const result = generate(stringFormatsSpec)
+      const result = generate(stringFormatsSpec, {
+        types: { treeShake: false },
+      })
 
       // Should contain operation types
       expect(result).toContain("// Operation Types")
@@ -232,7 +234,7 @@ describe("Configuration Options", () => {
 
     test("helpers: package (default) - imports from zenko package", () => {
       const result = generate(stringFormatsSpec, {
-        types: { helpers: "package" },
+        types: { helpers: "package", treeShake: false },
       })
 
       expect(result).toContain(
@@ -274,6 +276,7 @@ describe("Configuration Options", () => {
         types: {
           helpers: "file",
           helpersOutput: "./custom-api-types",
+          treeShake: false,
         },
       })
 
@@ -289,6 +292,7 @@ describe("Configuration Options", () => {
         types: {
           helpers: "file",
           helpersOutput: "@/shared/types",
+          treeShake: false,
         },
       })
 
@@ -296,6 +300,7 @@ describe("Configuration Options", () => {
         types: {
           helpers: "file",
           helpersOutput: "../../types/api-helpers",
+          treeShake: false,
         },
       })
 

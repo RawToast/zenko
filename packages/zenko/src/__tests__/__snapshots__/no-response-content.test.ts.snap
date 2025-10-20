@@ -2,7 +2,7 @@
 
 exports[`No Response Content generates complete TypeScript output: no-response-content-complete-output 1`] = `
 "import { z } from "zod";
-import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
+import type { OperationDefinition, OperationErrors } from "zenko";
 
 // Path Functions
 export const paths = {

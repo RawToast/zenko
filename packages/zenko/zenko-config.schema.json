@@ -45,6 +45,11 @@
           "type": "string",
           "default": "./zenko-types",
           "description": "Path for helper types file when helpers='file'. Can be relative to output file or absolute. Automatically generated."
+        },
+        "treeShake": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to tree-shake unused types. When true, only types that are used in the operations will be generated."
         }
       }
     },
@@ -82,7 +87,8 @@
       "value": {
         "types": {
           "emit": true,
-          "helpers": "package"
+          "helpers": "package",
+          "treeShake": false
         },
         "schemas": [
           {

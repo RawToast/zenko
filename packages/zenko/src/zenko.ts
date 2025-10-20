@@ -6,7 +6,16 @@ import {
   isErrorStatus,
   mapStatusToIdentifier,
 } from "./utils/http-status"
+import { analyzeZenkoUsage, generateZenkoImport } from "./utils/tree-shaking"
 import type { RequestMethod } from "./types"
+import type {
+  PathParam,
+  QueryParam,
+  RequestHeader,
+  Operation,
+  OperationErrorGroup,
+  OperationErrorMap,
+} from "./types/operation"
 
 export type OpenAPISpec = {
   openapi: string
@@ -24,6 +33,7 @@ export type TypesConfig = {
   emit?: boolean
   helpers?: TypesHelperMode
   helpersOutput?: string
+  treeShake?: boolean
 }
 
 export type GenerateOptions = {
@@ -38,44 +48,6 @@ export type GenerateResult = {
     path: string
     content: string
   }
-}
-
-type PathParam = {
-  name: string
-  type: string
-}
-
-type QueryParam = {
-  name: string
-  description?: string
-  schema?: any
-  required?: boolean
-}
-
-type Operation = {
-  operationId: string
-  path: string
-  method: RequestMethod
-  pathParams: PathParam[]
-  queryParams: QueryParam[]
-  requestType?: string
-  responseType?: string
-  requestHeaders?: RequestHeader[]
-  errors?: OperationErrorGroup
-}
-type OperationErrorGroup = {
-  clientErrors?: OperationErrorMap
-  serverErrors?: OperationErrorMap
-  defaultErrors?: OperationErrorMap
-  otherErrors?: OperationErrorMap
-}
-type OperationErrorMap = Record<string, string>
-
-type RequestHeader = {
-  name: string
-  description?: string
-  schema?: any
-  required?: boolean
 }
 
 /**
@@ -99,8 +71,6 @@ export function generateWithMetadata(
   }
 
   output.push('import { z } from "zod";')
-  appendHelperTypesImport(output, typesConfig)
-  output.push("")
 
   // Create mapping from original names to sanitized names
   const nameMap = new Map<string, string>()
@@ -108,39 +78,43 @@ export function generateWithMetadata(
     for (const name of Object.keys(spec.components.schemas)) {
       nameMap.set(name, toCamelCase(name))
     }
-
-    // Generate Zod schemas from components/schemas
-    if (spec.components?.schemas) {
-      output.push("// Generated Zod Schemas")
-      output.push("")
-
-      // Sort schemas by dependencies (topological sort)
-      const sortedSchemas = topologicalSort(spec.components.schemas)
-
-      for (const name of sortedSchemas) {
-        const schema = spec.components.schemas[name]
-        const sanitizedName = nameMap.get(name)!
-        output.push(
-          generateZodSchema(
-            sanitizedName,
-            schema,
-            generatedTypes,
-            schemaOptions,
-            nameMap
-          )
-        )
-        output.push("")
-        // Export inferred type
-        output.push(
-          `export type ${sanitizedName} = z.infer<typeof ${sanitizedName}>;`
-        )
-        output.push("")
-      }
-    }
   }
 
-  // Parse all operations
+  // Parse all operations early for tree-shaking
   const operations = parseOperations(spec, nameMap)
+
+  // Generate helper types import right after Zod import
+  appendHelperTypesImport(output, typesConfig, operations)
+  output.push("")
+
+  // Generate Zod schemas from components/schemas
+  if (spec.components?.schemas) {
+    output.push("// Generated Zod Schemas")
+    output.push("")
+
+    // Sort schemas by dependencies (topological sort)
+    const sortedSchemas = topologicalSort(spec.components.schemas)
+
+    for (const name of sortedSchemas) {
+      const schema = spec.components.schemas[name]
+      const sanitizedName = nameMap.get(name)!
+      output.push(
+        generateZodSchema(
+          sanitizedName,
+          schema,
+          generatedTypes,
+          schemaOptions,
+          nameMap
+        )
+      )
+      output.push("")
+      // Export inferred type
+      output.push(
+        `export type ${sanitizedName} = z.infer<typeof ${sanitizedName}>;`
+      )
+      output.push("")
+    }
+  }
 
   // Generate path functions
   output.push("// Path Functions")
@@ -629,6 +603,7 @@ function normalizeTypesConfig(
     emit: config?.emit ?? true,
     helpers: config?.helpers ?? "package",
     helpersOutput: config?.helpersOutput ?? "./zenko-types",
+    treeShake: config?.treeShake ?? true,
   }
 }
 
@@ -636,6 +611,7 @@ type NormalizedTypesConfig = {
   emit: boolean
   helpers: TypesHelperMode
   helpersOutput: string
+  treeShake: boolean
 }
 
 /**
@@ -646,20 +622,41 @@ type NormalizedTypesConfig = {
  */
 function appendHelperTypesImport(
   buffer: string[],
-  config: NormalizedTypesConfig
+  config: NormalizedTypesConfig,
+  operations: Operation[]
 ) {
   if (!config.emit) return
 
   switch (config.helpers) {
     case "package":
-      buffer.push(
-        'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";'
-      )
+      if (config.treeShake) {
+        const usage = analyzeZenkoUsage(operations)
+        const importStatement = generateZenkoImport(usage, "package")
+        if (importStatement) {
+          buffer.push(importStatement)
+        }
+      } else {
+        buffer.push(
+          'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";'
+        )
+      }
       return
     case "file":
-      buffer.push(
-        `import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "${config.helpersOutput}";`
-      )
+      if (config.treeShake) {
+        const usage = analyzeZenkoUsage(operations)
+        const importStatement = generateZenkoImport(
+          usage,
+          "file",
+          config.helpersOutput
+        )
+        if (importStatement) {
+          buffer.push(importStatement)
+        }
+      } else {
+        buffer.push(
+          `import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "${config.helpersOutput}";`
+        )
+      }
       return
     case "inline":
       buffer.push(
@@ -677,22 +674,22 @@ function appendHelperTypesImport(
       buffer.push(
         "type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {"
       )
-      buffer.push("  clientErrors?: TClient;")
-      buffer.push("  serverErrors?: TServer;")
-      buffer.push("  defaultErrors?: TDefault;")
-      buffer.push("  otherErrors?: TOther;")
-      buffer.push("};")
+      buffer.push("  client?: TClient")
+      buffer.push("  server?: TServer")
+      buffer.push("  default?: TDefault")
+      buffer.push("  other?: TOther")
+      buffer.push("}")
       buffer.push(
         "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
       )
-      buffer.push("  method: TMethod;")
-      buffer.push("  path: TPath;")
-      buffer.push("  request?: TRequest;")
-      buffer.push("  response?: TResponse;")
-      buffer.push("  headers?: THeaders;")
-      buffer.push("  errors?: TErrors;")
-      buffer.push("};")
-      return
+      buffer.push("  method: TMethod")
+      buffer.push("  path: TPath")
+      buffer.push("  request?: TRequest")
+      buffer.push("  response?: TResponse")
+      buffer.push("  headers?: THeaders")
+      buffer.push("  errors?: TErrors")
+      buffer.push("}")
+      buffer.push("")
   }
 }
 
