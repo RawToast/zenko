@@ -1,6 +1,6 @@
 import { toCamelCase, capitalize } from "./string-utils"
 import type { Operation } from "../types/operation"
-
+import type { OpenAPISpec as FullOpenAPISpec } from "../zenko"
 /**
  * Minimal OpenAPI types for the properties we access
  */
@@ -23,13 +23,9 @@ type OpenAPISchema = {
   [key: string]: any // Allow arbitrary properties
 }
 
-type OpenAPIPathItem = {
-  [method: string]: OpenAPIOperation | unknown
-}
-
 type OpenAPISpec = {
-  paths?: Record<string, OpenAPIPathItem | Record<string, unknown>>
-  webhooks?: Record<string, OpenAPIPathItem | Record<string, unknown>>
+  paths?: FullOpenAPISpec["paths"]
+  webhooks?: FullOpenAPISpec["webhooks"]
 }
 
 /**
@@ -106,48 +102,40 @@ export function collectInlineResponseTypes(
 ): Map<string, any> {
   const responseTypesToGenerate = new Map<string, any>()
 
-  // Build a lookup map of operationId -> operation for O(1) access
-  const operationLookup = new Map<string, OpenAPIOperation>()
-
-  // Process paths
-  for (const [, pathItem] of Object.entries(spec.paths || {})) {
-    for (const [, operation] of Object.entries(pathItem)) {
-      const op = operation as OpenAPIOperation
-      if (op.operationId) {
-        operationLookup.set(op.operationId, op)
-      }
-    }
-  }
-
-  // Process webhooks
-  for (const [, pathItem] of Object.entries(spec.webhooks || {})) {
-    for (const [, operation] of Object.entries(pathItem)) {
-      const op = operation as OpenAPIOperation
-      if (op.operationId) {
-        operationLookup.set(op.operationId, op)
-      }
-    }
-  }
-
+  // Collect all response types that need to be generated
   for (const op of operations) {
-    const operation = operationLookup.get(op.operationId)
-    if (!operation) continue
+    // Find the operation in the spec to get its responses
+    // Check both paths and webhooks
+    const allSpecItems = { ...spec.paths, ...spec.webhooks }
 
-    const responses = operation.responses || {}
-    for (const [statusCode, response] of Object.entries(responses)) {
-      if (/^2\d\d$/.test(statusCode) && (response as any).content) {
-        const content = (response as any).content
-        const jsonContent = content["application/json"]
+    for (const [, pathItem] of Object.entries(allSpecItems)) {
+      for (const [, operation] of Object.entries(pathItem)) {
+        if ((operation as OpenAPIOperation).operationId === op.operationId) {
+          const responses = (operation as OpenAPIOperation).responses || {}
 
-        if (jsonContent && jsonContent.schema) {
-          const schema = jsonContent.schema
-          const typeName = `${capitalize(toCamelCase(op.operationId))}Response`
+          for (const [statusCode, response] of Object.entries(responses)) {
+            if (/^2\d\d$/.test(statusCode) && (response as any).content) {
+              const content = (response as any).content
+              const jsonContent = content["application/json"]
 
-          // Generate if it's not a simple $ref (those are already handled)
-          // This includes allOf, oneOf, anyOf, and complex inline schemas
-          if (!schema.$ref || schema.allOf || schema.oneOf || schema.anyOf) {
-            responseTypesToGenerate.set(typeName, schema)
+              if (jsonContent && jsonContent.schema) {
+                const schema = jsonContent.schema
+                const typeName = `${capitalize(toCamelCase(op.operationId))}Response`
+
+                // Generate if it's not a simple $ref (those are already handled)
+                // This includes allOf, oneOf, anyOf, and complex inline schemas
+                if (
+                  !schema.$ref ||
+                  schema.allOf ||
+                  schema.oneOf ||
+                  schema.anyOf
+                ) {
+                  responseTypesToGenerate.set(typeName, schema)
+                }
+              }
+            }
           }
+          break
         }
       }
     }
