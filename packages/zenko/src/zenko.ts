@@ -193,7 +193,7 @@ export function generateWithMetadata(
     for (const param of op.queryParams) {
       const accessor = isValidJSIdentifier(param.name)
         ? param.name
-        : toCamelCase(param.name)
+        : alias(toCamelCase(param.name))
       const schema = param.schema ?? {}
 
       if (schema?.type === "array") {

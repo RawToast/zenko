@@ -62,6 +62,12 @@ describe("Non-identifier parameter handling", () => {
                 required: true,
                 schema: { type: "string" },
               },
+              {
+                name: "123filter",
+                in: "query",
+                required: false,
+                schema: { type: "string" },
+              },
             ],
             responses: { "200": { description: "Success" } },
           },
@@ -74,11 +80,19 @@ describe("Non-identifier parameter handling", () => {
     // Should alias parameters starting with numbers
     expect(result).toContain('"123item": _123item')
     expect(result).toContain('"123item": string')
-    expect(result).toContain("=> `/items/${_123item}")
+    expect(result).toContain("return `/items/${_123item}")
+
+    // Should alias query parameters starting with numbers
+    expect(result).toContain('"123filter": _123filter')
+    expect(result).toContain('"123filter"?: string')
+    expect(result).toContain("if (_123filter !== undefined)")
+    expect(result).toContain('params.set("123filter", String(_123filter))')
 
     // Should not contain invalid syntax
     expect(result).not.toContain("{ 123item }")
     expect(result).not.toContain("123item: string")
-    expect(result).not.toContain("=> `/items/${123item}")
+    expect(result).not.toContain("return `/items/${123item}")
+    expect(result).not.toContain('if ("123filter" !== undefined)')
+    expect(result).not.toContain('String("123filter")')
   })
 })
