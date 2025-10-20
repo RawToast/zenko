@@ -1,12 +1,10 @@
 import { describe, test, expect } from "bun:test"
 import { generate, type OpenAPISpec } from "../zenko"
-import * as fs from "fs"
 import jsYaml from "js-yaml"
+import { stringFormats } from "@zenko/resources"
 
 describe("Configuration Options", () => {
-  const stringFormatsSpec = jsYaml.load(
-    fs.readFileSync("src/resources/string-formats.yaml", "utf8")
-  ) as OpenAPISpec
+  const stringFormatsSpec = jsYaml.load(stringFormats) as OpenAPISpec
 
   describe("strictDates option", () => {
     test("default behavior (strictDates: false) - date formats use z.string()", () => {

@@ -3,6 +3,7 @@ import { execSync } from "child_process"
 import * as fs from "fs"
 import * as path from "path"
 import * as jsYaml from "js-yaml"
+import petstore from "@zenko/resources/petstore.yaml"
 
 describe("CLI", () => {
   const tempDir = path.join(process.cwd(), "temp-test")
@@ -23,7 +24,7 @@ describe("CLI", () => {
   })
 
   test("generates TypeScript from petstore.yaml", () => {
-    const petstorePath = path.join(process.cwd(), "src/resources/petstore.yaml")
+    const petstorePath = path.join(process.cwd(), petstore)
 
     // Run the CLI
     const cliPath = path.join(process.cwd(), "src/cli.ts")

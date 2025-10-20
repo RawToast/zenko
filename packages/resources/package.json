@@ -1,0 +1,14 @@
+{
+  "name": "@zenko/resources",
+  "version": "0.0.1",
+  "description": "OpenAPI specs and other resources for Zenko",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "1.3.0"
+  },
+  "exports": {
+    "./specs/*": "./specs/*.yaml",
+    ".": "./index.ts"
+  }
+}
