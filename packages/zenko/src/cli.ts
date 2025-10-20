@@ -236,7 +236,10 @@ async function generateSingle(options: {
   fs.writeFileSync(resolvedOutput, result.output)
 
   console.log(`✅ Generated TypeScript types in ${resolvedOutput}`)
-  console.log(`📄 Processed ${Object.keys(spec.paths).length} paths`)
+  console.log(`📄 Processed ${Object.keys(spec.paths || {}).length} paths`)
+  if (spec.webhooks) {
+    console.log(`🪝 Processed ${Object.keys(spec.webhooks).length} webhooks`)
+  }
 
   // Write helper file if needed
   if (result.helperFile) {

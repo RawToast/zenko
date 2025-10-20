@@ -7,6 +7,10 @@ import {
   mapStatusToIdentifier,
 } from "./utils/http-status"
 import { analyzeZenkoUsage, generateZenkoImport } from "./utils/tree-shaking"
+import {
+  collectInlineRequestTypes,
+  collectInlineResponseTypes,
+} from "./utils/collect-inline-types"
 import type { RequestMethod } from "./types"
 import type {
   PathParam,
@@ -21,6 +25,7 @@ export type OpenAPISpec = {
   openapi: string
   info: unknown
   paths: Record<string, Record<string, unknown>>
+  webhooks?: Record<string, Record<string, unknown>>
   components?: {
     schemas?: Record<string, unknown>
     parameters?: Record<string, unknown>
@@ -307,7 +312,8 @@ export function generateWithMetadata(
   output.push("} as const;")
   output.push("")
 
-  // Generate response types before operation types
+  // Generate request and response types before operation types
+  generateRequestTypes(output, operations, spec, nameMap, schemaOptions)
   generateResponseTypes(output, operations, spec, nameMap, schemaOptions)
 
   // Generate operation types first (needed for type annotations)
@@ -364,10 +370,49 @@ export function generateWithMetadata(
 }
 
 /**
- * Generates response type definitions for all operations that need them.
+ * Generates TypeScript type definitions for inline request schemas.
  *
- * @param output - Output buffer to write the generated types to.
- * @param operations - Parsed operations from the OpenAPI spec.
+ * @param output - Array to which generated TypeScript code will be appended.
+ * @param operations - Processed operations with metadata.
+ * @param spec - The OpenAPI specification object.
+ * @param nameMap - Mapping from original schema names to sanitized names.
+ * @param schemaOptions - Options for schema generation.
+ */
+function generateRequestTypes(
+  output: string[],
+  operations: Operation[],
+  spec: OpenAPISpec,
+  nameMap: Map<string, string>,
+  schemaOptions: SchemaOptions
+) {
+  const requestTypesToGenerate = collectInlineRequestTypes(operations, spec)
+
+  // Generate the request type definitions
+  if (requestTypesToGenerate.size > 0) {
+    output.push("// Generated Request Types")
+    output.push("")
+
+    for (const [typeName, schema] of requestTypesToGenerate) {
+      const generatedSchema = generateZodSchema(
+        typeName,
+        schema,
+        new Set(),
+        schemaOptions,
+        nameMap
+      )
+      output.push(generatedSchema)
+      output.push("")
+      output.push(`export type ${typeName} = z.infer<typeof ${typeName}>;`)
+      output.push("")
+    }
+  }
+}
+
+/**
+ * Generates TypeScript type definitions for inline response schemas.
+ *
+ * @param output - Array to which generated TypeScript code will be appended.
+ * @param operations - Processed operations with metadata.
  * @param spec - The OpenAPI specification object.
  * @param nameMap - Mapping from original schema names to sanitized names.
  * @param schemaOptions - Options for schema generation.
@@ -379,43 +424,7 @@ function generateResponseTypes(
   nameMap: Map<string, string>,
   schemaOptions: SchemaOptions
 ) {
-  const responseTypesToGenerate = new Map<string, any>()
-
-  // Collect all response types that need to be generated
-  for (const op of operations) {
-    // Find the operation in the spec to get its responses
-    for (const [, pathItem] of Object.entries(spec.paths)) {
-      for (const [, operation] of Object.entries(pathItem)) {
-        if ((operation as any).operationId === op.operationId) {
-          const responses = (operation as any).responses || {}
-
-          for (const [statusCode, response] of Object.entries(responses)) {
-            if (/^2\d\d$/.test(statusCode) && (response as any).content) {
-              const content = (response as any).content as any
-              const jsonContent = content["application/json"]
-
-              if (jsonContent && jsonContent.schema) {
-                const schema = jsonContent.schema
-                const typeName = `${capitalize(toCamelCase(op.operationId))}Response`
-
-                // Generate if it's not a simple $ref (those are already handled)
-                // This includes allOf, oneOf, anyOf, and complex inline schemas
-                if (
-                  !schema.$ref ||
-                  schema.allOf ||
-                  schema.oneOf ||
-                  schema.anyOf
-                ) {
-                  responseTypesToGenerate.set(typeName, schema)
-                }
-              }
-            }
-          }
-          break
-        }
-      }
-    }
-  }
+  const responseTypesToGenerate = collectInlineResponseTypes(operations, spec)
 
   // Generate the response type definitions
   if (responseTypesToGenerate.size > 0) {
@@ -579,34 +588,76 @@ function parseOperations(
 ): Operation[] {
   const operations: Operation[] = []
 
-  for (const [path, pathItem] of Object.entries(spec.paths)) {
-    for (const [method, operation] of Object.entries(pathItem)) {
-      const normalizedMethod = method.toLowerCase()
-      if (!isRequestMethod(normalizedMethod)) continue
-      if (!(operation as any).operationId) continue
+  // Process regular paths
+  if (spec.paths) {
+    for (const [path, pathItem] of Object.entries(spec.paths)) {
+      for (const [method, operation] of Object.entries(pathItem)) {
+        const normalizedMethod = method.toLowerCase()
+        if (!isRequestMethod(normalizedMethod)) continue
+        if (!(operation as any).operationId) continue
 
-      const pathParams = extractPathParams(path)
-      const requestType = getRequestType(operation)
-      const { successResponse, errors } = getResponseTypes(
-        operation,
-        (operation as any).operationId,
-        nameMap
-      )
-      const resolvedParameters = collectParameters(pathItem, operation, spec)
-      const requestHeaders = getRequestHeaders(resolvedParameters)
-      const queryParams = getQueryParams(resolvedParameters)
+        const pathParams = extractPathParams(path)
+        const requestType = getRequestType(operation)
+        const { successResponse, errors } = getResponseTypes(
+          operation,
+          (operation as any).operationId,
+          nameMap
+        )
+        const resolvedParameters = collectParameters(pathItem, operation, spec)
+        const requestHeaders = getRequestHeaders(resolvedParameters)
+        const queryParams = getQueryParams(resolvedParameters)
 
-      operations.push({
-        operationId: (operation as any).operationId,
-        path,
-        method: normalizedMethod,
-        pathParams,
-        queryParams,
-        requestType,
-        responseType: successResponse,
-        requestHeaders,
-        errors,
-      })
+        operations.push({
+          operationId: (operation as any).operationId,
+          path,
+          method: normalizedMethod,
+          pathParams,
+          queryParams,
+          requestType,
+          responseType: successResponse,
+          requestHeaders,
+          errors,
+        })
+      }
+    }
+  }
+
+  // Process webhooks
+  if (spec.webhooks) {
+    for (const [webhookName, webhookItem] of Object.entries(spec.webhooks)) {
+      for (const [method, operation] of Object.entries(webhookItem)) {
+        const normalizedMethod = method.toLowerCase()
+        if (!isRequestMethod(normalizedMethod)) continue
+        if (!(operation as any).operationId) continue
+
+        // For webhooks, we use the webhook name as the path identifier
+        const path = webhookName
+        const pathParams = extractPathParams(path)
+        const requestType = getRequestType(operation)
+        const { successResponse, errors } = getResponseTypes(
+          operation,
+          (operation as any).operationId
+        )
+        const resolvedParameters = collectParameters(
+          webhookItem,
+          operation,
+          spec
+        )
+        const requestHeaders = getRequestHeaders(resolvedParameters)
+        const queryParams = getQueryParams(resolvedParameters)
+
+        operations.push({
+          operationId: (operation as any).operationId,
+          path,
+          method: normalizedMethod,
+          pathParams,
+          queryParams,
+          requestType,
+          responseType: successResponse,
+          requestHeaders,
+          errors,
+        })
+      }
     }
   }
 
@@ -905,7 +956,7 @@ function getRequestType(operation: any): string | undefined {
   }
 
   // Generate inline type if needed
-  const typeName = `${capitalize(operation.operationId)}Request`
+  const typeName = `${capitalize(toCamelCase(operation.operationId))}Request`
   return typeName
 }
 
