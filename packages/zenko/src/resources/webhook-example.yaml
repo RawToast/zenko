@@ -18,6 +18,7 @@ webhooks:
 components:
   schemas:
     Pet:
+      type: object
       required:
         - id
         - name
