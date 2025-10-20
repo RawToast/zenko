@@ -2,7 +2,7 @@ import { describe, test, expect } from "bun:test"
 import { generateHelperFile } from "../generate-helper-file"
 
 describe("generateHelperFile", () => {
-  test("produces valid TypeScript", () => {
+  test("produces expected TypeScript", () => {
     const helperContent = generateHelperFile()
     expect(helperContent).toMatchInlineSnapshot(`
       "// Generated helper types for Zenko
@@ -33,5 +33,17 @@ describe("generateHelperFile", () => {
       }
       "
     `)
+  })
+
+  test("exports expected types", () => {
+    const helperContent = generateHelperFile()
+
+    // Should contain all required exports
+    expect(helperContent).toContain("export type PathFn")
+    expect(helperContent).toContain("export type RequestMethod")
+    expect(helperContent).toContain("export type HeaderFn")
+    expect(helperContent).toContain("export type AnyHeaderFn")
+    expect(helperContent).toContain("export type OperationErrors")
+    expect(helperContent).toContain("export type OperationDefinition")
   })
 })

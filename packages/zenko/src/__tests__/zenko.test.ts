@@ -1,10 +1,5 @@
 import { describe, test, expect } from "bun:test"
-import {
-  generate,
-  generateWithMetadata,
-  generateHelperFile,
-  type OpenAPISpec,
-} from "../zenko"
+import { generate, generateWithMetadata, type OpenAPISpec } from "../zenko"
 import * as fs from "fs"
 import jsYaml from "js-yaml"
 
@@ -309,22 +304,6 @@ describe("generate", () => {
     const petstoreSpec = jsYaml.load(
       fs.readFileSync("src/resources/petstore.yaml", "utf8")
     ) as OpenAPISpec
-
-    test("generateHelperFile produces valid TypeScript", () => {
-      const helperContent = generateHelperFile()
-
-      // Should contain all required exports
-      expect(helperContent).toContain("export type PathFn")
-      expect(helperContent).toContain("export type RequestMethod")
-      expect(helperContent).toContain("export type HeaderFn")
-      expect(helperContent).toContain("export type AnyHeaderFn")
-      expect(helperContent).toContain("export type OperationErrors")
-      expect(helperContent).toContain("export type OperationDefinition")
-
-      // Should have proper structure
-      expect(helperContent).toContain("// Generated helper types for Zenko")
-      expect(helperContent).toMatchSnapshot("helper-file-content")
-    })
 
     test("generateWithMetadata returns helper file info when using file mode", () => {
       const result = generateWithMetadata(petstoreSpec, {
