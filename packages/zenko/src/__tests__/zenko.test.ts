@@ -247,7 +247,9 @@ describe("generate", () => {
     })
 
     test("uses package helpers by default", () => {
-      const result = generate(petstoreSpec)
+      const result = generate(petstoreSpec, {
+        types: { treeShake: false },
+      })
 
       expect(result).toContain(
         'import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";'
@@ -261,7 +263,7 @@ describe("generate", () => {
 
     test("inlines helper types", () => {
       const result = generate(petstoreSpec, {
-        types: { helpers: "inline" },
+        types: { helpers: "inline", treeShake: false },
       })
 
       expect(result).toContain(
@@ -277,7 +279,11 @@ describe("generate", () => {
 
     test("uses custom helper import path", () => {
       const result = generate(petstoreSpec, {
-        types: { helpers: "file", helpersOutput: "./custom-types" },
+        types: {
+          helpers: "file",
+          helpersOutput: "./custom-types",
+          treeShake: false,
+        },
       })
 
       expect(result).toContain(
@@ -292,7 +298,7 @@ describe("generate", () => {
 
     test("generates complete inline output", () => {
       const result = generate(petstoreSpec, {
-        types: { helpers: "inline" },
+        types: { helpers: "inline", treeShake: false },
       })
 
       expect(result).toMatchSnapshot("petstore-inline-helpers-output")
@@ -322,7 +328,11 @@ describe("generate", () => {
 
     test("generateWithMetadata returns helper file info when using file mode", () => {
       const result = generateWithMetadata(petstoreSpec, {
-        types: { helpers: "file", helpersOutput: "./api-types.ts" },
+        types: {
+          helpers: "file",
+          helpersOutput: "./api-types.ts",
+          treeShake: false,
+        },
       })
 
       // Should include helper file information
@@ -341,7 +351,7 @@ describe("generate", () => {
 
     test("generateWithMetadata does not return helper file for package mode", () => {
       const result = generateWithMetadata(petstoreSpec, {
-        types: { helpers: "package" },
+        types: { helpers: "package", treeShake: false },
       })
 
       expect(result.helperFile).toBeUndefined()
@@ -350,7 +360,7 @@ describe("generate", () => {
 
     test("generateWithMetadata does not return helper file for inline mode", () => {
       const result = generateWithMetadata(petstoreSpec, {
-        types: { helpers: "inline" },
+        types: { helpers: "inline", treeShake: false },
       })
 
       expect(result.helperFile).toBeUndefined()
@@ -359,7 +369,12 @@ describe("generate", () => {
 
     test("generateWithMetadata does not return helper file when emit is false", () => {
       const result = generateWithMetadata(petstoreSpec, {
-        types: { emit: false, helpers: "file", helpersOutput: "./types.ts" },
+        types: {
+          emit: false,
+          helpers: "file",
+          helpersOutput: "./types.ts",
+          treeShake: false,
+        },
       })
 
       expect(result.helperFile).toBeUndefined()

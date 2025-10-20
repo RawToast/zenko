@@ -2,7 +2,7 @@
 
 exports[`TicTacToe generates complete TypeScript output: tictactoe-complete-output 1`] = `
 "import { z } from "zod";
-import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
+import type { OperationDefinition, OperationErrors } from "zenko";
 
 // Generated Zod Schemas
 
@@ -116,7 +116,7 @@ export const putSquare: PutSquareOperation = {
 
 exports[`TicTacToe generates complete TypeScript output with strict options: tictactoe-complete-output 1`] = `
 "import { z } from "zod";
-import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
+import type { OperationDefinition, OperationErrors } from "zenko";
 
 // Generated Zod Schemas
 

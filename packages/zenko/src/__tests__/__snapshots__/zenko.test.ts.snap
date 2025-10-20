@@ -2,7 +2,6 @@
 
 exports[`generate Edge cases handles empty spec: empty-spec-output 1`] = `
 "import { z } from "zod";
-import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
 
 // Path Functions
 export const paths = {
@@ -22,7 +21,7 @@ export const headers = {
 
 exports[`generate Edge cases handles spec with no components: no-components-spec-output 1`] = `
 "import { z } from "zod";
-import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
+import type { OperationDefinition, OperationErrors } from "zenko";
 
 // Path Functions
 export const paths = {
@@ -59,7 +58,6 @@ export const getTest: GetTestOperation = {
 
 exports[`generate Edge cases handles circular dependencies gracefully: circular-dependencies-output 1`] = `
 "import { z } from "zod";
-import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
 
 // Generated Zod Schemas
 
@@ -93,7 +91,7 @@ export const headers = {
 
 exports[`generate Response inference infers string error responses without schemas: error-response-inference 1`] = `
 "import { z } from "zod";
-import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
+import type { OperationDefinition, OperationErrors } from "zenko";
 
 // Path Functions
 export const paths = {
@@ -149,19 +147,20 @@ type RequestMethod = "get" | "put" | "post" | "delete" | "options" | "head" | "p
 type HeaderFn<TArgs extends unknown[] = [], TResult = Record<string, unknown> | Record<string, never>> = (...args: TArgs) => TResult;
 type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown);
 type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {
-  clientErrors?: TClient;
-  serverErrors?: TServer;
-  defaultErrors?: TDefault;
-  otherErrors?: TOther;
-};
+  clientErrors?: TClient
+  serverErrors?: TServer
+  defaultErrors?: TDefault
+  otherErrors?: TOther
+}
 type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {
-  method: TMethod;
-  path: TPath;
-  request?: TRequest;
-  response?: TResponse;
-  headers?: THeaders;
-  errors?: TErrors;
-};
+  method: TMethod
+  path: TPath
+  request?: TRequest
+  response?: TResponse
+  headers?: THeaders
+  errors?: TErrors
+}
+
 
 // Generated Zod Schemas
 

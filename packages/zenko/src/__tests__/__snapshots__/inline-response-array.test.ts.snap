@@ -2,7 +2,7 @@
 
 exports[`Inline Response Array generates complete TypeScript output: inline-response-array-complete-output 1`] = `
 "import { z } from "zod";
-import type { PathFn, HeaderFn, OperationDefinition, OperationErrors } from "zenko";
+import type { OperationDefinition, OperationErrors } from "zenko";
 
 // Generated Zod Schemas
 
