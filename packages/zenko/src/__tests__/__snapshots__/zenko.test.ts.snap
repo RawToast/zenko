@@ -147,10 +147,10 @@ type RequestMethod = "get" | "put" | "post" | "delete" | "options" | "head" | "p
 type HeaderFn<TArgs extends unknown[] = [], TResult = Record<string, unknown> | Record<string, never>> = (...args: TArgs) => TResult;
 type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown);
 type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {
-  client?: TClient
-  server?: TServer
-  default?: TDefault
-  other?: TOther
+  clientErrors?: TClient
+  serverErrors?: TServer
+  defaultErrors?: TDefault
+  otherErrors?: TOther
 }
 type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {
   method: TMethod
