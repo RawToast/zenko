@@ -108,7 +108,7 @@ describe("tree-shaking", () => {
         requestType: "CreateUserRequest",
         responseType: "User",
         requestHeaders: [
-          { name: "authorization", type: "string", required: true },
+          { name: "authorization", schema: { type: "string" }, required: true },
         ],
         errors: undefined,
       },
