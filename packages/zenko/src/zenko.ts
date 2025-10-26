@@ -1,11 +1,7 @@
 import { topologicalSort, extractRefName } from "./utils/topological-sort"
 import { formatPropertyName, isValidJSIdentifier } from "./utils/property-name"
 import { toCamelCase, capitalize } from "./utils/string-utils"
-import {
-  getStatusCategory,
-  isErrorStatus,
-  mapStatusToIdentifier,
-} from "./utils/http-status"
+import { isErrorStatus, mapStatusToIdentifier } from "./utils/http-status"
 import { analyzeZenkoUsage, generateZenkoImport } from "./utils/tree-shaking"
 import {
   collectInlineRequestTypes,
@@ -340,10 +336,7 @@ export function generateWithMetadata(
 
     if (op.errors && hasAnyErrors(op.errors)) {
       output.push("  errors: {")
-      appendErrorGroup(output, "clientErrors", op.errors.clientErrors)
-      appendErrorGroup(output, "serverErrors", op.errors.serverErrors)
-      appendErrorGroup(output, "defaultErrors", op.errors.defaultErrors)
-      appendErrorGroup(output, "otherErrors", op.errors.otherErrors)
+      appendErrorGroup(output, "errors", op.errors.errors)
       output.push("  },")
     }
 
@@ -491,12 +484,7 @@ function appendErrorGroup(
  * @returns `true` if at least one bucket has one or more entries, `false` otherwise.
  */
 function hasAnyErrors(group: OperationErrorGroup): boolean {
-  return [
-    group.clientErrors,
-    group.serverErrors,
-    group.defaultErrors,
-    group.otherErrors,
-  ].some((bucket) => bucket && Object.keys(bucket).length > 0)
+  return Boolean(group.errors && Object.keys(group.errors).length > 0)
 }
 
 /**
@@ -740,13 +728,8 @@ function appendHelperTypesImport(
       buffer.push(
         "type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown);"
       )
-      buffer.push(
-        "type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {"
-      )
-      buffer.push("  clientErrors?: TClient")
-      buffer.push("  serverErrors?: TServer")
-      buffer.push("  defaultErrors?: TDefault")
-      buffer.push("  otherErrors?: TOther")
+      buffer.push("type OperationErrors<TError = unknown> = {")
+      buffer.push("  errors?: TError")
       buffer.push("}")
       buffer.push(
         "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
@@ -814,12 +797,9 @@ function buildOperationErrorsType(errors?: OperationErrorGroup): string {
     return "OperationErrors"
   }
 
-  const client = buildErrorBucket(errors.clientErrors)
-  const server = buildErrorBucket(errors.serverErrors)
-  const fallback = buildErrorBucket(errors.defaultErrors)
-  const other = buildErrorBucket(errors.otherErrors)
+  const errorBucket = buildErrorBucket(errors.errors)
 
-  return `OperationErrors<${client}, ${server}, ${fallback}, ${other}>`
+  return `OperationErrors<${errorBucket}>`
 }
 
 function buildErrorBucket(bucket?: OperationErrorMap): string {
@@ -1102,7 +1082,6 @@ function buildErrorGroups(
   const group: OperationErrorGroup = {}
 
   for (const { code, schema } of errors) {
-    const category = getStatusCategory(code)
     const identifier = mapStatusToIdentifier(code)
     const typeName = resolveResponseType(
       schema,
@@ -1110,24 +1089,8 @@ function buildErrorGroups(
       nameMap
     )
 
-    switch (category) {
-      case "client":
-        group.clientErrors ??= {}
-        group.clientErrors[identifier] = typeName
-        break
-      case "server":
-        group.serverErrors ??= {}
-        group.serverErrors[identifier] = typeName
-        break
-      case "default":
-        group.defaultErrors ??= {}
-        group.defaultErrors[identifier] = typeName
-        break
-      default:
-        group.otherErrors ??= {}
-        group.otherErrors[identifier] = typeName
-        break
-    }
+    group.errors ??= {}
+    group.errors[identifier] = typeName
   }
 
   return group

@@ -27,13 +27,8 @@ export function generateHelperFile(): string {
     "export type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown)"
   )
   output.push("")
-  output.push(
-    "export type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {"
-  )
-  output.push("  clientErrors?: TClient")
-  output.push("  serverErrors?: TServer")
-  output.push("  defaultErrors?: TDefault")
-  output.push("  otherErrors?: TOther")
+  output.push("export type OperationErrors<TError = unknown> = {")
+  output.push("  errors?: TError")
   output.push("}")
   output.push("")
   output.push(

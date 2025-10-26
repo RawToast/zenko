@@ -42,7 +42,7 @@ export type BySourceOperation = OperationDefinition<
   undefined,
   z.ZodArray<typeof AdminLog>,
   undefined,
-  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined }, { internalServerError: undefined; serviceUnavailable: undefined }, unknown, unknown>
+  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined; internalServerError: undefined; serviceUnavailable: undefined }>
 >;
 
 // Operation Objects
@@ -51,12 +51,10 @@ export const bySource: BySourceOperation = {
   path: paths.bySource,
   response: z.array(AdminLog),
   errors: {
-    clientErrors: {
+    errors: {
       badRequest: undefined,
       forbidden: undefined,
       notFound: undefined,
-    },
-    serverErrors: {
       internalServerError: undefined,
       serviceUnavailable: undefined,
     },

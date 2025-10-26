@@ -70,7 +70,7 @@ export type GetSquareOperation = OperationDefinition<
   undefined,
   typeof mark,
   undefined,
-  OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>
+  OperationErrors<{ badRequest: typeof errorMessage }>
 >;
 
 export type PutSquareOperation = OperationDefinition<
@@ -79,7 +79,7 @@ export type PutSquareOperation = OperationDefinition<
   typeof mark,
   typeof status,
   undefined,
-  OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>
+  OperationErrors<{ badRequest: typeof errorMessage }>
 >;
 
 // Operation Objects
@@ -94,7 +94,7 @@ export const getSquare: GetSquareOperation = {
   path: paths.getSquare,
   response: mark,
   errors: {
-    clientErrors: {
+    errors: {
       badRequest: errorMessage,
     },
   },
@@ -106,7 +106,7 @@ export const putSquare: PutSquareOperation = {
   request: mark,
   response: status,
   errors: {
-    clientErrors: {
+    errors: {
       badRequest: errorMessage,
     },
   },
@@ -184,7 +184,7 @@ export type GetSquareOperation = OperationDefinition<
   undefined,
   typeof mark,
   undefined,
-  OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>
+  OperationErrors<{ badRequest: typeof errorMessage }>
 >;
 
 export type PutSquareOperation = OperationDefinition<
@@ -193,7 +193,7 @@ export type PutSquareOperation = OperationDefinition<
   typeof mark,
   typeof status,
   undefined,
-  OperationErrors<{ badRequest: typeof errorMessage }, unknown, unknown, unknown>
+  OperationErrors<{ badRequest: typeof errorMessage }>
 >;
 
 // Operation Objects
@@ -208,7 +208,7 @@ export const getSquare: GetSquareOperation = {
   path: paths.getSquare,
   response: mark,
   errors: {
-    clientErrors: {
+    errors: {
       badRequest: errorMessage,
     },
   },
@@ -220,7 +220,7 @@ export const putSquare: PutSquareOperation = {
   request: mark,
   response: status,
   errors: {
-    clientErrors: {
+    errors: {
       badRequest: errorMessage,
     },
   },

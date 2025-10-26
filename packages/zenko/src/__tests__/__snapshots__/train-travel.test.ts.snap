@@ -241,7 +241,7 @@ export type GetStationsOperation = OperationDefinition<
   undefined,
   typeof GetStationsResponse,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined; internalServerError: undefined }>
 >;
 
 export type GetTripsOperation = OperationDefinition<
@@ -250,7 +250,7 @@ export type GetTripsOperation = OperationDefinition<
   undefined,
   typeof GetTripsResponse,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined; internalServerError: undefined }>
 >;
 
 export type GetBookingsOperation = OperationDefinition<
@@ -259,7 +259,7 @@ export type GetBookingsOperation = OperationDefinition<
   undefined,
   typeof GetBookingsResponse,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined; internalServerError: undefined }>
 >;
 
 export type CreateBookingOperation = OperationDefinition<
@@ -268,7 +268,7 @@ export type CreateBookingOperation = OperationDefinition<
   typeof Booking,
   typeof CreateBookingResponse,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; notFound: undefined; conflict: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; notFound: undefined; conflict: undefined; tooManyRequests: undefined; internalServerError: undefined }>
 >;
 
 export type GetBookingOperation = OperationDefinition<
@@ -277,7 +277,7 @@ export type GetBookingOperation = OperationDefinition<
   undefined,
   typeof GetBookingResponse,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; notFound: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; notFound: undefined; tooManyRequests: undefined; internalServerError: undefined }>
 >;
 
 export type DeleteBookingOperation = OperationDefinition<
@@ -286,7 +286,7 @@ export type DeleteBookingOperation = OperationDefinition<
   undefined,
   undefined,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; notFound: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; notFound: undefined; tooManyRequests: undefined; internalServerError: undefined }>
 >;
 
 export type CreateBookingPaymentOperation = OperationDefinition<
@@ -295,7 +295,7 @@ export type CreateBookingPaymentOperation = OperationDefinition<
   typeof BookingPayment,
   typeof CreateBookingPaymentResponse,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined }, { internalServerError: undefined }, unknown, unknown>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined; internalServerError: undefined }>
 >;
 
 export type NewBookingOperation = OperationDefinition<
@@ -313,13 +313,11 @@ export const getStations: GetStationsOperation = {
   path: paths.getStations,
   response: GetStationsResponse,
   errors: {
-    clientErrors: {
+    errors: {
       badRequest: undefined,
       unauthorized: undefined,
       forbidden: undefined,
       tooManyRequests: undefined,
-    },
-    serverErrors: {
       internalServerError: undefined,
     },
   },
@@ -330,13 +328,11 @@ export const getTrips: GetTripsOperation = {
   path: paths.getTrips,
   response: GetTripsResponse,
   errors: {
-    clientErrors: {
+    errors: {
       badRequest: undefined,
       unauthorized: undefined,
       forbidden: undefined,
       tooManyRequests: undefined,
-    },
-    serverErrors: {
       internalServerError: undefined,
     },
   },
@@ -347,13 +343,11 @@ export const getBookings: GetBookingsOperation = {
   path: paths.getBookings,
   response: GetBookingsResponse,
   errors: {
-    clientErrors: {
+    errors: {
       badRequest: undefined,
       unauthorized: undefined,
       forbidden: undefined,
       tooManyRequests: undefined,
-    },
-    serverErrors: {
       internalServerError: undefined,
     },
   },
@@ -365,14 +359,12 @@ export const createBooking: CreateBookingOperation = {
   request: Booking,
   response: CreateBookingResponse,
   errors: {
-    clientErrors: {
+    errors: {
       badRequest: undefined,
       unauthorized: undefined,
       notFound: undefined,
       conflict: undefined,
       tooManyRequests: undefined,
-    },
-    serverErrors: {
       internalServerError: undefined,
     },
   },
@@ -383,14 +375,12 @@ export const getBooking: GetBookingOperation = {
   path: paths.getBooking,
   response: GetBookingResponse,
   errors: {
-    clientErrors: {
+    errors: {
       badRequest: undefined,
       unauthorized: undefined,
       forbidden: undefined,
       notFound: undefined,
       tooManyRequests: undefined,
-    },
-    serverErrors: {
       internalServerError: undefined,
     },
   },
@@ -401,14 +391,12 @@ export const deleteBooking: DeleteBookingOperation = {
   path: paths.deleteBooking,
   response: undefined,
   errors: {
-    clientErrors: {
+    errors: {
       badRequest: undefined,
       unauthorized: undefined,
       forbidden: undefined,
       notFound: undefined,
       tooManyRequests: undefined,
-    },
-    serverErrors: {
       internalServerError: undefined,
     },
   },
@@ -420,13 +408,11 @@ export const createBookingPayment: CreateBookingPaymentOperation = {
   request: BookingPayment,
   response: CreateBookingPaymentResponse,
   errors: {
-    clientErrors: {
+    errors: {
       badRequest: undefined,
       unauthorized: undefined,
       forbidden: undefined,
       tooManyRequests: undefined,
-    },
-    serverErrors: {
       internalServerError: undefined,
     },
   },
