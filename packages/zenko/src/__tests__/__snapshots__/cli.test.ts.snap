@@ -86,33 +86,27 @@ export const listPets: ListPetsOperation = {
   method: "get",
   path: paths.listPets,
   response: Pets,
-  errors: {
     errors: {
       defaultError: Error,
     },
-  },
 } as const;
 
 export const createPets: CreatePetsOperation = {
   method: "post",
   path: paths.createPets,
   request: Pet,
-  errors: {
     errors: {
       defaultError: Error,
     },
-  },
 } as const;
 
 export const showPetById: ShowPetByIdOperation = {
   method: "get",
   path: paths.showPetById,
   response: Pet,
-  errors: {
     errors: {
       defaultError: Error,
     },
-  },
 } as const;
 "
 `;

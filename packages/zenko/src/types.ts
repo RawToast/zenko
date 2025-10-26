@@ -17,9 +17,8 @@ export type HeaderFn<
 
 export type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown)
 
-export type OperationErrors<TError = unknown> = {
-  errors?: TError
-}
+export type OperationErrors<TError = unknown> =
+  TError extends Record<string, unknown> ? TError : Record<string, TError>
 
 export type OperationDefinition<
   TMethod extends RequestMethod,

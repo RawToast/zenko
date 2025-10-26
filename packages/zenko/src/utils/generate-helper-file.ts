@@ -24,12 +24,8 @@ export function generateHelperFile(): string {
   )
   output.push("")
   output.push(
-    "export type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown)"
+    "export type OperationErrors<TError = unknown> = TError extends Record<string, unknown> ? TError : Record<string, TError>;"
   )
-  output.push("")
-  output.push("export type OperationErrors<TError = unknown> = {")
-  output.push("  errors?: TError")
-  output.push("}")
   output.push("")
   output.push(
     "export type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"

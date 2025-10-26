@@ -84,12 +84,7 @@ describe("tree-shaking", () => {
         requestType: undefined,
         responseType: undefined,
         requestHeaders: [],
-        errors: {
-          clientErrors: { badRequest: "string" },
-          serverErrors: {},
-          defaultErrors: {},
-          otherErrors: {},
-        },
+        errors: { badRequest: "string" },
       },
     ]
 
@@ -129,12 +124,7 @@ describe("tree-shaking", () => {
         requestType: undefined,
         responseType: undefined,
         requestHeaders: [],
-        errors: {
-          clientErrors: { badRequest: "string" },
-          serverErrors: {},
-          defaultErrors: {},
-          otherErrors: {},
-        },
+        errors: { badRequest: "string" },
       },
     ]
 

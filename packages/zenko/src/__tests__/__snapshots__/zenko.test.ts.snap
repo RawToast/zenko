@@ -131,11 +131,9 @@ export const getErrorWithoutSchema: GetErrorWithoutSchemaOperation = {
   method: "get",
   path: paths.getErrorWithoutSchema,
   response: GetErrorWithoutSchemaResponse,
-  errors: {
     errors: {
       internalServerError: string,
     },
-  },
 } as const;
 "
 `;
@@ -146,9 +144,7 @@ type PathFn<TArgs extends unknown[] = []> = (...args: TArgs) => string;
 type RequestMethod = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 type HeaderFn<TArgs extends unknown[] = [], TResult = Record<string, unknown> | Record<string, never>> = (...args: TArgs) => TResult;
 type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown);
-type OperationErrors<TError = unknown> = {
-  errors?: TError
-}
+type OperationErrors<TError = unknown> = TError extends Record<string, unknown> ? TError : Record<string, TError>;
 type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {
   method: TMethod
   path: TPath
@@ -241,33 +237,27 @@ export const listPets: ListPetsOperation = {
   method: "get",
   path: paths.listPets,
   response: Pets,
-  errors: {
     errors: {
       defaultError: Error,
     },
-  },
 } as const;
 
 export const createPets: CreatePetsOperation = {
   method: "post",
   path: paths.createPets,
   request: Pet,
-  errors: {
     errors: {
       defaultError: Error,
     },
-  },
 } as const;
 
 export const showPetById: ShowPetByIdOperation = {
   method: "get",
   path: paths.showPetById,
   response: Pet,
-  errors: {
     errors: {
       defaultError: Error,
     },
-  },
 } as const;
 "
 `;

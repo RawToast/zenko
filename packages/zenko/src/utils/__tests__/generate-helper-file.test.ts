@@ -14,11 +14,7 @@ describe("generateHelperFile", () => {
 
       export type HeaderFn<TArgs extends unknown[] = [], TResult = Record<string, unknown> | Record<string, never>> = (...args: TArgs) => TResult
 
-      export type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown)
-
-      export type OperationErrors<TError = unknown> = {
-        errors?: TError
-      }
+      export type OperationErrors<TError = unknown> = TError extends Record<string, unknown> ? TError : Record<string, TError>;
 
       export type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {
         method: TMethod
@@ -39,7 +35,7 @@ describe("generateHelperFile", () => {
     expect(helperContent).toContain("export type PathFn")
     expect(helperContent).toContain("export type RequestMethod")
     expect(helperContent).toContain("export type HeaderFn")
-    expect(helperContent).toContain("export type AnyHeaderFn")
+    expect(helperContent).toContain("export type OperationErrors")
     expect(helperContent).toContain("export type OperationErrors")
     expect(helperContent).toContain("export type OperationDefinition")
   })

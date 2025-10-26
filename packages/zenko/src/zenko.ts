@@ -335,9 +335,7 @@ export function generateWithMetadata(
     }
 
     if (op.errors && hasAnyErrors(op.errors)) {
-      output.push("  errors: {")
-      appendErrorGroup(output, "errors", op.errors.errors)
-      output.push("  },")
+      appendErrorGroup(output, "errors", op.errors)
     }
 
     output.push("} as const;")
@@ -484,7 +482,7 @@ function appendErrorGroup(
  * @returns `true` if at least one bucket has one or more entries, `false` otherwise.
  */
 function hasAnyErrors(group: OperationErrorGroup): boolean {
-  return Boolean(group.errors && Object.keys(group.errors).length > 0)
+  return Boolean(group && Object.keys(group).length > 0)
 }
 
 /**
@@ -728,9 +726,9 @@ function appendHelperTypesImport(
       buffer.push(
         "type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown);"
       )
-      buffer.push("type OperationErrors<TError = unknown> = {")
-      buffer.push("  errors?: TError")
-      buffer.push("}")
+      buffer.push(
+        "type OperationErrors<TError = unknown> = TError extends Record<string, unknown> ? TError : Record<string, TError>;"
+      )
       buffer.push(
         "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
       )
@@ -797,7 +795,7 @@ function buildOperationErrorsType(errors?: OperationErrorGroup): string {
     return "OperationErrors"
   }
 
-  const errorBucket = buildErrorBucket(errors.errors)
+  const errorBucket = buildErrorBucket(errors)
 
   return `OperationErrors<${errorBucket}>`
 }
@@ -1089,8 +1087,7 @@ function buildErrorGroups(
       nameMap
     )
 
-    group.errors ??= {}
-    group.errors[identifier] = typeName
+    group[identifier] = typeName
   }
 
   return group

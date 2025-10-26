@@ -34,7 +34,6 @@ export const PutSomething: PutSomethingOperation = {
   method: "put",
   path: paths.PutSomething,
   response: undefined,
-  errors: {
     errors: {
       badRequest: undefined,
       forbidden: undefined,
@@ -42,7 +41,6 @@ export const PutSomething: PutSomethingOperation = {
       internalServerError: undefined,
       serviceUnavailable: undefined,
     },
-  },
 } as const;
 "
 `;

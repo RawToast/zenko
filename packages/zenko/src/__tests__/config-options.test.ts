@@ -262,7 +262,9 @@ describe("Configuration Options", () => {
       expect(result).toContain(
         "type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown);"
       )
-      expect(result).toContain("type OperationErrors<TError = unknown> = {")
+      expect(result).toContain(
+        "type OperationErrors<TError = unknown> = TError extends Record<string, unknown> ? TError : Record<string, TError>;"
+      )
       expect(result).toContain("type OperationDefinition<")
 
       // Should NOT contain package imports

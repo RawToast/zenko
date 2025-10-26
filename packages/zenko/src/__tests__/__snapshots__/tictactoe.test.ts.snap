@@ -93,11 +93,9 @@ export const getSquare: GetSquareOperation = {
   method: "get",
   path: paths.getSquare,
   response: mark,
-  errors: {
     errors: {
       badRequest: errorMessage,
     },
-  },
 } as const;
 
 export const putSquare: PutSquareOperation = {
@@ -105,11 +103,9 @@ export const putSquare: PutSquareOperation = {
   path: paths.putSquare,
   request: mark,
   response: status,
-  errors: {
     errors: {
       badRequest: errorMessage,
     },
-  },
 } as const;
 "
 `;
@@ -207,11 +203,9 @@ export const getSquare: GetSquareOperation = {
   method: "get",
   path: paths.getSquare,
   response: mark,
-  errors: {
     errors: {
       badRequest: errorMessage,
     },
-  },
 } as const;
 
 export const putSquare: PutSquareOperation = {
@@ -219,11 +213,9 @@ export const putSquare: PutSquareOperation = {
   path: paths.putSquare,
   request: mark,
   response: status,
-  errors: {
     errors: {
       badRequest: errorMessage,
     },
-  },
 } as const;
 "
 `;

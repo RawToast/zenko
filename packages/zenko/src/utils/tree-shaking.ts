@@ -78,5 +78,5 @@ export function generateZenkoImport(
 }
 
 function hasAnyErrors(errors: OperationErrorGroup): boolean {
-  return Boolean(errors.errors && Object.keys(errors.errors).length > 0)
+  return Boolean(errors && Object.keys(errors).length > 0)
 }

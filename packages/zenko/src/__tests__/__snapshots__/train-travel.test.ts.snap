@@ -312,7 +312,6 @@ export const getStations: GetStationsOperation = {
   method: "get",
   path: paths.getStations,
   response: GetStationsResponse,
-  errors: {
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -320,14 +319,12 @@ export const getStations: GetStationsOperation = {
       tooManyRequests: undefined,
       internalServerError: undefined,
     },
-  },
 } as const;
 
 export const getTrips: GetTripsOperation = {
   method: "get",
   path: paths.getTrips,
   response: GetTripsResponse,
-  errors: {
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -335,14 +332,12 @@ export const getTrips: GetTripsOperation = {
       tooManyRequests: undefined,
       internalServerError: undefined,
     },
-  },
 } as const;
 
 export const getBookings: GetBookingsOperation = {
   method: "get",
   path: paths.getBookings,
   response: GetBookingsResponse,
-  errors: {
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -350,7 +345,6 @@ export const getBookings: GetBookingsOperation = {
       tooManyRequests: undefined,
       internalServerError: undefined,
     },
-  },
 } as const;
 
 export const createBooking: CreateBookingOperation = {
@@ -358,7 +352,6 @@ export const createBooking: CreateBookingOperation = {
   path: paths.createBooking,
   request: Booking,
   response: CreateBookingResponse,
-  errors: {
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -367,14 +360,12 @@ export const createBooking: CreateBookingOperation = {
       tooManyRequests: undefined,
       internalServerError: undefined,
     },
-  },
 } as const;
 
 export const getBooking: GetBookingOperation = {
   method: "get",
   path: paths.getBooking,
   response: GetBookingResponse,
-  errors: {
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -383,14 +374,12 @@ export const getBooking: GetBookingOperation = {
       tooManyRequests: undefined,
       internalServerError: undefined,
     },
-  },
 } as const;
 
 export const deleteBooking: DeleteBookingOperation = {
   method: "delete",
   path: paths.deleteBooking,
   response: undefined,
-  errors: {
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -399,7 +388,6 @@ export const deleteBooking: DeleteBookingOperation = {
       tooManyRequests: undefined,
       internalServerError: undefined,
     },
-  },
 } as const;
 
 export const createBookingPayment: CreateBookingPaymentOperation = {
@@ -407,7 +395,6 @@ export const createBookingPayment: CreateBookingPaymentOperation = {
   path: paths.createBookingPayment,
   request: BookingPayment,
   response: CreateBookingPaymentResponse,
-  errors: {
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -415,7 +402,6 @@ export const createBookingPayment: CreateBookingPaymentOperation = {
       tooManyRequests: undefined,
       internalServerError: undefined,
     },
-  },
 } as const;
 
 export const newBooking: NewBookingOperation = {
