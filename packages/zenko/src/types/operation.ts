@@ -21,12 +21,7 @@ export type RequestHeader = {
 
 export type OperationErrorMap = Record<string, string>
 
-export type OperationErrorGroup = {
-  clientErrors?: OperationErrorMap
-  serverErrors?: OperationErrorMap
-  defaultErrors?: OperationErrorMap
-  otherErrors?: OperationErrorMap
-}
+export type OperationErrorGroup = OperationErrorMap
 
 export type Operation = {
   operationId: string

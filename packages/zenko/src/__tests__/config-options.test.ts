@@ -263,7 +263,7 @@ describe("Configuration Options", () => {
         "type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown);"
       )
       expect(result).toContain(
-        "type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {"
+        "type OperationErrors<TError = unknown> = TError extends Record<string, unknown> ? TError : Record<string, TError>;"
       )
       expect(result).toContain("type OperationDefinition<")
 

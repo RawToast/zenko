@@ -26,7 +26,7 @@ export type PutSomethingOperation = OperationDefinition<
   undefined,
   undefined,
   undefined,
-  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined }, { internalServerError: undefined; serviceUnavailable: undefined }, unknown, unknown>
+  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined; internalServerError: undefined; serviceUnavailable: undefined }>
 >;
 
 // Operation Objects
@@ -34,17 +34,13 @@ export const PutSomething: PutSomethingOperation = {
   method: "put",
   path: paths.PutSomething,
   response: undefined,
-  errors: {
-    clientErrors: {
+    errors: {
       badRequest: undefined,
       forbidden: undefined,
       notFound: undefined,
-    },
-    serverErrors: {
       internalServerError: undefined,
       serviceUnavailable: undefined,
     },
-  },
 } as const;
 "
 `;

@@ -1,7 +1,7 @@
 /**
  * Generate a standalone helper types file for use with `helpers: "file"` mode.
  *
- * @returns TypeScript source containing PathFn, HeaderFn, OperationDefinition, and OperationErrors type definitions.
+ * @returns TypeScript source containing PathFn, RequestMethod, HeaderFn, AnyHeaderFn, OperationErrors, and OperationDefinition type definitions.
  */
 export function generateHelperFile(): string {
   const output: string[] = []
@@ -28,13 +28,8 @@ export function generateHelperFile(): string {
   )
   output.push("")
   output.push(
-    "export type OperationErrors<TClient = unknown, TServer = unknown, TDefault = unknown, TOther = unknown> = {"
+    "export type OperationErrors<TError = unknown> = TError extends Record<string, unknown> ? TError : Record<string, TError>;"
   )
-  output.push("  clientErrors?: TClient")
-  output.push("  serverErrors?: TServer")
-  output.push("  defaultErrors?: TDefault")
-  output.push("  otherErrors?: TOther")
-  output.push("}")
   output.push("")
   output.push(
     "export type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
