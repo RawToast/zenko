@@ -24,6 +24,10 @@ export function generateHelperFile(): string {
   )
   output.push("")
   output.push(
+    "export type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown)"
+  )
+  output.push("")
+  output.push(
     "export type OperationErrors<TError = unknown> = TError extends Record<string, unknown> ? TError : Record<string, TError>;"
   )
   output.push("")
