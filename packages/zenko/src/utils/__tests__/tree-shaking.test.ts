@@ -47,7 +47,7 @@ describe("tree-shaking", () => {
     expect(usage.usesOperationErrors).toBe(true)
   })
 
-  test("detects HeaderFn usage", () => {
+  test("HeaderFn is never used in package/file mode", () => {
     const operations = [
       {
         operationId: "createUser",
@@ -70,47 +70,8 @@ describe("tree-shaking", () => {
     ]
 
     const usage = analyzeZenkoUsage(operations)
-    expect(usage.usesHeaderFn).toBe(true)
-  })
-
-  test("detects OperationErrors usage", () => {
-    const operations = [
-      {
-        operationId: "getError",
-        path: "/error",
-        method: "get" as RequestMethod,
-        pathParams: [],
-        queryParams: [],
-        requestType: undefined,
-        responseType: undefined,
-        requestHeaders: [],
-        errors: { badRequest: "string" },
-      },
-    ]
-
-    const usage = analyzeZenkoUsage(operations)
-    expect(usage.usesOperationErrors).toBe(true)
-  })
-
-  test("detects HeaderFn usage", () => {
-    const operations = [
-      {
-        operationId: "createUser",
-        path: "/users",
-        method: "post" as RequestMethod,
-        pathParams: [],
-        queryParams: [],
-        requestType: "CreateUserRequest",
-        responseType: "User",
-        requestHeaders: [
-          { name: "authorization", schema: { type: "string" }, required: true },
-        ],
-        errors: undefined,
-      },
-    ]
-
-    const usage = analyzeZenkoUsage(operations)
-    expect(usage.usesHeaderFn).toBe(true)
+    // HeaderFn is never used because generated code uses `typeof headers.xxx`
+    expect(usage.usesHeaderFn).toBe(false)
   })
 
   test("detects OperationErrors usage", () => {

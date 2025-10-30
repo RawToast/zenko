@@ -25,10 +25,9 @@ export function analyzeZenkoUsage(operations: Operation[]): ZenkoUsage {
     // PathFn is never used in package/file mode - only in inline helpers
     // So we never set usesPathFn to true here
 
-    // HeaderFn is used if there are any request headers
-    if (op.requestHeaders && op.requestHeaders.length > 0) {
-      usage.usesHeaderFn = true
-    }
+    // HeaderFn is never used in package/file mode - the generated code uses
+    // `typeof headers.xxx` which TypeScript can infer without needing HeaderFn
+    // So we never set usesHeaderFn to true here
 
     // OperationErrors is used if there are any error responses
     // Note: Even if there are no explicit errors, the type might still be used
