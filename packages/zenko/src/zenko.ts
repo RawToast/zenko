@@ -36,6 +36,7 @@ export type TypesConfig = {
   helpers?: TypesHelperMode
   helpersOutput?: string
   treeShake?: boolean
+  optionalType?: "optional" | "nullable" | "nullish"
 }
 
 export type GenerateOptions = {
@@ -70,6 +71,7 @@ export function generateWithMetadata(
   const schemaOptions: SchemaOptions = {
     strictDates,
     strictNumeric,
+    optionalType: typesConfig.optionalType,
   }
 
   output.push('import { z } from "zod";')
@@ -259,8 +261,10 @@ export function generateWithMetadata(
     const schemaFields = op.requestHeaders
       .map((header) => {
         const zodType = mapHeaderToZodType(header)
-        const optional = header.required ? "" : ".optional()"
-        return `    ${formatPropertyName(header.name)}: ${zodType}${optional},`
+        const finalType = header.required
+          ? zodType
+          : applyOptionalModifier(zodType, schemaOptions.optionalType)
+        return `    ${formatPropertyName(header.name)}: ${finalType},`
       })
       .join("\n")
 
@@ -659,6 +663,7 @@ function normalizeTypesConfig(
     helpers: config?.helpers ?? "package",
     helpersOutput: config?.helpersOutput ?? "./zenko-types",
     treeShake: config?.treeShake ?? true,
+    optionalType: config?.optionalType ?? "optional",
   }
 }
 
@@ -667,6 +672,7 @@ type NormalizedTypesConfig = {
   helpers: TypesHelperMode
   helpersOutput: string
   treeShake: boolean
+  optionalType: "optional" | "nullable" | "nullish"
 }
 
 /**
@@ -1227,6 +1233,24 @@ function convertQueryParamValue(schema: any, accessor: string): string {
 type SchemaOptions = {
   strictDates: boolean
   strictNumeric: boolean
+  optionalType: "optional" | "nullable" | "nullish"
+}
+
+/**
+ * Applies the appropriate optional modifier to a Zod type based on the optionalType option.
+ */
+function applyOptionalModifier(
+  zodType: string,
+  optionalType: "optional" | "nullable" | "nullish"
+): string {
+  switch (optionalType) {
+    case "optional":
+      return `${zodType}.optional()`
+    case "nullable":
+      return `${zodType}.nullable()`
+    case "nullish":
+      return `${zodType}.nullish()`
+  }
 }
 
 function generateZodSchema(
@@ -1354,7 +1378,9 @@ function buildZodObject(
   )) {
     const isRequired = schema.required?.includes(propName) ?? false
     const zodType = getZodTypeFromSchema(propSchema as any, options, nameMap)
-    const finalType = isRequired ? zodType : `${zodType}.optional()`
+    const finalType = isRequired
+      ? zodType
+      : applyOptionalModifier(zodType, options.optionalType)
     properties.push(`  ${formatPropertyName(propName)}: ${finalType},`)
   }
 

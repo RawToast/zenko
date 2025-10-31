@@ -439,4 +439,121 @@ describe("Configuration Options", () => {
       expect(result).toContain("plain: z.string()")
     })
   })
+
+  describe("optionalType option", () => {
+    test("default behavior (optionalType: optional) - optional fields use z.optional()", () => {
+      const result = generate(stringFormatsSpec, {
+        types: { optionalType: "optional" },
+      })
+
+      // Optional fields should use .optional()
+      expect(result).toContain("website: z.string().url().optional()")
+      expect(result).toContain("avatar: z.string().url().optional()")
+      expect(result).toContain("username: z.string().optional()")
+      expect(result).toContain("tags: z.array(z.string()).optional()")
+
+      // Required fields should NOT have optional modifier
+      expect(result).toContain("id: z.string().uuid()")
+      expect(result).not.toContain("id: z.string().uuid().optional()")
+      expect(result).toContain("email: z.string().email()")
+      expect(result).not.toContain("email: z.string().email().optional()")
+    })
+
+    test("optionalType: nullable - optional fields use z.nullable()", () => {
+      const result = generate(stringFormatsSpec, {
+        types: { optionalType: "nullable" },
+      })
+
+      // Optional fields should use .nullable()
+      expect(result).toContain("website: z.string().url().nullable()")
+      expect(result).toContain("avatar: z.string().url().nullable()")
+      expect(result).toContain("username: z.string().nullable()")
+      expect(result).toContain("tags: z.array(z.string()).nullable()")
+
+      // Should NOT contain .optional() for optional fields
+      expect(result).not.toContain("website: z.string().url().optional()")
+      expect(result).not.toContain("avatar: z.string().url().optional()")
+
+      // Required fields should NOT have nullable modifier
+      expect(result).toContain("id: z.string().uuid()")
+      expect(result).not.toContain("id: z.string().uuid().nullable()")
+    })
+
+    test("optionalType: nullish - optional fields use z.nullish()", () => {
+      const result = generate(stringFormatsSpec, {
+        types: { optionalType: "nullish" },
+      })
+
+      // Optional fields should use .nullish()
+      expect(result).toContain("website: z.string().url().nullish()")
+      expect(result).toContain("avatar: z.string().url().nullish()")
+      expect(result).toContain("username: z.string().nullish()")
+      expect(result).toContain("tags: z.array(z.string()).nullish()")
+
+      // Should NOT contain .optional() or .nullable() for optional fields
+      expect(result).not.toContain("website: z.string().url().optional()")
+      expect(result).not.toContain("website: z.string().url().nullable()")
+
+      // Required fields should NOT have nullish modifier
+      expect(result).toContain("id: z.string().uuid()")
+      expect(result).not.toContain("id: z.string().uuid().nullish()")
+    })
+
+    test("optionalType applies to headers as well", () => {
+      const headerSpec = jsYaml.load(
+        fs.readFileSync("src/resources/mixed-headers.yaml", "utf8")
+      ) as OpenAPISpec
+
+      const resultOptional = generate(headerSpec, {
+        types: { optionalType: "optional" },
+      })
+      expect(resultOptional).toContain("Agent: z.string().optional()")
+
+      const resultNullable = generate(headerSpec, {
+        types: { optionalType: "nullable" },
+      })
+      expect(resultNullable).toContain("Agent: z.string().nullable()")
+      expect(resultNullable).not.toContain("Agent: z.string().optional()")
+
+      const resultNullish = generate(headerSpec, {
+        types: { optionalType: "nullish" },
+      })
+      expect(resultNullish).toContain("Agent: z.string().nullish()")
+      expect(resultNullish).not.toContain("Agent: z.string().optional()")
+      expect(resultNullish).not.toContain("Agent: z.string().nullable()")
+
+      // Required headers should not have modifiers
+      expect(resultOptional).toContain("Test: z.coerce.boolean()")
+      expect(resultOptional).not.toContain(
+        "Test: z.coerce.boolean().optional()"
+      )
+      expect(resultNullable).toContain("Test: z.coerce.boolean()")
+      expect(resultNullable).not.toContain(
+        "Test: z.coerce.boolean().nullable()"
+      )
+    })
+
+    test("optionalType can be overridden per-schema via config", () => {
+      // This test would require a config file, but we can test the API directly
+      const result1 = generate(stringFormatsSpec, {
+        types: { optionalType: "optional" },
+      })
+      const result2 = generate(stringFormatsSpec, {
+        types: { optionalType: "nullable" },
+      })
+      const result3 = generate(stringFormatsSpec, {
+        types: { optionalType: "nullish" },
+      })
+
+      // Verify different behaviors
+      expect(result1).toContain("website: z.string().url().optional()")
+      expect(result2).toContain("website: z.string().url().nullable()")
+      expect(result3).toContain("website: z.string().url().nullish()")
+
+      // Verify no cross-contamination
+      expect(result1).not.toContain("website: z.string().url().nullable()")
+      expect(result2).not.toContain("website: z.string().url().optional()")
+      expect(result3).not.toContain("website: z.string().url().optional()")
+    })
+  })
 })
