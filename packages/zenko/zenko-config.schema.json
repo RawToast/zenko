@@ -50,6 +50,12 @@
           "type": "boolean",
           "default": true,
           "description": "Whether to tree-shake unused types. When true, only types that are used in the operations will be generated."
+        },
+        "optionalType": {
+          "type": "string",
+          "enum": ["optional", "nullable", "nullish"],
+          "default": "optional",
+          "description": "How to handle optional fields: 'optional' (z.optional() - field can be undefined), 'nullable' (z.nullable() - field can be null), or 'nullish' (z.nullish() - field can be undefined or null)"
         }
       }
     },

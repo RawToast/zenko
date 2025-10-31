@@ -3,7 +3,7 @@ import { dirname, resolve } from "path"
 import { load } from "js-yaml"
 import { generate } from "zenko"
 
-function generateSchema(inputFile, outputFile) {
+function generateSchema(inputFile, outputFile, options) {
   try {
     // Resolve input and output paths
     const inputPath = resolve(`./resources/${inputFile}`)
@@ -28,7 +28,7 @@ function generateSchema(inputFile, outputFile) {
     }
 
     // Generate TypeScript code
-    const output = generate(spec)
+    const output = generate(spec, options)
 
     // Validate output
     if (!output || typeof output !== "string") {
@@ -57,7 +57,12 @@ try {
   const petstoreSuccess = generateSchema("petstore.yaml", "petstore.gen.ts")
   const trainTravelSuccess = generateSchema(
     "train-travel.yaml",
-    "train-travel.gen.ts"
+    "train-travel.gen.ts",
+    {
+      types: {
+        optionalType: "nullish",
+      },
+    }
   )
 
   if (!petstoreSuccess || !trainTravelSuccess) {
