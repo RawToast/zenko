@@ -14,17 +14,6 @@ describe("Petstore", () => {
     expect(result).toMatchSnapshot("petstore-complete-output")
   })
 
-  test("generates complete TypeScript output", () => {
-    const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(petstoreContent) as OpenAPISpec
-    const result = generate(specYaml)
-
-    expect(result).toMatchSnapshot("petstore-complete-output")
-  })
-
   test("includes Zod import", () => {
     const petstoreContent = fs.readFileSync(
       "src/resources/petstore.yaml",
