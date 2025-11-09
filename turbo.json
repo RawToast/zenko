@@ -25,7 +25,7 @@
       "inputs": ["**/*.{ts,tsx}"]
     },
     "test": {
-      "inputs": ["**/*.ts", "**/*.yaml"],
+      "inputs": ["$TURBO_DEFAULT$", "**/*.ts", "**/*.yaml"],
       "dependsOn": ["^test"]
     },
     "coverage": {

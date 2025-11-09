@@ -83,6 +83,13 @@
         "types": {
           "$ref": "#/definitions/TypesConfig",
           "description": "Per-schema type generation configuration. Overrides global types config."
+        },
+        "operationIds": {
+          "type": "array",
+          "description": "Array of operation IDs to include in the generated file. If not provided, all operations will be included.",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }
