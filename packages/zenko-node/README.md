@@ -45,11 +45,20 @@ await writeFile("types.ts", output)
 
 ```bash
 bun install
-bun run --filter zenko-node build
+bun zenko-node build
 ```
 
 Run tests with:
 
 ```bash
-bun run --filter zenko-node test
+bun zenko-node test
+```
+
+Alternatively, you can run the scripts directly from the package directory:
+
+```bash
+cd packages/zenko-node
+bun install
+bun run build
+bun run test
 ```
