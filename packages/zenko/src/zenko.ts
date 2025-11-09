@@ -7,6 +7,7 @@ import {
   collectInlineRequestTypes,
   collectInlineResponseTypes,
 } from "./utils/collect-inline-types"
+import { collectReferencedSchemas } from "./utils/collect-referenced-schemas"
 import type { RequestMethod } from "./types"
 import type {
   PathParam,
@@ -43,6 +44,7 @@ export type GenerateOptions = {
   strictDates?: boolean
   strictNumeric?: boolean
   types?: TypesConfig
+  operationIds?: string[]
 }
 
 export type GenerateResult = {
@@ -66,7 +68,7 @@ export function generateWithMetadata(
 ): GenerateResult {
   const output: string[] = []
   const generatedTypes = new Set<string>()
-  const { strictDates = false, strictNumeric = false } = options
+  const { strictDates = false, strictNumeric = false, operationIds } = options
   const typesConfig = normalizeTypesConfig(options.types)
   const schemaOptions: SchemaOptions = {
     strictDates,
@@ -85,7 +87,13 @@ export function generateWithMetadata(
   }
 
   // Parse all operations early for tree-shaking
-  const operations = parseOperations(spec, nameMap)
+  let operations = parseOperations(spec, nameMap)
+
+  // Filter operations if operationIds is provided
+  if (operationIds && operationIds.length > 0) {
+    const selectedIds = new Set(operationIds)
+    operations = operations.filter((op) => selectedIds.has(op.operationId))
+  }
 
   // Generate helper types import right after Zod import
   appendHelperTypesImport(output, typesConfig, operations)
@@ -96,8 +104,21 @@ export function generateWithMetadata(
     output.push("// Generated Zod Schemas")
     output.push("")
 
+    // Determine which schemas to generate
+    let schemasToGenerate: string[]
+    if (operationIds && operationIds.length > 0) {
+      // Only generate schemas referenced by selected operations
+      const referencedSchemas = collectReferencedSchemas(operations, spec)
+      schemasToGenerate = Array.from(referencedSchemas)
+    } else {
+      // Generate all schemas
+      schemasToGenerate = Object.keys(spec.components.schemas)
+    }
+
     // Sort schemas by dependencies (topological sort)
-    const sortedSchemas = topologicalSort(spec.components.schemas)
+    const sortedSchemas = topologicalSort(spec.components.schemas).filter(
+      (name) => schemasToGenerate.includes(name)
+    )
 
     for (const name of sortedSchemas) {
       const schema = spec.components.schemas[name]
