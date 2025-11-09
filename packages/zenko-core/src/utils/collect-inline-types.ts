@@ -1,4 +1,5 @@
 import { toCamelCase, capitalize } from "./string-utils"
+import { isErrorStatus, mapStatusToIdentifier } from "./http-status"
 import type { Operation } from "../types/operation"
 import type { OpenAPISpec as FullOpenAPISpec } from "../zenko"
 /**
@@ -150,4 +151,68 @@ export function collectInlineResponseTypes(
   }
 
   return responseTypesToGenerate
+}
+
+/**
+ * Collects all inline error response types that need to be generated.
+ *
+ * @param operations - Processed operations with metadata
+ * @param spec - Raw OpenAPI specification
+ * @returns Map of type names to their schemas
+ */
+export function collectInlineErrorTypes(
+  operations: Operation[],
+  spec: OpenAPISpec
+): Map<string, any> {
+  const errorTypesToGenerate = new Map<string, any>()
+
+  // Build a lookup map of operationId -> operation for O(1) access
+  const operationLookup = new Map<string, OpenAPIOperation>()
+
+  // Process paths
+  for (const [, pathItem] of Object.entries(spec.paths || {})) {
+    for (const [, operation] of Object.entries(pathItem)) {
+      const op = operation as OpenAPIOperation
+      if (op.operationId) {
+        operationLookup.set(op.operationId, op)
+      }
+    }
+  }
+
+  // Process webhooks
+  for (const [, pathItem] of Object.entries(spec.webhooks || {})) {
+    for (const [, operation] of Object.entries(pathItem)) {
+      const op = operation as OpenAPIOperation
+      if (op.operationId) {
+        operationLookup.set(op.operationId, op)
+      }
+    }
+  }
+
+  for (const op of operations) {
+    const operation = operationLookup.get(op.operationId)
+    if (!operation) continue
+
+    const responses = operation.responses || {}
+    for (const [statusCode, response] of Object.entries(responses)) {
+      if (isErrorStatus(statusCode) && (response as any).content) {
+        const content = (response as any).content
+        const jsonContent = content["application/json"]
+
+        if (jsonContent && jsonContent.schema) {
+          const schema = jsonContent.schema
+          const identifier = mapStatusToIdentifier(statusCode)
+          const typeName = `${capitalize(toCamelCase(op.operationId))}${capitalize(identifier)}`
+
+          // Generate if it's not a simple $ref (those are already handled)
+          // This includes allOf, oneOf, anyOf, and complex inline schemas
+          if (!schema.$ref || schema.allOf || schema.oneOf || schema.anyOf) {
+            errorTypesToGenerate.set(typeName, schema)
+          }
+        }
+      }
+    }
+  }
+
+  return errorTypesToGenerate
 }

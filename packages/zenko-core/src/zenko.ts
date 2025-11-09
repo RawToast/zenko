@@ -6,6 +6,7 @@ import { analyzeZenkoUsage, generateZenkoImport } from "./utils/tree-shaking"
 import {
   collectInlineRequestTypes,
   collectInlineResponseTypes,
+  collectInlineErrorTypes,
 } from "./utils/collect-inline-types"
 import { collectReferencedSchemas } from "./utils/collect-referenced-schemas"
 import type { RequestMethod } from "./types"
@@ -456,13 +457,28 @@ function generateResponseTypes(
   schemaOptions: SchemaOptions
 ) {
   const responseTypesToGenerate = collectInlineResponseTypes(operations, spec)
+  const errorTypesToGenerate = collectInlineErrorTypes(operations, spec)
 
   // Generate the response type definitions
-  if (responseTypesToGenerate.size > 0) {
+  if (responseTypesToGenerate.size > 0 || errorTypesToGenerate.size > 0) {
     output.push("// Generated Response Types")
     output.push("")
 
     for (const [typeName, schema] of responseTypesToGenerate) {
+      const generatedSchema = generateZodSchema(
+        typeName,
+        schema,
+        new Set(),
+        schemaOptions,
+        nameMap
+      )
+      output.push(generatedSchema)
+      output.push("")
+      output.push(`export type ${typeName} = z.infer<typeof ${typeName}>;`)
+      output.push("")
+    }
+
+    for (const [typeName, schema] of errorTypesToGenerate) {
       const generatedSchema = generateZodSchema(
         typeName,
         schema,
