@@ -59,6 +59,7 @@ try {
     "train-travel.yaml",
     "train-travel.gen.ts",
     {
+      operationIds: ["get-stations"], // Include only ~10% of operations (1 of 8)
       types: {
         optionalType: "nullish",
       },

@@ -25,6 +25,7 @@
       "inputs": ["**/*.{ts,tsx}"]
     },
     "test": {
+      "inputs": ["**/*.ts", "**/*.yaml"],
       "dependsOn": ["^test"]
     },
     "coverage": {

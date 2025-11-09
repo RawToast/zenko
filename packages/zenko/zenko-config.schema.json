@@ -184,6 +184,18 @@
           }
         ]
       }
+    },
+    {
+      "title": "Selective Operations",
+      "value": {
+        "schemas": [
+          {
+            "input": "api.yaml",
+            "output": "api.gen.ts",
+            "operationIds": ["getUser", "createUser", "updateUser"]
+          }
+        ]
+      }
     }
   ]
 }

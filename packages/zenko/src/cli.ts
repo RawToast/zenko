@@ -16,6 +16,7 @@ type CliConfigEntry = {
   strictDates?: boolean
   strictNumeric?: boolean
   types?: TypesConfig
+  operationIds?: string[]
 }
 
 type CliConfigFile = {
@@ -157,6 +158,7 @@ async function runFromConfig(parsed: ParsedArgs) {
       strictDates: entry.strictDates ?? parsed.strictDates,
       strictNumeric: entry.strictNumeric ?? parsed.strictNumeric,
       typesConfig,
+      operationIds: entry.operationIds,
     })
   }
 }
@@ -219,9 +221,16 @@ async function generateSingle(options: {
   strictDates: boolean
   strictNumeric: boolean
   typesConfig?: TypesConfig
+  operationIds?: string[]
 }) {
-  const { inputFile, outputFile, strictDates, strictNumeric, typesConfig } =
-    options
+  const {
+    inputFile,
+    outputFile,
+    strictDates,
+    strictNumeric,
+    typesConfig,
+    operationIds,
+  } = options
   const resolvedInput = path.resolve(inputFile)
   const resolvedOutput = path.resolve(outputFile)
 
@@ -230,6 +239,7 @@ async function generateSingle(options: {
     strictDates,
     strictNumeric,
     types: typesConfig,
+    operationIds,
   })
 
   fs.mkdirSync(path.dirname(resolvedOutput), { recursive: true })

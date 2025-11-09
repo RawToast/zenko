@@ -187,4 +187,39 @@ describe("CLI", () => {
     expect(output).toContain(".max(5)")
     expect(output).toContain("export const paths =")
   })
+
+  test("supports operationIds in config file", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+    const petstorePath = path.join(process.cwd(), "src/resources/petstore.yaml")
+
+    const configDir = path.join(tempDir, "selective-config")
+    const configOutput = path.join(configDir, "selective-output.ts")
+    fs.mkdirSync(configDir, { recursive: true })
+
+    const configPath = path.join(configDir, "zenko.config.json")
+    const config = {
+      schemas: [
+        {
+          input: path.relative(configDir, petstorePath),
+          output: "selective-output.ts",
+          operationIds: ["listPets", "showPetById"],
+        },
+      ],
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+
+    execSync(`bun run ${cliPath} --config ${configPath}`, {
+      encoding: "utf8",
+    })
+
+    const output = fs.readFileSync(configOutput, "utf8")
+    expect(output).toContain('import { z } from "zod"')
+    expect(output).toContain("export const paths =")
+    expect(output).toContain("listPets:")
+    expect(output).toContain("showPetById:")
+    expect(output).not.toContain("createPets:")
+    expect(output).toContain("export const Pet =")
+    expect(output).toContain("export const Pets =")
+    expect(output).toContain("export const Error =")
+  })
 })
