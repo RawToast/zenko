@@ -35,6 +35,10 @@ export default defineConfig({
   // External dependencies (don't bundle them)
   external: ["fs"],
 
+  // Explicitly bundle workspace dependencies
+  // tsup should bundle @zenko/core by default, but this ensures it
+  noExternal: ["@zenko/core"],
+
   // CJS interop for better compatibility
   cjsInterop: true,
 

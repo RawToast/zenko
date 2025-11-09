@@ -1,6 +1,6 @@
 {
   "name": "zenko-node",
-  "version": "0.1.10",
+  "version": "0.1.10-beta.3",
   "description": "Node.js-compatible distribution of Zenko using js-yaml for spec loading",
   "type": "module",
   "main": "dist/index.cjs",
