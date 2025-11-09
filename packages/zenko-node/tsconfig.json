@@ -9,6 +9,9 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
+    "paths": {
+      "@zenko/core": ["../zenko-core/src/index.ts"]
+    },
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,

@@ -4,7 +4,10 @@ import { generate, type OpenAPISpec } from "../zenko"
 
 describe("tree-shaking with train-travel spec", () => {
   test("correctly tree-shakes imports for complex spec", () => {
-    const content = fs.readFileSync("../zenko-core/src/resources/train-travel.yaml", "utf8")
+    const content = fs.readFileSync(
+      "../zenko-core/src/resources/train-travel.yaml",
+      "utf8"
+    )
     const specYaml = Bun.YAML.parse(content) as OpenAPISpec
 
     // Without tree-shaking

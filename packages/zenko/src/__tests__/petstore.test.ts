@@ -146,7 +146,10 @@ describe("Petstore", () => {
   })
 
   test("generates expected TypeScript from petstore.yaml", () => {
-    const petstorePath = path.join(process.cwd(), "../zenko-core/src/resources/petstore.yaml")
+    const petstorePath = path.join(
+      process.cwd(),
+      "../zenko-core/src/resources/petstore.yaml"
+    )
 
     // Run the CLI
     const cliPath = path.join(process.cwd(), "src/cli.ts")
