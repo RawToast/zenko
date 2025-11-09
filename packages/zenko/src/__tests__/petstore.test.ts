@@ -22,35 +22,29 @@ describe("Petstore", () => {
     }
   })
 
-  test("generates complete TypeScript output", () => {
+  function generatePetstoreOutput() {
     const petstoreContent = fs.readFileSync(
       "../zenko-core/src/resources/petstore.yaml",
       "utf8"
     )
     const specYaml = Bun.YAML.parse(petstoreContent) as OpenAPISpec
-    const result = generate(specYaml)
+    return generate(specYaml)
+  }
+
+  test("generates complete TypeScript output", () => {
+    const result = generatePetstoreOutput()
 
     expect(result).toMatchSnapshot("petstore-complete-output")
   })
 
   test("includes Zod import", () => {
-    const petstoreContent = fs.readFileSync(
-      "../zenko-core/src/resources/petstore.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(petstoreContent) as OpenAPISpec
-    const result = generate(specYaml)
+    const result = generatePetstoreOutput()
 
     expect(result).toContain('import { z } from "zod"')
   })
 
   test("generates schemas in correct dependency order", () => {
-    const petstoreContent = fs.readFileSync(
-      "../zenko-core/src/resources/petstore.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(petstoreContent) as OpenAPISpec
-    const result = generate(specYaml)
+    const result = generatePetstoreOutput()
 
     // Pet should come before Pets since Pets references Pet
     const petIndex = result.indexOf("export const Pet =")
@@ -61,12 +55,7 @@ describe("Petstore", () => {
   })
 
   test("generates all expected schemas", () => {
-    const petstoreContent = fs.readFileSync(
-      "../zenko-core/src/resources/petstore.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(petstoreContent) as OpenAPISpec
-    const result = generate(specYaml)
+    const result = generatePetstoreOutput()
 
     expect(result).toContain("export const Pet =")
     expect(result).toContain("export const Pets =")
@@ -77,12 +66,7 @@ describe("Petstore", () => {
   })
 
   test("generates path functions", () => {
-    const petstoreContent = fs.readFileSync(
-      "../zenko-core/src/resources/petstore.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(petstoreContent) as OpenAPISpec
-    const result = generate(specYaml)
+    const result = generatePetstoreOutput()
 
     expect(result).toContain("export const paths = {")
     expect(result).toContain("listPets:")
@@ -91,12 +75,7 @@ describe("Petstore", () => {
   })
 
   test("generates operation objects", () => {
-    const petstoreContent = fs.readFileSync(
-      "../zenko-core/src/resources/petstore.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(petstoreContent) as OpenAPISpec
-    const result = generate(specYaml)
+    const result = generatePetstoreOutput()
 
     expect(result).toContain("export const listPets: ListPetsOperation =")
     expect(result).toContain("export const createPets: CreatePetsOperation =")
