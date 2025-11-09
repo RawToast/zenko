@@ -1,0 +1,221 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`TicTacToe generates complete TypeScript output: tictactoe-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const errorMessage = z.string();
+
+export type errorMessage = z.infer<typeof errorMessage>;
+
+export const coordinate = z.number().int();
+
+export type coordinate = z.infer<typeof coordinate>;
+
+export const mark = z.enum([".", "X", "O"]);
+
+export type mark = z.infer<typeof mark>;
+
+export const board = z.array(z.array(mark));
+
+export type board = z.infer<typeof board>;
+
+export const winner = z.enum([".", "X", "O"]);
+
+export type winner = z.infer<typeof winner>;
+
+export const status = z.object({
+  winner: winner.optional(),
+  board: board.optional(),
+});
+
+export type status = z.infer<typeof status>;
+
+// Path Functions
+export const paths = {
+  getBoard: () => "/board",
+  getSquare: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+  putSquare: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  getBoard: z.object({}),
+  getSquare: z.object({}),
+  putSquare: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  getBoard: () => headerSchemas.getBoard.parse({}),
+  getSquare: () => headerSchemas.getSquare.parse({}),
+  putSquare: () => headerSchemas.putSquare.parse({}),
+} as const;
+
+// Operation Types
+export type GetBoardOperation = OperationDefinition<
+  "get",
+  typeof paths.getBoard,
+  undefined,
+  typeof status,
+  undefined,
+  OperationErrors
+>;
+
+export type GetSquareOperation = OperationDefinition<
+  "get",
+  typeof paths.getSquare,
+  undefined,
+  typeof mark,
+  undefined,
+  OperationErrors<{ badRequest: typeof errorMessage }>
+>;
+
+export type PutSquareOperation = OperationDefinition<
+  "put",
+  typeof paths.putSquare,
+  typeof mark,
+  typeof status,
+  undefined,
+  OperationErrors<{ badRequest: typeof errorMessage }>
+>;
+
+// Operation Objects
+export const getBoard: GetBoardOperation = {
+  method: "get",
+  path: paths.getBoard,
+  response: status,
+} as const;
+
+export const getSquare: GetSquareOperation = {
+  method: "get",
+  path: paths.getSquare,
+  response: mark,
+    errors: {
+      badRequest: errorMessage,
+    },
+} as const;
+
+export const putSquare: PutSquareOperation = {
+  method: "put",
+  path: paths.putSquare,
+  request: mark,
+  response: status,
+    errors: {
+      badRequest: errorMessage,
+    },
+} as const;
+"
+`;
+
+exports[`TicTacToe generates complete TypeScript output with strict options: tictactoe-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const errorMessage = z.string().max(256);
+
+export type errorMessage = z.infer<typeof errorMessage>;
+
+export const coordinate = z.number().min(1).max(3).int();
+
+export type coordinate = z.infer<typeof coordinate>;
+
+export const mark = z.enum([".", "X", "O"]);
+
+export type mark = z.infer<typeof mark>;
+
+export const board = z.array(z.array(mark)).min(3).max(3);
+
+export type board = z.infer<typeof board>;
+
+export const winner = z.enum([".", "X", "O"]);
+
+export type winner = z.infer<typeof winner>;
+
+export const status = z.object({
+  winner: winner.optional(),
+  board: board.optional(),
+});
+
+export type status = z.infer<typeof status>;
+
+// Path Functions
+export const paths = {
+  getBoard: () => "/board",
+  getSquare: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+  putSquare: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  getBoard: z.object({}),
+  getSquare: z.object({}),
+  putSquare: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  getBoard: () => headerSchemas.getBoard.parse({}),
+  getSquare: () => headerSchemas.getSquare.parse({}),
+  putSquare: () => headerSchemas.putSquare.parse({}),
+} as const;
+
+// Operation Types
+export type GetBoardOperation = OperationDefinition<
+  "get",
+  typeof paths.getBoard,
+  undefined,
+  typeof status,
+  undefined,
+  OperationErrors
+>;
+
+export type GetSquareOperation = OperationDefinition<
+  "get",
+  typeof paths.getSquare,
+  undefined,
+  typeof mark,
+  undefined,
+  OperationErrors<{ badRequest: typeof errorMessage }>
+>;
+
+export type PutSquareOperation = OperationDefinition<
+  "put",
+  typeof paths.putSquare,
+  typeof mark,
+  typeof status,
+  undefined,
+  OperationErrors<{ badRequest: typeof errorMessage }>
+>;
+
+// Operation Objects
+export const getBoard: GetBoardOperation = {
+  method: "get",
+  path: paths.getBoard,
+  response: status,
+} as const;
+
+export const getSquare: GetSquareOperation = {
+  method: "get",
+  path: paths.getSquare,
+  response: mark,
+    errors: {
+      badRequest: errorMessage,
+    },
+} as const;
+
+export const putSquare: PutSquareOperation = {
+  method: "put",
+  path: paths.putSquare,
+  request: mark,
+  response: status,
+    errors: {
+      badRequest: errorMessage,
+    },
+} as const;
+"
+`;

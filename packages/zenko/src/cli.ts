@@ -1,28 +1,14 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
-import * as fs from "fs"
 import * as path from "path"
-import { pathToFileURL } from "url"
-import { load } from "js-yaml"
+import { mkdir } from "node:fs/promises"
+import { generateFromDocument, type TypesConfig } from "@zenko/core"
 import {
-  generateWithMetadata,
-  type OpenAPISpec,
-  type TypesConfig,
-} from "./zenko.js"
-
-type CliConfigEntry = {
-  input: string
-  output: string
-  strictDates?: boolean
-  strictNumeric?: boolean
-  types?: TypesConfig
-  operationIds?: string[]
-}
-
-type CliConfigFile = {
-  schemas: CliConfigEntry[]
-  types?: TypesConfig
-}
+  loadConfig,
+  loadSpec,
+  normalizeGenerationOptions,
+  type SchemaConfigFile,
+} from "./loader"
 
 type ParsedArgs = {
   showHelp: boolean
@@ -62,8 +48,8 @@ async function main() {
         return
       }
       await generateSingle({
-        inputFile,
-        outputFile,
+        resolvedInput: path.resolve(inputFile),
+        resolvedOutput: path.resolve(outputFile),
         strictDates: parsed.strictDates,
         strictNumeric: parsed.strictNumeric,
       })
@@ -142,55 +128,34 @@ function printHelp() {
 async function runFromConfig(parsed: ParsedArgs) {
   const configPath = parsed.configPath!
   const resolvedConfigPath = path.resolve(configPath)
-  const config = await loadConfig(resolvedConfigPath)
-  validateConfig(config)
+  const configDocument = await loadConfig(resolvedConfigPath)
+  validateConfig(configDocument)
+  const config = configDocument as SchemaConfigFile
 
   const baseDir = path.dirname(resolvedConfigPath)
-  const baseTypesConfig = config.types
+  const defaults = {
+    strictDates: parsed.strictDates,
+    strictNumeric: parsed.strictNumeric,
+    types: config.types,
+    operationIds: undefined as string[] | undefined,
+  }
 
   for (const entry of config.schemas) {
-    const inputFile = resolvePath(entry.input, baseDir)
-    const outputFile = resolvePath(entry.output, baseDir)
-    const typesConfig = resolveTypesConfig(baseTypesConfig, entry.types)
-    await generateSingle({
-      inputFile,
-      outputFile,
-      strictDates: entry.strictDates ?? parsed.strictDates,
-      strictNumeric: entry.strictNumeric ?? parsed.strictNumeric,
-      typesConfig,
-      operationIds: entry.operationIds,
-    })
+    const options = normalizeGenerationOptions(entry, baseDir, defaults)
+    await generateSingle(options)
   }
 }
 
-async function loadConfig(filePath: string): Promise<unknown> {
-  const extension = path.extname(filePath).toLowerCase()
-
-  if (extension === ".json") {
-    const content = fs.readFileSync(filePath, "utf8")
-    return JSON.parse(content)
-  }
-
-  if (extension === ".yaml" || extension === ".yml") {
-    const content = fs.readFileSync(filePath, "utf8")
-    return load(content)
-  }
-
-  const fileUrl = pathToFileURL(filePath).href
-  const module = await import(fileUrl)
-  return module.default ?? module.config ?? module
-}
-
-function validateConfig(config: unknown): asserts config is CliConfigFile {
+function validateConfig(config: unknown): asserts config is SchemaConfigFile {
   if (!config || typeof config !== "object") {
     throw new Error("Config file must export an object")
   }
 
-  if (!Array.isArray((config as CliConfigFile).schemas)) {
+  if (!Array.isArray((config as SchemaConfigFile).schemas)) {
     throw new Error("Config file must contain a 'schemas' array")
   }
 
-  for (const entry of (config as CliConfigFile).schemas) {
+  for (const entry of (config as SchemaConfigFile).schemas) {
     if (!entry || typeof entry !== "object") {
       throw new Error("Each schema entry must be an object")
     }
@@ -200,50 +165,32 @@ function validateConfig(config: unknown): asserts config is CliConfigFile {
   }
 }
 
-function resolvePath(filePath: string, baseDir: string): string {
-  return path.isAbsolute(filePath) ? filePath : path.join(baseDir, filePath)
-}
-
-function resolveTypesConfig(
-  baseConfig: TypesConfig | undefined,
-  entryConfig: TypesConfig | undefined
-): TypesConfig | undefined {
-  if (!baseConfig && !entryConfig) return undefined
-  return {
-    ...baseConfig,
-    ...entryConfig,
-  }
-}
-
 async function generateSingle(options: {
-  inputFile: string
-  outputFile: string
-  strictDates: boolean
-  strictNumeric: boolean
-  typesConfig?: TypesConfig
+  resolvedInput: string
+  resolvedOutput: string
+  strictDates?: boolean
+  strictNumeric?: boolean
+  types?: TypesConfig
   operationIds?: string[]
 }) {
   const {
-    inputFile,
-    outputFile,
-    strictDates,
-    strictNumeric,
-    typesConfig,
+    resolvedInput,
+    resolvedOutput,
+    strictDates = false,
+    strictNumeric = false,
+    types,
     operationIds,
   } = options
-  const resolvedInput = path.resolve(inputFile)
-  const resolvedOutput = path.resolve(outputFile)
-
-  const spec = readSpec(resolvedInput)
-  const result = generateWithMetadata(spec, {
+  const spec = await loadSpec(resolvedInput)
+  const result = generateFromDocument(spec, {
     strictDates,
     strictNumeric,
-    types: typesConfig,
+    types,
     operationIds,
   })
 
-  fs.mkdirSync(path.dirname(resolvedOutput), { recursive: true })
-  fs.writeFileSync(resolvedOutput, result.output)
+  await mkdir(path.dirname(resolvedOutput), { recursive: true })
+  await Bun.write(resolvedOutput, result.output)
 
   console.log(`✅ Generated TypeScript types in ${resolvedOutput}`)
   console.log(`📄 Processed ${Object.keys(spec.paths || {}).length} paths`)
@@ -269,27 +216,11 @@ async function generateSingle(options: {
       return
     }
 
-    fs.mkdirSync(path.dirname(helperPath), { recursive: true })
-    fs.writeFileSync(helperPath, result.helperFile.content, {
-      encoding: "utf8",
-    })
+    await mkdir(path.dirname(helperPath), { recursive: true })
+    await Bun.write(helperPath, result.helperFile.content)
 
     console.log(`📦 Generated helper types in ${helperPath}`)
   }
-}
-
-function readSpec(filePath: string): OpenAPISpec {
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Input file not found: ${filePath}`)
-  }
-
-  const content = fs.readFileSync(filePath, "utf8")
-
-  if (filePath.endsWith(".yaml") || filePath.endsWith(".yml")) {
-    return load(content) as OpenAPISpec
-  }
-
-  return JSON.parse(content) as OpenAPISpec
 }
 
 main().catch((error) => {

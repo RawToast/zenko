@@ -1,6 +1,5 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
 import * as path from "path"
 import { generate, type OpenAPISpec } from "../zenko"
 
@@ -21,10 +20,10 @@ describe("Train Travel", () => {
 
   test("generates complete TypeScript output", () => {
     const trainTravelContent = fs.readFileSync(
-      "src/resources/train-travel.yaml",
+      "../zenko-core/src/resources/train-travel.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(trainTravelContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(trainTravelContent) as OpenAPISpec
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("train-travel-complete-output")
@@ -32,10 +31,10 @@ describe("Train Travel", () => {
 
   test("handles operation IDs with hyphens correctly", () => {
     const trainTravelContent = fs.readFileSync(
-      "src/resources/train-travel.yaml",
+      "../zenko-core/src/resources/train-travel.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(trainTravelContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(trainTravelContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Currently generates valid TypeScript identifiers (camelCase) for operations
@@ -60,10 +59,10 @@ describe("Train Travel", () => {
 
   test("generates proper response types for operations", () => {
     const trainTravelContent = fs.readFileSync(
-      "src/resources/train-travel.yaml",
+      "../zenko-core/src/resources/train-travel.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(trainTravelContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(trainTravelContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Should generate response types that reference the correct schemas
@@ -73,10 +72,10 @@ describe("Train Travel", () => {
 
   test("generates all expected schemas", () => {
     const trainTravelContent = fs.readFileSync(
-      "src/resources/train-travel.yaml",
+      "../zenko-core/src/resources/train-travel.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(trainTravelContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(trainTravelContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Key schemas from the spec
@@ -91,10 +90,10 @@ describe("Train Travel", () => {
 
   test("generates valid TypeScript identifiers for schemas with hyphens", () => {
     const trainTravelContent = fs.readFileSync(
-      "src/resources/train-travel.yaml",
+      "../zenko-core/src/resources/train-travel.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(trainTravelContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(trainTravelContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Fixed: hyphens are now converted to camelCase

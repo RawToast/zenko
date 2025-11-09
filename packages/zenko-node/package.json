@@ -1,0 +1,52 @@
+{
+  "name": "zenko-node",
+  "version": "0.1.10",
+  "description": "Node.js-compatible distribution of Zenko using js-yaml for spec loading",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "zenko-node": "dist/cli.cjs"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RawToast/zenko.git"
+  },
+  "license": "MIT",
+  "author": "RawToast",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "test": "bun test",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@zenko/core": "workspace:*",
+    "js-yaml": "4.1.0"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.2",
+    "@types/js-yaml": "4.0.9",
+    "tsup": "8.5.0",
+    "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

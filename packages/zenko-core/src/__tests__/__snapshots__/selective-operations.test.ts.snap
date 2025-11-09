@@ -1,0 +1,91 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Selective Operations generates only selected operations and their referenced schemas: selective-operations-petstore 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const Pet = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  tag: z.string().optional(),
+});
+
+export type Pet = z.infer<typeof Pet>;
+
+export const Pets = z.array(Pet);
+
+export type Pets = z.infer<typeof Pets>;
+
+export const Error = z.object({
+  code: z.number().int(),
+  message: z.string(),
+});
+
+export type Error = z.infer<typeof Error>;
+
+// Path Functions
+export const paths = {
+  listPets: ({ limit }: { limit?: number } = {}) => {
+    const params = new URLSearchParams()
+    if (limit !== undefined) {
+      params.set("limit", String(limit))
+    }
+    const _searchParams = params.toString()
+    return \`/pets\${_searchParams ? \`?\${_searchParams}\` : ""}\`
+  },
+  showPetById: ({ petId }: { petId: string }) => \`/pets/\${petId}\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  listPets: z.object({}),
+  showPetById: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  listPets: () => headerSchemas.listPets.parse({}),
+  showPetById: () => headerSchemas.showPetById.parse({}),
+} as const;
+
+// Operation Types
+export type ListPetsOperation = OperationDefinition<
+  "get",
+  typeof paths.listPets,
+  undefined,
+  typeof Pets,
+  undefined,
+  OperationErrors<{ defaultError: typeof Error }>
+>;
+
+export type ShowPetByIdOperation = OperationDefinition<
+  "get",
+  typeof paths.showPetById,
+  undefined,
+  typeof Pet,
+  undefined,
+  OperationErrors<{ defaultError: typeof Error }>
+>;
+
+// Operation Objects
+export const listPets: ListPetsOperation = {
+  method: "get",
+  path: paths.listPets,
+  response: Pets,
+    errors: {
+      defaultError: Error,
+    },
+} as const;
+
+export const showPetById: ShowPetByIdOperation = {
+  method: "get",
+  path: paths.showPetById,
+  response: Pet,
+    errors: {
+      defaultError: Error,
+    },
+} as const;
+"
+`;

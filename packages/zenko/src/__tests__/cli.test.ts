@@ -2,11 +2,17 @@ import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import { execSync } from "child_process"
 import * as fs from "fs"
 import * as path from "path"
-import * as jsYaml from "js-yaml"
 
 describe("CLI", () => {
   const tempDir = path.join(process.cwd(), "temp-test")
   const outputFile = path.join(tempDir, "output.ts")
+  const fixturesRoot = path.join(
+    process.cwd(),
+    "..",
+    "zenko-core",
+    "src",
+    "resources"
+  )
 
   beforeAll(() => {
     // Create temp directory for test output
@@ -23,7 +29,7 @@ describe("CLI", () => {
   })
 
   test("generates TypeScript from petstore.yaml", () => {
-    const petstorePath = path.join(process.cwd(), "src/resources/petstore.yaml")
+    const petstorePath = path.join(fixturesRoot, "petstore.yaml")
 
     // Run the CLI
     const cliPath = path.join(process.cwd(), "src/cli.ts")
@@ -125,7 +131,7 @@ describe("CLI", () => {
 
   test("supports config file generation", () => {
     const cliPath = path.join(process.cwd(), "src/cli.ts")
-    const petstorePath = path.join(process.cwd(), "src/resources/petstore.yaml")
+    const petstorePath = path.join(fixturesRoot, "petstore.yaml")
 
     const configDir = path.join(tempDir, "config")
     const configOutput = path.join(configDir, "config-output.ts")
@@ -171,8 +177,8 @@ describe("CLI", () => {
       },
     }
 
-    const specPath = path.join(tempDir, "strict-spec.yaml")
-    fs.writeFileSync(specPath, jsYaml.dump(strictSpec))
+    const specPath = path.join(tempDir, "strict-spec.json")
+    fs.writeFileSync(specPath, JSON.stringify(strictSpec, null, 2))
 
     execSync(
       `bun run ${cliPath} ${specPath} ${outputFile} --strict-dates --strict-numeric`,
@@ -190,7 +196,7 @@ describe("CLI", () => {
 
   test("supports operationIds in config file", () => {
     const cliPath = path.join(process.cwd(), "src/cli.ts")
-    const petstorePath = path.join(process.cwd(), "src/resources/petstore.yaml")
+    const petstorePath = path.join(fixturesRoot, "petstore.yaml")
 
     const configDir = path.join(tempDir, "selective-config")
     const configOutput = path.join(configDir, "selective-output.ts")

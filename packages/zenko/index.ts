@@ -1,12 +1,17 @@
 export {
   generate,
-  type OpenAPISpec,
+  generateFromDocument,
+  generateWithMetadata,
   type GenerateOptions,
+  type GenerateResult,
+  type OpenAPISpec,
   type TypesConfig,
-} from "./src/zenko"
+  type TypesHelperMode,
+} from "@zenko/core"
+
 export {
   type PathFn,
   type HeaderFn,
   type OperationErrors,
   type OperationDefinition,
-} from "./src/types"
+} from "@zenko/core"

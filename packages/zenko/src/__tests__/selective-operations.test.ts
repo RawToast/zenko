@@ -1,15 +1,14 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
 describe("Selective Operations", () => {
   test("generates only selected operations and their referenced schemas", () => {
     const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
+      "../zenko-core/src/resources/petstore.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(petstoreContent) as OpenAPISpec
     const result = generate(specYaml, {
       operationIds: ["listPets", "showPetById"],
     })
@@ -38,10 +37,10 @@ describe("Selective Operations", () => {
 
   test("generates only single operation when one operationId provided", () => {
     const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
+      "../zenko-core/src/resources/petstore.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(petstoreContent) as OpenAPISpec
     const result = generate(specYaml, {
       operationIds: ["listPets"],
     })
@@ -65,10 +64,10 @@ describe("Selective Operations", () => {
 
   test("generates all operations when operationIds is empty", () => {
     const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
+      "../zenko-core/src/resources/petstore.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(petstoreContent) as OpenAPISpec
     const result = generate(specYaml, {
       operationIds: [],
     })
@@ -86,10 +85,10 @@ describe("Selective Operations", () => {
 
   test("generates all operations when operationIds is undefined", () => {
     const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
+      "../zenko-core/src/resources/petstore.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(petstoreContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Should include all operations

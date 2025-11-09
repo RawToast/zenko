@@ -33,7 +33,7 @@ export default defineConfig({
   shims: true,
 
   // External dependencies (don't bundle them)
-  external: ["fs", "js-yaml"],
+  external: ["fs"],
 
   // CJS interop for better compatibility
   cjsInterop: true,

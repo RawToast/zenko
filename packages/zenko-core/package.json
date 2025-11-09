@@ -1,0 +1,45 @@
+{
+  "name": "@zenko/core",
+  "version": "0.1.0",
+  "description": "Shared OpenAPI-to-TypeScript generation logic for Zenko runtimes",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RawToast/zenko.git"
+  },
+  "license": "MIT",
+  "author": "RawToast",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "test": "bun test",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.2",
+    "tsup": "8.5.0",
+    "typescript": "5.9.3"
+  }
+}

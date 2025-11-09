@@ -1,0 +1,46 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`No Response Content generates complete TypeScript output: no-response-content-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Path Functions
+export const paths = {
+  PutSomething: () => "/data",
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  PutSomething: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  PutSomething: () => headerSchemas.PutSomething.parse({}),
+} as const;
+
+// Operation Types
+export type PutSomethingOperation = OperationDefinition<
+  "put",
+  typeof paths.PutSomething,
+  undefined,
+  undefined,
+  undefined,
+  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined; internalServerError: undefined; serviceUnavailable: undefined }>
+>;
+
+// Operation Objects
+export const PutSomething: PutSomethingOperation = {
+  method: "put",
+  path: paths.PutSomething,
+  response: undefined,
+    errors: {
+      badRequest: undefined,
+      forbidden: undefined,
+      notFound: undefined,
+      internalServerError: undefined,
+      serviceUnavailable: undefined,
+    },
+} as const;
+"
+`;

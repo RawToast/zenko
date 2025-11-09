@@ -1,12 +1,11 @@
 import { describe, test, expect } from "bun:test"
 import fs from "fs"
-import jsYaml from "js-yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
 describe("tree-shaking with train-travel spec", () => {
   test("correctly tree-shakes imports for complex spec", () => {
-    const content = fs.readFileSync("src/resources/train-travel.yaml", "utf8")
-    const specYaml = jsYaml.load(content) as OpenAPISpec
+    const content = fs.readFileSync("../zenko-core/src/resources/train-travel.yaml", "utf8")
+    const specYaml = Bun.YAML.parse(content) as OpenAPISpec
 
     // Without tree-shaking
     const resultWithoutTreeShake = generate(specYaml, {

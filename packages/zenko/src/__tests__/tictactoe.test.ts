@@ -1,6 +1,5 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
 import * as path from "path"
 import { generate, type OpenAPISpec } from "../zenko"
 
@@ -23,10 +22,10 @@ describe("TicTacToe", () => {
 
   test("generates complete TypeScript output", () => {
     const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
+      "../zenko-core/src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(tictactoeContent) as OpenAPISpec
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("tictactoe-complete-output")
@@ -34,10 +33,10 @@ describe("TicTacToe", () => {
 
   test("generates complete TypeScript output with strict options", () => {
     const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
+      "../zenko-core/src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(tictactoeContent) as OpenAPISpec
     const result = generate(specYaml, {
       strictDates: true,
       strictNumeric: true,
@@ -48,10 +47,10 @@ describe("TicTacToe", () => {
 
   test("generates header functions for security schemes", () => {
     const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
+      "../zenko-core/src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(tictactoeContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Should generate header functions
@@ -71,10 +70,10 @@ describe("TicTacToe", () => {
 
   test("includes headers in operation objects when request headers exist", () => {
     const optionalHeaderContent = fs.readFileSync(
-      "src/resources/optional-headers.yaml",
+      "../zenko-core/src/resources/optional-headers.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(optionalHeaderContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(optionalHeaderContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Should include headers when request headers exist
@@ -89,10 +88,10 @@ describe("TicTacToe", () => {
 
   test("generates all expected schemas with proper types", () => {
     const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
+      "../zenko-core/src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(tictactoeContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Should generate all schemas
@@ -114,10 +113,10 @@ describe("TicTacToe", () => {
 
   test("generates path functions with parameters", () => {
     const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
+      "../zenko-core/src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(tictactoeContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Should generate path functions
@@ -133,10 +132,10 @@ describe("TicTacToe", () => {
 
   test("generates operation objects with correct properties", () => {
     const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
+      "../zenko-core/src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(tictactoeContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Should generate operation objects with type annotations
@@ -159,10 +158,10 @@ describe("TicTacToe", () => {
 
   test("generates operation objects without type annotations when types disabled", () => {
     const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
+      "../zenko-core/src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(tictactoeContent) as OpenAPISpec
     const result = generate(specYaml, { types: { emit: false } })
 
     // Should generate operation objects without type annotations

@@ -1,11 +1,10 @@
 import { describe, test, expect } from "bun:test"
 import { generate, type OpenAPISpec } from "../zenko"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
 
 describe("Configuration Options", () => {
-  const stringFormatsSpec = jsYaml.load(
-    fs.readFileSync("src/resources/string-formats.yaml", "utf8")
+  const stringFormatsSpec = Bun.YAML.parse(
+    fs.readFileSync("../zenko-core/src/resources/string-formats.yaml", "utf8")
   ) as OpenAPISpec
 
   describe("strictDates option", () => {
@@ -500,8 +499,11 @@ describe("Configuration Options", () => {
     })
 
     test("optionalType applies to headers as well", () => {
-      const headerSpec = jsYaml.load(
-        fs.readFileSync("src/resources/mixed-headers.yaml", "utf8")
+      const headerSpec = Bun.YAML.parse(
+        fs.readFileSync(
+          "../zenko-core/src/resources/mixed-headers.yaml",
+          "utf8"
+        )
       ) as OpenAPISpec
 
       const resultOptional = generate(headerSpec, {

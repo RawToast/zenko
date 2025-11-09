@@ -17,29 +17,24 @@ Unlike most OpenAPI generators, Zenko does not create a client. Instead you are 
 
 ## Installation
 
-### One-time Usage
+### One-time Usage (Bun)
 
 ```bash
-# Use directly with npx (no installation required)
-npx zenko input.yaml output.ts
-
-# Or with bunx
+# Use directly with bunx (no installation required)
 bunx zenko input.yaml output.ts
 ```
 
-### Install for Repeated Use
+### Install for Repeated Use (Bun runtime)
 
 ```bash
 # Install globally
-npm install -g zenko
 bun install -g zenko
 
 # Or install locally
-npm install zenko
 bun add zenko
-yarn add zenko
-pnpm add zenko
 ```
+
+> 💡 Need pure Node.js support? Install [`zenko-node`](../zenko-node/README.md) for an equivalent CLI and library powered by `js-yaml`.
 
 ## Usage
 
@@ -103,18 +98,13 @@ The config file controls generation for multiple specs and can also configure ty
 ### Programmatic Usage
 
 ```typescript
-import { generate, type OpenAPISpec } from "zenko"
-import * as fs from "fs"
-import { load } from "js-yaml"
+import { generateFromDocument, type OpenAPISpec } from "zenko"
 
-// Load your OpenAPI spec
-const spec = load(fs.readFileSync("api.yaml", "utf8")) as OpenAPISpec
+const specText = await Bun.file("api.yaml").text()
+const spec = Bun.YAML.parse(specText) as OpenAPISpec
 
-// Generate TypeScript code
-const output = generate(spec)
-
-// Write to file
-fs.writeFileSync("types.ts", output)
+const { output } = generateFromDocument(spec)
+await Bun.write("types.ts", output)
 ```
 
 #### ES Modules
@@ -284,7 +274,7 @@ bun test
 bun run build
 
 # Test with example spec
-zenko src/resources/petstore.yaml output.ts
+zenko ../zenko-core/src/resources/petstore.yaml output.ts
 
 # Format code
 bun run format

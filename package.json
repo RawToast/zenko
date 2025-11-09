@@ -17,7 +17,10 @@
     "lint:check": "oxlint packages/*/src --max-warnings=0",
     "check": "turbo lint format check-types",
     "dev": "turbo watch lint format check-types test",
+    "core": "bun run --cwd packages/zenko-core",
+    "examples": "bun run --cwd packages/examples",
     "zenko": "bun run --cwd packages/zenko",
+    "zenko-node": "bun run --cwd packages/zenko-node",
     "nuke": "rimraf --glob '**/node_modules' --glob '**/dist' --glob '**/coverage' --glob 'packages/examples/**/*.gen.ts'"
   },
   "devDependencies": {

@@ -1,0 +1,62 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Inline Response Array generates complete TypeScript output: inline-response-array-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const AdminLog = z.object({
+  id: z.string().optional(),
+  message: z.string().optional(),
+  timestamp: z.string().optional(),
+});
+
+export type AdminLog = z.infer<typeof AdminLog>;
+
+// Path Functions
+export const paths = {
+  bySource: () => "/logs",
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  bySource: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  bySource: () => headerSchemas.bySource.parse({}),
+} as const;
+
+// Generated Response Types
+
+export const BySourceResponse = z.array(AdminLog);
+
+export type BySourceResponse = z.infer<typeof BySourceResponse>;
+
+// Operation Types
+export type BySourceOperation = OperationDefinition<
+  "get",
+  typeof paths.bySource,
+  undefined,
+  z.ZodArray<typeof AdminLog>,
+  undefined,
+  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined; internalServerError: undefined; serviceUnavailable: undefined }>
+>;
+
+// Operation Objects
+export const bySource: BySourceOperation = {
+  method: "get",
+  path: paths.bySource,
+  response: z.array(AdminLog),
+    errors: {
+      badRequest: undefined,
+      forbidden: undefined,
+      notFound: undefined,
+      internalServerError: undefined,
+      serviceUnavailable: undefined,
+    },
+} as const;
+"
+`;

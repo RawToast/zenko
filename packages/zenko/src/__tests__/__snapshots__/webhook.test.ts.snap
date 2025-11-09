@@ -1,53 +1,5 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`Webhook Example should generate complete TypeScript output for webhook-only spec: webhook-complete-output 1`] = `
-"import { z } from "zod";
-import type { OperationDefinition, OperationErrors } from "zenko";
-
-// Generated Zod Schemas
-
-export const Pet = z.object({
-  id: z.number().int(),
-  name: z.string(),
-  tag: z.string().optional(),
-});
-
-export type Pet = z.infer<typeof Pet>;
-
-// Path Functions
-export const paths = {
-  newPet: () => "newPet",
-} as const;
-
-// Header Schemas
-export const headerSchemas = {
-  newPet: z.object({}),
-} as const;
-
-// Header Functions
-export const headers = {
-  newPet: () => headerSchemas.newPet.parse({}),
-} as const;
-
-// Operation Types
-export type NewPetOperation = OperationDefinition<
-  "post",
-  typeof paths.newPet,
-  typeof Pet,
-  undefined,
-  undefined,
-  OperationErrors
->;
-
-// Operation Objects
-export const newPet: NewPetOperation = {
-  method: "post",
-  path: paths.newPet,
-  request: Pet,
-} as const;
-"
-`;
-
 exports[`Webhook Example should handle mixed paths and webhooks: webhook-mixed-output 1`] = `
 "import { z } from "zod";
 import type { OperationDefinition, OperationErrors } from "zenko";
@@ -112,6 +64,54 @@ export const listPets: ListPetsOperation = {
   response: z.array(Pet),
 } as const;
 
+export const newPet: NewPetOperation = {
+  method: "post",
+  path: paths.newPet,
+  request: Pet,
+} as const;
+"
+`;
+
+exports[`Webhook Example should generate complete TypeScript output for webhook-only spec: webhook-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const Pet = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  tag: z.string().optional(),
+});
+
+export type Pet = z.infer<typeof Pet>;
+
+// Path Functions
+export const paths = {
+  newPet: () => "newPet",
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  newPet: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  newPet: () => headerSchemas.newPet.parse({}),
+} as const;
+
+// Operation Types
+export type NewPetOperation = OperationDefinition<
+  "post",
+  typeof paths.newPet,
+  typeof Pet,
+  undefined,
+  undefined,
+  OperationErrors
+>;
+
+// Operation Objects
 export const newPet: NewPetOperation = {
   method: "post",
   path: paths.newPet,
