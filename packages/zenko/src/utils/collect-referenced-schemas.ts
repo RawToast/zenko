@@ -60,44 +60,13 @@ function resolveParameter(parameter: any, spec: OpenAPISpec) {
  *
  * @param operations - Processed operations to analyze
  * @param spec - The OpenAPI specification
- * @param nameMap - Mapping from original schema names to sanitized names
  * @returns Set of original schema names that are referenced
  */
 export function collectReferencedSchemas(
   operations: Operation[],
-  spec: OpenAPISpec,
-  nameMap: Map<string, string>
+  spec: OpenAPISpec
 ): Set<string> {
   const referenced = new Set<string>()
-
-  // Helper to extract schema name from a type reference string
-  const extractSchemaName = (typeRef: string | undefined): string | null => {
-    if (!typeRef) return null
-    // Remove typeof wrapper if present
-    const cleaned = typeRef.replace(/^typeof\s+/, "").trim()
-    // Check if it's a direct schema reference (not a primitive or z.array)
-    if (
-      cleaned === "undefined" ||
-      cleaned === "string" ||
-      cleaned === "number" ||
-      cleaned === "boolean" ||
-      cleaned.startsWith("z.array") ||
-      cleaned.startsWith("z.ZodArray")
-    ) {
-      return null
-    }
-    // Find the original name from nameMap (reverse lookup)
-    for (const [original, sanitized] of nameMap.entries()) {
-      if (sanitized === cleaned) {
-        return original
-      }
-    }
-    // If not found in nameMap, might be the original name itself
-    if (nameMap.has(cleaned)) {
-      return cleaned
-    }
-    return null
-  }
 
   // Build operation lookup from raw spec
   const operationLookup = new Map<string, any>()

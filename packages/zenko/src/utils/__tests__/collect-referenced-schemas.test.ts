@@ -44,9 +44,7 @@ describe("collectReferencedSchemas", () => {
       },
     ]
 
-    const nameMap = new Map([["TestRequest", "testRequest"]])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     expect(result.has("TestRequest")).toBe(true)
     expect(result.size).toBe(1)
@@ -93,9 +91,7 @@ describe("collectReferencedSchemas", () => {
       },
     ]
 
-    const nameMap = new Map([["TestResponse", "testResponse"]])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     expect(result.has("TestResponse")).toBe(true)
     expect(result.size).toBe(1)
@@ -145,9 +141,7 @@ describe("collectReferencedSchemas", () => {
       },
     ]
 
-    const nameMap = new Map([["Filter", "filter"]])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     expect(result.has("Filter")).toBe(true)
     expect(result.size).toBe(1)
@@ -202,9 +196,7 @@ describe("collectReferencedSchemas", () => {
       },
     ]
 
-    const nameMap = new Map([["Id", "id"]])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     expect(result.has("Id")).toBe(true)
     expect(result.size).toBe(1)
@@ -254,9 +246,7 @@ describe("collectReferencedSchemas", () => {
       },
     ]
 
-    const nameMap = new Map([["CustomHeader", "customHeader"]])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     expect(result.has("CustomHeader")).toBe(true)
     expect(result.size).toBe(1)
@@ -315,13 +305,7 @@ describe("collectReferencedSchemas", () => {
       },
     ]
 
-    const nameMap = new Map([
-      ["User", "user"],
-      ["Profile", "profile"],
-      ["Address", "address"],
-    ])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     expect(result.has("User")).toBe(true)
     expect(result.has("Profile")).toBe(true)
@@ -373,9 +357,7 @@ describe("collectReferencedSchemas", () => {
       },
     ]
 
-    const nameMap = new Map([["Nested", "nested"]])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     expect(result.has("Nested")).toBe(true)
     expect(result.size).toBe(1)
@@ -426,9 +408,7 @@ describe("collectReferencedSchemas", () => {
       },
     ]
 
-    const nameMap = new Map([["Data", "data"]])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     expect(result.has("Data")).toBe(true)
     expect(result.size).toBe(1)
@@ -509,14 +489,7 @@ describe("collectReferencedSchemas", () => {
       },
     ]
 
-    const nameMap = new Map([
-      ["UserList", "userList"],
-      ["PostList", "postList"],
-      ["User", "user"],
-      ["Post", "post"],
-    ])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     expect(result.has("UserList")).toBe(true)
     expect(result.has("PostList")).toBe(true)
@@ -566,9 +539,7 @@ describe("collectReferencedSchemas", () => {
       },
     ]
 
-    const nameMap = new Map([["WebhookPayload", "webhookPayload"]])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     expect(result.has("WebhookPayload")).toBe(true)
     expect(result.size).toBe(1)
@@ -590,9 +561,7 @@ describe("collectReferencedSchemas", () => {
     }
 
     const operations: Operation[] = []
-    const nameMap = new Map([["Unused", "unused"]])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     expect(result.size).toBe(0)
   })
@@ -622,9 +591,7 @@ describe("collectReferencedSchemas", () => {
       },
     ]
 
-    const nameMap = new Map([["Test", "test"]])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     expect(result.size).toBe(0)
   })
@@ -681,12 +648,7 @@ describe("collectReferencedSchemas", () => {
       },
     ]
 
-    const nameMap = new Map([
-      ["Success", "success"],
-      ["Error", "error"],
-    ])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     // Should include both success and error schemas
     expect(result.has("Success")).toBe(true)
@@ -743,12 +705,7 @@ describe("collectReferencedSchemas", () => {
       },
     ]
 
-    const nameMap = new Map([
-      ["A", "a"],
-      ["B", "b"],
-    ])
-
-    const result = collectReferencedSchemas(operations, spec, nameMap)
+    const result = collectReferencedSchemas(operations, spec)
 
     // Should include both schemas despite circular dependency
     expect(result.has("A")).toBe(true)

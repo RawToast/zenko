@@ -108,11 +108,7 @@ export function generateWithMetadata(
     let schemasToGenerate: string[]
     if (operationIds && operationIds.length > 0) {
       // Only generate schemas referenced by selected operations
-      const referencedSchemas = collectReferencedSchemas(
-        operations,
-        spec,
-        nameMap
-      )
+      const referencedSchemas = collectReferencedSchemas(operations, spec)
       schemasToGenerate = Array.from(referencedSchemas)
     } else {
       // Generate all schemas
