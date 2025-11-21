@@ -226,3 +226,198 @@ describe("Form Data", () => {
     expect(result).toContain(".default(false)")
   })
 })
+
+describe.skip("Form Data (skipped coverage)", () => {
+  const specPath = path.join(import.meta.dir, "../resources/form-data.yaml")
+
+  test("generates complete TypeScript output", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    expect(result).toMatchSnapshot("form-data-complete-output")
+  })
+
+  test("handles multipart/form-data content type", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    // FileUpload is used with multipart/form-data
+    expect(result).toContain("export const FileUpload =")
+
+    // Should generate appropriate schema for form data
+    // Could use FormData type or specific Zod schema
+  })
+
+  test("handles binary file format", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    // FileUpload has a file field with format: binary
+    expect(result).toContain("export const FileUpload =")
+
+    // Binary format could be represented as:
+    // - z.instanceof(File) for browser
+    // - z.instanceof(Buffer) or z.instanceof(Blob) for Node
+    // - z.any() or z.unknown()
+  })
+
+  test("handles array of binary files", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    // MultiFileUpload has files: array of binary
+    expect(result).toContain("export const MultiFileUpload =")
+
+    // Should generate array schema for multiple files
+    // z.array(z.instanceof(File)) or similar
+  })
+
+  test("handles application/x-www-form-urlencoded", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    // ContactForm and LoginForm use application/x-www-form-urlencoded
+    expect(result).toContain("export const ContactForm =")
+    expect(result).toContain("export const LoginForm =")
+
+    // Should generate standard object schemas
+    // URL-encoded forms are typically just objects with primitive values
+  })
+
+  test("handles mixed data types in form data", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    // ProfileForm has string, integer, boolean, binary, and object fields
+    expect(result).toContain("export const ProfileForm =")
+
+    // Should handle mixed types appropriately
+    expect(result).toContain("username")
+    expect(result).toContain("email")
+    expect(result).toContain("age")
+    expect(result).toContain("avatar")
+  })
+
+  test("handles encoding specification", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    // createProfile operation has encoding specification for avatar
+    // encoding: { avatar: { contentType: "image/png, image/jpeg" } }
+
+    expect(result).toContain("export const createProfile:")
+  })
+
+  test("handles nested objects in form data", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    // ProfileForm has nested preferences object
+    // DocumentUpload has nested metadata object
+    expect(result).toContain("export const ProfileForm =")
+    expect(result).toContain("export const DocumentUpload =")
+
+    // Nested objects in form data might be flattened or serialized as JSON strings
+  })
+
+  test("handles arrays in form data", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    // DocumentUpload has tags array
+    expect(result).toContain("export const DocumentUpload =")
+
+    // Arrays in form data are typically repeated fields or comma-separated
+  })
+
+  test("generates all form schemas", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    // All form schemas should be generated
+    expect(result).toContain("export const FileUpload =")
+    expect(result).toContain("export const MultiFileUpload =")
+    expect(result).toContain("export const ProfileForm =")
+    expect(result).toContain("export const ContactForm =")
+    expect(result).toContain("export const LoginForm =")
+    expect(result).toContain("export const DocumentUpload =")
+
+    // Response schemas
+    expect(result).toContain("export const UploadResponse =")
+    expect(result).toContain("export const MultiUploadResponse =")
+    expect(result).toContain("export const Profile =")
+    expect(result).toContain("export const LoginResponse =")
+    expect(result).toContain("export const Document =")
+  })
+
+  test("generates operation objects with correct content types", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    // Operations should reference the correct schemas
+    expect(result).toContain("export const uploadFile:")
+    expect(result).toContain("export const uploadMultipleFiles:")
+    expect(result).toContain("export const createProfile:")
+    expect(result).toContain("export const submitContactForm:")
+    expect(result).toContain("export const login:")
+    expect(result).toContain("export const uploadDocument:")
+
+    // Operation type definitions
+    expect(result).toContain("UploadFileOperation")
+    expect(result).toContain("UploadMultipleFilesOperation")
+    expect(result).toContain("CreateProfileOperation")
+    expect(result).toContain("SubmitContactFormOperation")
+    expect(result).toContain("LoginOperation")
+    expect(result).toContain("UploadDocumentOperation")
+  })
+
+  test("applies validation constraints to form fields", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml, { strictNumeric: true })
+
+    // ProfileForm has age constraints
+    expect(result).toContain("export const ProfileForm =")
+
+    // Should include validation
+    // .min(18).max(120) for age
+    // .minLength(3).maxLength(20) for username
+  })
+
+  test("handles password format", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    // LoginForm has password field with format: password
+    expect(result).toContain("export const LoginForm =")
+
+    // Password format is typically just a string, but could have special handling
+    expect(result).toContain("password")
+  })
+
+  test("handles default values in forms", () => {
+    const specContent = fs.readFileSync(specPath, "utf8")
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    // LoginForm has rememberMe with default: false
+    // DocumentUpload has isPublic with default: false
+    expect(result).toContain("export const LoginForm =")
+    expect(result).toContain("export const DocumentUpload =")
+
+    // Should include .default(false)
+    expect(result).toContain(".default(false)")
+  })
+})

@@ -1,0 +1,305 @@
+openapi: 3.0.0
+info:
+  title: Property Metadata Test API
+  version: 1.0.0
+  description: Tests readOnly, writeOnly, const, default, deprecated, and examples
+
+paths:
+  /users:
+    post:
+      operationId: createUser
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/{userId}:
+    get:
+      operationId: getUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+    put:
+      operationId: updateUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /settings:
+    get:
+      operationId: getSettings
+      responses:
+        '200':
+          description: Application settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+
+    put:
+      operationId: updateSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsUpdate'
+      responses:
+        '200':
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+
+components:
+  schemas:
+    # User with readOnly fields (id, createdAt, updatedAt)
+    User:
+      type: object
+      required:
+        - id
+        - username
+        - email
+        - role
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: System-generated user ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+          example: "johndoe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        role:
+          type: string
+          enum: [user, admin, moderator]
+          default: user
+          example: "user"
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+          default: active
+          const: active
+          description: User status (always active for new users)
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+          example: "2024-01-20T15:45:00Z"
+        passwordHash:
+          type: string
+          writeOnly: true
+          description: Password hash (never returned in responses)
+
+    # UserInput for creation (no readOnly fields, includes writeOnly password)
+    UserInput:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+          description: User password (write only)
+          example: "SecurePass123!"
+        role:
+          type: string
+          enum: [user, admin, moderator]
+          default: user
+
+    # UserUpdate (no readOnly fields, includes writeOnly password)
+    UserUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+          description: New password (optional)
+        role:
+          type: string
+          enum: [user, admin, moderator]
+
+    # Settings with various metadata
+    Settings:
+      type: object
+      properties:
+        version:
+          type: string
+          readOnly: true
+          description: API version
+          example: "1.0.0"
+        maintenanceMode:
+          type: boolean
+          default: false
+          example: false
+        maxUploadSize:
+          type: integer
+          default: 10485760
+          description: Maximum upload size in bytes (default 10MB)
+          example: 10485760
+        apiKey:
+          type: string
+          writeOnly: true
+          description: API key for external services
+        sessionTimeout:
+          type: integer
+          default: 3600
+          description: Session timeout in seconds
+          example: 3600
+        enableNotifications:
+          type: boolean
+          default: true
+        theme:
+          type: string
+          enum: [light, dark, auto]
+          default: auto
+          example: "dark"
+        deprecatedField:
+          type: string
+          deprecated: true
+          description: This field is deprecated and will be removed in v2.0
+
+    SettingsUpdate:
+      type: object
+      properties:
+        maintenanceMode:
+          type: boolean
+        maxUploadSize:
+          type: integer
+          minimum: 1048576
+          maximum: 104857600
+        apiKey:
+          type: string
+          writeOnly: true
+        sessionTimeout:
+          type: integer
+          minimum: 300
+          maximum: 86400
+        enableNotifications:
+          type: boolean
+        theme:
+          type: string
+          enum: [light, dark, auto]
+
+    # Complex metadata example
+    Product:
+      type: object
+      required:
+        - id
+        - name
+        - price
+      properties:
+        id:
+          type: string
+          readOnly: true
+          example: "prod_123"
+        sku:
+          type: string
+          const: "CONST_SKU"
+          description: Constant SKU value
+        name:
+          type: string
+          example: "Premium Widget"
+        description:
+          type: string
+          example: "A high-quality widget for all your needs"
+        price:
+          type: number
+          minimum: 0
+          example: 29.99
+        currency:
+          type: string
+          const: USD
+          description: All prices in USD
+        internalCost:
+          type: number
+          writeOnly: true
+          description: Internal cost (not exposed to customers)
+        stockLevel:
+          type: integer
+          readOnly: true
+          example: 150
+        featured:
+          type: boolean
+          default: false
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["electronics", "gadgets", "premium"]
+        createdBy:
+          type: string
+          readOnly: true
+          deprecated: true
+          description: Use 'metadata.createdBy' instead

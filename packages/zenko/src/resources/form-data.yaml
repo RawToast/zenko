@@ -14,14 +14,14 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/FileUpload"
+              $ref: '#/components/schemas/FileUpload'
       responses:
-        "201":
+        '201':
           description: File uploaded
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UploadResponse"
+                $ref: '#/components/schemas/UploadResponse'
 
   /upload-multiple:
     post:
@@ -32,14 +32,14 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/MultiFileUpload"
+              $ref: '#/components/schemas/MultiFileUpload'
       responses:
-        "201":
+        '201':
           description: Files uploaded
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MultiUploadResponse"
+                $ref: '#/components/schemas/MultiUploadResponse'
 
   /profile:
     post:
@@ -50,17 +50,17 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/ProfileForm"
+              $ref: '#/components/schemas/ProfileForm'
             encoding:
               avatar:
                 contentType: image/png, image/jpeg
       responses:
-        "201":
+        '201':
           description: Profile created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Profile"
+                $ref: '#/components/schemas/Profile'
 
   /contact:
     post:
@@ -71,9 +71,9 @@ paths:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/ContactForm"
+              $ref: '#/components/schemas/ContactForm'
       responses:
-        "200":
+        '200':
           description: Form submitted
 
   /login:
@@ -85,14 +85,14 @@ paths:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/LoginForm"
+              $ref: '#/components/schemas/LoginForm'
       responses:
-        "200":
+        '200':
           description: Login successful
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LoginResponse"
+                $ref: '#/components/schemas/LoginResponse'
 
   /documents:
     post:
@@ -103,14 +103,14 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/DocumentUpload"
+              $ref: '#/components/schemas/DocumentUpload'
       responses:
-        "201":
+        '201':
           description: Document uploaded
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Document"
+                $ref: '#/components/schemas/Document'
 
 components:
   schemas:
@@ -279,7 +279,7 @@ components:
         files:
           type: array
           items:
-            $ref: "#/components/schemas/UploadResponse"
+            $ref: '#/components/schemas/UploadResponse'
         totalSize:
           type: integer
 

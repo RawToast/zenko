@@ -1,0 +1,322 @@
+openapi: 3.0.0
+info:
+  title: Non-JSON Responses Test API
+  version: 1.0.0
+  description: Tests various non-JSON response content types including CSV, XML, binary, text, and streaming
+
+paths:
+  /export/users:
+    get:
+      operationId: exportUsersCsv
+      summary: Export users as CSV
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [csv]
+            default: csv
+      responses:
+        '200':
+          description: Users in CSV format
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+              example: |
+                id,username,email,created_at
+                1,john_doe,john@example.com,2024-01-15
+                2,jane_smith,jane@example.com,2024-01-16
+
+  /export/data:
+    get:
+      operationId: exportDataXml
+      summary: Export data as XML
+      responses:
+        '200':
+          description: Data in XML format
+          content:
+            application/xml:
+              schema:
+                type: object
+                xml:
+                  name: dataExport
+                properties:
+                  records:
+                    type: array
+                    xml:
+                      wrapped: true
+                    items:
+                      type: object
+                      xml:
+                        name: record
+                      properties:
+                        id:
+                          type: string
+                        value:
+                          type: string
+              example: |
+                <?xml version="1.0" encoding="UTF-8"?>
+                <dataExport>
+                  <records>
+                    <record>
+                      <id>1</id>
+                      <value>data1</value>
+                    </record>
+                  </records>
+                </dataExport>
+
+  /download/{fileId}:
+    get:
+      operationId: downloadFile
+      summary: Download a file (binary)
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File content
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: attachment; filename="document.pdf"
+            Content-Length:
+              schema:
+                type: integer
+        '404':
+          description: File not found
+
+  /documents/{documentId}/pdf:
+    get:
+      operationId: getDocumentPdf
+      summary: Get document as PDF
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: PDF document
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /images/{imageId}:
+    get:
+      operationId: getImage
+      summary: Get image file
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: size
+          in: query
+          schema:
+            type: string
+            enum: [thumbnail, medium, large]
+      responses:
+        '200':
+          description: Image file
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/webp:
+              schema:
+                type: string
+                format: binary
+
+  /logs:
+    get:
+      operationId: getLogs
+      summary: Get application logs as plain text
+      parameters:
+        - name: lines
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: level
+          in: query
+          schema:
+            type: string
+            enum: [debug, info, warn, error]
+      responses:
+        '200':
+          description: Log entries
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |
+                2024-01-15 10:30:00 INFO Application started
+                2024-01-15 10:30:01 DEBUG Database connection established
+                2024-01-15 10:30:05 WARN Cache miss for key: user_123
+
+  /stream/events:
+    get:
+      operationId: streamEvents
+      summary: Server-sent events stream
+      responses:
+        '200':
+          description: Event stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+              example: |
+                event: message
+                data: {"type":"notification","message":"Hello"}
+
+                event: heartbeat
+                data: {"timestamp":1234567890}
+
+  /reports/{reportId}:
+    get:
+      operationId: getReport
+      summary: Get report in multiple formats
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, xml, csv, html]
+            default: json
+      responses:
+        '200':
+          description: Report in requested format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+            application/xml:
+              schema:
+                type: string
+            text/csv:
+              schema:
+                type: string
+            text/html:
+              schema:
+                type: string
+
+  /api/health:
+    get:
+      operationId: getHealthText
+      summary: Health check with plain text response
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            text/plain:
+              schema:
+                type: string
+                enum: [OK, DEGRADED]
+              example: OK
+
+  /download/zip/{archiveId}:
+    get:
+      operationId: downloadArchive
+      summary: Download compressed archive
+      parameters:
+        - name: archiveId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ZIP archive
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+
+  /markdown/{docId}:
+    get:
+      operationId: getMarkdownDoc
+      summary: Get document as Markdown
+      parameters:
+        - name: docId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Markdown document
+          content:
+            text/markdown:
+              schema:
+                type: string
+              example: |
+                # Document Title
+
+                This is a **markdown** document with _formatting_.
+
+  /feed:
+    get:
+      operationId: getRssFeed
+      summary: Get RSS feed
+      responses:
+        '200':
+          description: RSS feed
+          content:
+            application/rss+xml:
+              schema:
+                type: string
+            application/atom+xml:
+              schema:
+                type: string
+
+components:
+  schemas:
+    Report:
+      type: object
+      required:
+        - id
+        - title
+        - data
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              metric:
+                type: string
+              value:
+                type: number

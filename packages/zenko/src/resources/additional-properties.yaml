@@ -1,0 +1,239 @@
+openapi: 3.0.0
+info:
+  title: Additional Properties Test API
+  version: 1.0.0
+  description: Tests additionalProperties for flexible object schemas
+
+paths:
+  /metadata:
+    post:
+      operationId: createMetadata
+      summary: Create metadata with flexible key-value pairs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetadataInput'
+      responses:
+        '201':
+          description: Metadata created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metadata'
+
+  /config:
+    get:
+      operationId: getConfig
+      summary: Get configuration with arbitrary properties
+      responses:
+        '200':
+          description: Configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Config'
+
+    put:
+      operationId: updateConfig
+      summary: Update configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Config'
+      responses:
+        '200':
+          description: Configuration updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Config'
+
+  /labels:
+    post:
+      operationId: createLabels
+      summary: Create labels with string values
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Labels'
+      responses:
+        '201':
+          description: Labels created
+
+components:
+  schemas:
+    # Metadata with additionalProperties: true (any additional properties allowed)
+    Metadata:
+      type: object
+      required:
+        - id
+        - type
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [user, system, custom]
+        createdAt:
+          type: string
+          format: date-time
+      additionalProperties: true
+      description: Metadata object that accepts any additional properties
+
+    # MetadataInput with typed additionalProperties
+    MetadataInput:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [user, system, custom]
+      additionalProperties:
+        type: string
+      description: Metadata input where additional properties must be strings
+
+    # Config with additionalProperties as object schema
+    Config:
+      type: object
+      properties:
+        version:
+          type: string
+        environment:
+          type: string
+          enum: [development, staging, production]
+      additionalProperties:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+          value:
+            type: string
+      description: Configuration with structured additional properties
+
+    # Labels with additionalProperties: string (simple key-value)
+    Labels:
+      type: object
+      additionalProperties:
+        type: string
+      description: Simple key-value labels where all values are strings
+      example:
+        env: production
+        team: backend
+        region: us-east-1
+
+    # StrictObject with additionalProperties: false (no additional properties)
+    StrictObject:
+      type: object
+      required:
+        - name
+        - value
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+        description:
+          type: string
+      additionalProperties: false
+      description: Strict object that does not allow additional properties
+
+    # ComplexAdditionalProps with nested schema
+    ComplexAdditionalProps:
+      type: object
+      properties:
+        id:
+          type: string
+        metadata:
+          type: object
+          properties:
+            created:
+              type: string
+              format: date-time
+          additionalProperties:
+            type: object
+            properties:
+              key:
+                type: string
+              value:
+                anyOf:
+                  - type: string
+                  - type: number
+                  - type: boolean
+      additionalProperties:
+        type: array
+        items:
+          type: string
+
+    # TypedDictionary with various additionalProperties types
+    TypedDictionary:
+      type: object
+      additionalProperties:
+        oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+          - type: array
+            items:
+              type: string
+      description: Dictionary that accepts various types as values
+
+    # MixedConstraints with required props and additionalProperties
+    MixedConstraints:
+      type: object
+      required:
+        - requiredField
+      properties:
+        requiredField:
+          type: string
+        optionalField:
+          type: number
+      additionalProperties:
+        type: string
+        minLength: 1
+        maxLength: 100
+      description: Object with required fields and constrained additional properties
+
+    # NumericDictionary
+    NumericDictionary:
+      type: object
+      additionalProperties:
+        type: number
+        minimum: 0
+        maximum: 100
+      description: Dictionary where all values are numbers between 0 and 100
+
+    # BooleanFlags
+    BooleanFlags:
+      type: object
+      additionalProperties:
+        type: boolean
+      description: Feature flags as boolean key-value pairs
+
+    # ArrayDictionary
+    ArrayDictionary:
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          type: string
+        minItems: 1
+      description: Dictionary where values are non-empty string arrays
+
+    # NoAdditionalProps (explicit false)
+    NoAdditionalProps:
+      type: object
+      properties:
+        field1:
+          type: string
+        field2:
+          type: number
+      additionalProperties: false
+      description: No additional properties allowed beyond field1 and field2
