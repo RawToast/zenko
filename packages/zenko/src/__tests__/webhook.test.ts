@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
+import { parseYaml } from "../utils/yaml"
 import { generate } from "../zenko"
 
 const webhookOnlySpec: any = {
@@ -62,7 +62,7 @@ describe("Webhook Example", () => {
       "src/resources/webhook-example.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(webhookContent) as any
+    const specYaml = parseYaml(webhookContent) as any
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("webhook-complete-output")

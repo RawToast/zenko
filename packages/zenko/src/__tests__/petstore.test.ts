@@ -1,9 +1,9 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import { execSync } from "child_process"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
 import * as path from "path"
 import { generate, type OpenAPISpec } from "../zenko"
+import { loadOpenAPISpec } from "../utils/yaml"
 
 describe("Petstore", () => {
   const tempDir = path.join(process.cwd(), "temp-test")
@@ -24,44 +24,28 @@ describe("Petstore", () => {
   })
 
   test("generates complete TypeScript output", () => {
-    const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
-      "utf8"
-    )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("petstore-complete-output")
   })
 
   test("generates complete TypeScript output", () => {
-    const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
-      "utf8"
-    )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("petstore-complete-output")
   })
 
   test("includes Zod import", () => {
-    const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
-      "utf8"
-    )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
     const result = generate(specYaml)
 
     expect(result).toContain('import { z } from "zod"')
   })
 
   test("generates schemas in correct dependency order", () => {
-    const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
-      "utf8"
-    )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
     const result = generate(specYaml)
 
     // Pet should come before Pets since Pets references Pet
@@ -73,11 +57,7 @@ describe("Petstore", () => {
   })
 
   test("generates all expected schemas", () => {
-    const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
-      "utf8"
-    )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
     const result = generate(specYaml)
 
     expect(result).toContain("export const Pet =")
@@ -89,11 +69,7 @@ describe("Petstore", () => {
   })
 
   test("generates path functions", () => {
-    const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
-      "utf8"
-    )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
     const result = generate(specYaml)
 
     expect(result).toContain("export const paths = {")
@@ -103,11 +79,7 @@ describe("Petstore", () => {
   })
 
   test("generates operation objects", () => {
-    const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
-      "utf8"
-    )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
     const result = generate(specYaml)
 
     expect(result).toContain("export const listPets: ListPetsOperation =")

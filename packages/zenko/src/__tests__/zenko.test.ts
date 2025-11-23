@@ -1,7 +1,6 @@
 import { describe, test, expect } from "bun:test"
 import { generate, generateWithMetadata, type OpenAPISpec } from "../zenko"
-import * as fs from "fs"
-import jsYaml from "js-yaml"
+import { loadOpenAPISpec } from "../utils/yaml"
 
 describe("generate", () => {
   describe("Edge cases", () => {
@@ -226,9 +225,7 @@ describe("generate", () => {
   })
 
   describe("Type helpers", () => {
-    const petstoreSpec = jsYaml.load(
-      fs.readFileSync("src/resources/petstore.yaml", "utf8")
-    ) as OpenAPISpec
+    const petstoreSpec = loadOpenAPISpec("src/resources/petstore.yaml")
 
     test("disables type emission", () => {
       const result = generate(petstoreSpec, {
@@ -301,9 +298,7 @@ describe("generate", () => {
   })
 
   describe("Helper file generation", () => {
-    const petstoreSpec = jsYaml.load(
-      fs.readFileSync("src/resources/petstore.yaml", "utf8")
-    ) as OpenAPISpec
+    const petstoreSpec = loadOpenAPISpec("src/resources/petstore.yaml")
 
     test("generateWithMetadata returns helper file info when using file mode", () => {
       const result = generateWithMetadata(petstoreSpec, {

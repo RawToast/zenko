@@ -1,0 +1,82 @@
+---
+openapi: 3.0.3
+info:
+  title: date-enum
+  description: Some Service with an enum
+  version: 0.1.0
+paths:
+  "/my-service/{someId}/create":
+    post:
+      tags:
+        - Something
+      operationId: createSomething
+      parameters:
+        - $ref: "#/components/parameters/SomeIdPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSomethingRequest"
+        required: true
+      responses:
+        "200":
+          description: Successfully created something
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateSomethingErrorResponse"
+components:
+  schemas:
+    ErrorResponseStatus:
+      type: string
+      example: "404"
+    CreateSomethingRequest:
+      type: object
+      required:
+        - status
+        - version
+      properties:
+        status:
+          $ref: "#/components/schemas/Status"
+        version:
+          $ref: "#/components/schemas/Version"
+    Status:
+      type: string
+      enum:
+        - enabled
+        - disabled
+        - closed
+    Version:
+      type: string
+      enum:
+        - 2016-01-19
+        - 2016-07-01
+        - 2018-04-10
+        - 2023-08-01
+    DateTime:
+      type: string
+      format: date-time
+      example: "2014-09-23T05:00:22.231Z"
+    CreateSomethingErrorResponse:
+      type: object
+      required:
+        - statusCode
+        - errorType
+        - message
+      properties:
+        statusCode:
+          type: integer
+        errorType:
+          type: string
+        message:
+          type: string
+  parameters:
+    SomeIdPath:
+      name: someId
+      in: path
+      required: true
+      schema:
+        type: string
+      example: "some_ABCD12345678wxyz"

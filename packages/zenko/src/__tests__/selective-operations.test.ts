@@ -1,7 +1,7 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
-import { generate, type OpenAPISpec } from "../zenko"
+import { parseYaml } from "../utils/yaml"
+import { generate } from "../zenko"
 
 describe("Selective Operations", () => {
   test("generates only selected operations and their referenced schemas", () => {
@@ -9,7 +9,7 @@ describe("Selective Operations", () => {
       "src/resources/petstore.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = parseYaml(petstoreContent)
     const result = generate(specYaml, {
       operationIds: ["listPets", "showPetById"],
     })
@@ -41,7 +41,7 @@ describe("Selective Operations", () => {
       "src/resources/petstore.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = parseYaml(petstoreContent)
     const result = generate(specYaml, {
       operationIds: ["listPets"],
     })
@@ -68,7 +68,7 @@ describe("Selective Operations", () => {
       "src/resources/petstore.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = parseYaml(petstoreContent)
     const result = generate(specYaml, {
       operationIds: [],
     })
@@ -89,7 +89,7 @@ describe("Selective Operations", () => {
       "src/resources/petstore.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(petstoreContent) as OpenAPISpec
+    const specYaml = parseYaml(petstoreContent)
     const result = generate(specYaml)
 
     // Should include all operations
