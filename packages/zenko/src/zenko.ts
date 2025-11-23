@@ -542,7 +542,6 @@ function isRequestMethod(method: string): method is RequestMethod {
   }
 }
 
-
 /**
  * Infers the TypeScript type for a response based on content type and status code.
  */
@@ -1208,4 +1207,3 @@ function convertQueryParamValue(schema: any, accessor: string): string {
       return `String(${accessor})`
   }
 }
-

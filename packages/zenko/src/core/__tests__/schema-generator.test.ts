@@ -174,7 +174,10 @@ describe("buildString", () => {
 
   test("should not apply constraints when strictNumeric is disabled", () => {
     expect(
-      buildString({ minLength: 1, maxLength: 10, pattern: "^[a-z]+$" }, defaultOptions)
+      buildString(
+        { minLength: 1, maxLength: 10, pattern: "^[a-z]+$" },
+        defaultOptions
+      )
     ).toBe("z.string()")
   })
 })
@@ -483,7 +486,9 @@ describe("generateZodSchema", () => {
       generatedTypes,
       defaultOptions
     )
-    expect(result).toBe('export const Color = z.enum(["red", "green", "blue"]);')
+    expect(result).toBe(
+      'export const Color = z.enum(["red", "green", "blue"]);'
+    )
     expect(generatedTypes.has("Color")).toBe(true)
   })
 
