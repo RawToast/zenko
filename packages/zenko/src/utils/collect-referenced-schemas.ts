@@ -1,58 +1,7 @@
 import { extractRefName, extractDependencies } from "./topological-sort"
+import { findContentType, resolveParameter } from "./schema-utils"
 import type { Operation } from "../types/operation"
 import type { OpenAPISpec } from "../zenko"
-
-/**
- * Finds the most appropriate content type from available options.
- * Prefers JSON first, then uses content-type mapping, otherwise takes first available.
- */
-function findContentType(content: Record<string, any>): string {
-  const contentTypes = Object.keys(content)
-
-  // Prefer JSON
-  if (contentTypes.includes("application/json")) {
-    return "application/json"
-  }
-
-  // Use first content type that has a mapping
-  const CONTENT_TYPE_MAP: Record<string, string> = {
-    "application/json": "unknown",
-    "text/csv": "string",
-    "text/plain": "string",
-    "application/octet-stream": "unknown",
-    "application/pdf": "unknown",
-  }
-
-  for (const contentType of contentTypes) {
-    if (contentType in CONTENT_TYPE_MAP) {
-      return contentType
-    }
-  }
-
-  // Default to first available
-  return contentTypes[0] || ""
-}
-
-/**
- * Resolves a parameter reference to its actual definition.
- */
-function resolveParameter(parameter: any, spec: OpenAPISpec) {
-  if (!parameter) return undefined
-
-  if (parameter.$ref) {
-    const refName = extractRefName(parameter.$ref)
-    const resolved = spec.components?.parameters?.[refName]
-    if (!resolved) return undefined
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { $ref, ...overrides } = parameter
-    return {
-      ...resolved,
-      ...overrides,
-    }
-  }
-
-  return parameter
-}
 
 /**
  * Collects all component schema names referenced by the given operations.
