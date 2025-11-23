@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
+import { parseYaml } from "../utils/yaml"
 import * as path from "path"
-import { generate, type OpenAPISpec } from "../zenko"
+import { generate } from "../zenko"
 
 describe("TicTacToe", () => {
   const tempDir = path.join(process.cwd(), "temp-test")
@@ -26,7 +26,7 @@ describe("TicTacToe", () => {
       "src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("tictactoe-complete-output")
@@ -37,7 +37,7 @@ describe("TicTacToe", () => {
       "src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml, {
       strictDates: true,
       strictNumeric: true,
@@ -51,7 +51,7 @@ describe("TicTacToe", () => {
       "src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml)
 
     // Should generate header functions
@@ -74,7 +74,7 @@ describe("TicTacToe", () => {
       "src/resources/optional-headers.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(optionalHeaderContent) as OpenAPISpec
+    const specYaml = parseYaml(optionalHeaderContent)
     const result = generate(specYaml)
 
     // Should include headers when request headers exist
@@ -92,7 +92,7 @@ describe("TicTacToe", () => {
       "src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml)
 
     // Should generate all schemas
@@ -117,7 +117,7 @@ describe("TicTacToe", () => {
       "src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml)
 
     // Should generate path functions
@@ -136,7 +136,7 @@ describe("TicTacToe", () => {
       "src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml)
 
     // Should generate operation objects with type annotations
@@ -162,7 +162,7 @@ describe("TicTacToe", () => {
       "src/resources/tictactoe.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(tictactoeContent) as OpenAPISpec
+    const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml, { types: { emit: false } })
 
     // Should generate operation objects without type annotations

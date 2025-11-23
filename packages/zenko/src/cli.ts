@@ -3,7 +3,7 @@
 import * as fs from "fs"
 import * as path from "path"
 import { pathToFileURL } from "url"
-import { load } from "js-yaml"
+import { load, JSON_SCHEMA } from "js-yaml"
 import {
   generateWithMetadata,
   type OpenAPISpec,
@@ -173,7 +173,7 @@ async function loadConfig(filePath: string): Promise<unknown> {
 
   if (extension === ".yaml" || extension === ".yml") {
     const content = fs.readFileSync(filePath, "utf8")
-    return load(content)
+    return load(content, { schema: JSON_SCHEMA })
   }
 
   const fileUrl = pathToFileURL(filePath).href
@@ -286,7 +286,7 @@ function readSpec(filePath: string): OpenAPISpec {
   const content = fs.readFileSync(filePath, "utf8")
 
   if (filePath.endsWith(".yaml") || filePath.endsWith(".yml")) {
-    return load(content) as OpenAPISpec
+    return load(content, { schema: JSON_SCHEMA }) as OpenAPISpec
   }
 
   return JSON.parse(content) as OpenAPISpec

@@ -1,12 +1,9 @@
 import { describe, test, expect } from "bun:test"
 import { generate, type OpenAPISpec } from "../zenko"
-import * as fs from "fs"
-import jsYaml from "js-yaml"
+import { loadOpenAPISpec } from "../utils/yaml"
 
 describe("Configuration Options", () => {
-  const stringFormatsSpec = jsYaml.load(
-    fs.readFileSync("src/resources/string-formats.yaml", "utf8")
-  ) as OpenAPISpec
+  const stringFormatsSpec = loadOpenAPISpec("src/resources/string-formats.yaml")
 
   describe("strictDates option", () => {
     test("default behavior (strictDates: false) - date formats use z.string()", () => {
@@ -500,9 +497,7 @@ describe("Configuration Options", () => {
     })
 
     test("optionalType applies to headers as well", () => {
-      const headerSpec = jsYaml.load(
-        fs.readFileSync("src/resources/mixed-headers.yaml", "utf8")
-      ) as OpenAPISpec
+      const headerSpec = loadOpenAPISpec("src/resources/mixed-headers.yaml")
 
       const resultOptional = generate(headerSpec, {
         types: { optionalType: "optional" },

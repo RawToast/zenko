@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
+import { parseYaml } from "../utils/yaml"
 import * as path from "path"
-import { generate, type OpenAPISpec } from "../zenko"
+import { generate } from "../zenko"
 
 describe("Train Travel", () => {
   const tempDir = path.join(process.cwd(), "temp-test")
@@ -24,7 +24,7 @@ describe("Train Travel", () => {
       "src/resources/train-travel.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(trainTravelContent) as OpenAPISpec
+    const specYaml = parseYaml(trainTravelContent)
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("train-travel-complete-output")
@@ -35,7 +35,7 @@ describe("Train Travel", () => {
       "src/resources/train-travel.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(trainTravelContent) as OpenAPISpec
+    const specYaml = parseYaml(trainTravelContent)
     const result = generate(specYaml)
 
     // Currently generates valid TypeScript identifiers (camelCase) for operations
@@ -63,7 +63,7 @@ describe("Train Travel", () => {
       "src/resources/train-travel.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(trainTravelContent) as OpenAPISpec
+    const specYaml = parseYaml(trainTravelContent)
     const result = generate(specYaml)
 
     // Should generate response types that reference the correct schemas
@@ -76,7 +76,7 @@ describe("Train Travel", () => {
       "src/resources/train-travel.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(trainTravelContent) as OpenAPISpec
+    const specYaml = parseYaml(trainTravelContent)
     const result = generate(specYaml)
 
     // Key schemas from the spec
@@ -94,7 +94,7 @@ describe("Train Travel", () => {
       "src/resources/train-travel.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(trainTravelContent) as OpenAPISpec
+    const specYaml = parseYaml(trainTravelContent)
     const result = generate(specYaml)
 
     // Fixed: hyphens are now converted to camelCase

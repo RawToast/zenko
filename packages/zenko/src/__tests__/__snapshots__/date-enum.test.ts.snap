@@ -1,0 +1,149 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`DateEnum generates complete TypeScript output: date-enum-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const ErrorResponseStatus = z.string();
+
+export type ErrorResponseStatus = z.infer<typeof ErrorResponseStatus>;
+
+export const Status = z.enum(["enabled", "disabled", "closed"]);
+
+export type Status = z.infer<typeof Status>;
+
+export const Version = z.enum(["2016-01-19", "2016-07-01", "2018-04-10", "2023-08-01"]);
+
+export type Version = z.infer<typeof Version>;
+
+export const CreateSomethingRequest = z.object({
+  status: Status,
+  version: Version,
+});
+
+export type CreateSomethingRequest = z.infer<typeof CreateSomethingRequest>;
+
+export const DateTime = z.string();
+
+export type DateTime = z.infer<typeof DateTime>;
+
+export const CreateSomethingErrorResponse = z.object({
+  statusCode: z.number().int(),
+  errorType: z.string(),
+  message: z.string(),
+});
+
+export type CreateSomethingErrorResponse = z.infer<typeof CreateSomethingErrorResponse>;
+
+// Path Functions
+export const paths = {
+  createSomething: ({ someId }: { someId: string }) => \`/my-service/\${someId}/create\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  createSomething: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  createSomething: () => headerSchemas.createSomething.parse({}),
+} as const;
+
+// Operation Types
+export type CreateSomethingOperation = OperationDefinition<
+  "post",
+  typeof paths.createSomething,
+  typeof CreateSomethingRequest,
+  undefined,
+  undefined,
+  OperationErrors<{ internalServerError: typeof CreateSomethingErrorResponse }>
+>;
+
+// Operation Objects
+export const createSomething: CreateSomethingOperation = {
+  method: "post",
+  path: paths.createSomething,
+  request: CreateSomethingRequest,
+    errors: {
+      internalServerError: CreateSomethingErrorResponse,
+    },
+} as const;
+"
+`;
+
+exports[`DateEnum generates complete TypeScript output with strict options: date-enum-complete-output-strict 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const ErrorResponseStatus = z.string();
+
+export type ErrorResponseStatus = z.infer<typeof ErrorResponseStatus>;
+
+export const Status = z.enum(["enabled", "disabled", "closed"]);
+
+export type Status = z.infer<typeof Status>;
+
+export const Version = z.enum(["2016-01-19", "2016-07-01", "2018-04-10", "2023-08-01"]);
+
+export type Version = z.infer<typeof Version>;
+
+export const CreateSomethingRequest = z.object({
+  status: Status,
+  version: Version,
+});
+
+export type CreateSomethingRequest = z.infer<typeof CreateSomethingRequest>;
+
+export const DateTime = z.string().datetime();
+
+export type DateTime = z.infer<typeof DateTime>;
+
+export const CreateSomethingErrorResponse = z.object({
+  statusCode: z.number().int(),
+  errorType: z.string(),
+  message: z.string(),
+});
+
+export type CreateSomethingErrorResponse = z.infer<typeof CreateSomethingErrorResponse>;
+
+// Path Functions
+export const paths = {
+  createSomething: ({ someId }: { someId: string }) => \`/my-service/\${someId}/create\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  createSomething: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  createSomething: () => headerSchemas.createSomething.parse({}),
+} as const;
+
+// Operation Types
+export type CreateSomethingOperation = OperationDefinition<
+  "post",
+  typeof paths.createSomething,
+  typeof CreateSomethingRequest,
+  undefined,
+  undefined,
+  OperationErrors<{ internalServerError: typeof CreateSomethingErrorResponse }>
+>;
+
+// Operation Objects
+export const createSomething: CreateSomethingOperation = {
+  method: "post",
+  path: paths.createSomething,
+  request: CreateSomethingRequest,
+    errors: {
+      internalServerError: CreateSomethingErrorResponse,
+    },
+} as const;
+"
+`;
