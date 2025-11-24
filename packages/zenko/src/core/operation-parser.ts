@@ -27,13 +27,13 @@ export function parseOperations(
       for (const [method, operation] of Object.entries(pathItem)) {
         const normalizedMethod = method.toLowerCase()
         if (!isRequestMethod(normalizedMethod)) continue
-        if (!(operation as any).operationId) continue
+        if (!(operation as { operationId?: string }).operationId) continue
 
         const pathParams = extractPathParams(path)
         const requestType = getRequestType(operation)
         const { successResponse, errors } = getResponseTypes(
           operation,
-          (operation as any).operationId,
+          (operation as { operationId: string }).operationId,
           nameMap
         )
         const resolvedParameters = collectParameters(pathItem, operation, spec)
@@ -41,7 +41,7 @@ export function parseOperations(
         const queryParams = getQueryParams(resolvedParameters)
 
         operations.push({
-          operationId: (operation as any).operationId,
+          operationId: (operation as { operationId: string }).operationId,
           path,
           method: normalizedMethod,
           pathParams,
@@ -60,14 +60,15 @@ export function parseOperations(
       for (const [method, operation] of Object.entries(webhookItem)) {
         const normalizedMethod = method.toLowerCase()
         if (!isRequestMethod(normalizedMethod)) continue
-        if (!(operation as any).operationId) continue
+        if (!(operation as { operationId?: string }).operationId) continue
 
         const path = webhookName
         const pathParams = extractPathParams(path)
         const requestType = getRequestType(operation)
         const { successResponse, errors } = getResponseTypes(
           operation,
-          (operation as any).operationId
+          (operation as { operationId: string }).operationId,
+          nameMap
         )
         const resolvedParameters = collectParameters(
           webhookItem,
@@ -78,7 +79,7 @@ export function parseOperations(
         const queryParams = getQueryParams(resolvedParameters)
 
         operations.push({
-          operationId: (operation as any).operationId,
+          operationId: (operation as { operationId: string }).operationId,
           path,
           method: normalizedMethod,
           pathParams,
