@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, mock } from "bun:test"
-import { PetstoreClient } from "../petstore-client"
+import { PetstoreClientFetch } from "../petstore-client-fetch"
 
-describe("PetstoreClient", () => {
+describe("PetstoreClientFetch", () => {
   const originalFetch = global.fetch
 
   afterEach(() => {
@@ -11,7 +11,7 @@ describe("PetstoreClient", () => {
   describe("listPets", () => {
     it("should call the correct endpoint without parameters", async () => {
       const fetchMock = setupFetchMock()
-      const client = new PetstoreClient("https://api.test.com")
+      const client = new PetstoreClientFetch("https://api.test.com")
 
       const mockPets = [
         { id: 1, name: "Fluffy", tag: "cat" },
@@ -39,7 +39,7 @@ describe("PetstoreClient", () => {
     it("should call the correct endpoint with limit parameter", async () => {
       const mockPets = [{ id: 1, name: "Fluffy", tag: "cat" }]
       const fetchMock = setupFetchMock()
-      const client = new PetstoreClient("https://api.test.com")
+      const client = new PetstoreClientFetch("https://api.test.com")
 
       fetchMock.mockResolvedValue(new Response(JSON.stringify(mockPets)))
 
@@ -60,7 +60,7 @@ describe("PetstoreClient", () => {
 
     it("should handle API errors", async () => {
       const fetchMock = setupFetchMock()
-      const client = new PetstoreClient("https://api.test.com")
+      const client = new PetstoreClientFetch("https://api.test.com")
 
       fetchMock.mockResolvedValue(
         new Response(JSON.stringify({ code: 400, message: "Bad Request" }), {
@@ -85,7 +85,7 @@ describe("PetstoreClient", () => {
 
     it("should handle HTTP errors without proper error format", async () => {
       const fetchMock = setupFetchMock()
-      const client = new PetstoreClient("https://api.test.com")
+      const client = new PetstoreClientFetch("https://api.test.com")
 
       fetchMock.mockResolvedValue(
         new Response("Internal Server Error", {
@@ -113,7 +113,7 @@ describe("PetstoreClient", () => {
   describe("createPets", () => {
     it("should create a pet with correct endpoint and data", async () => {
       const fetchMock = setupFetchMock()
-      const client = new PetstoreClient("https://api.test.com")
+      const client = new PetstoreClientFetch("https://api.test.com")
 
       const newPet = { name: "Buddy", tag: "dog" }
 
@@ -137,7 +137,7 @@ describe("PetstoreClient", () => {
 
     it("should handle creation errors", async () => {
       const fetchMock = setupFetchMock()
-      const client = new PetstoreClient("https://api.test.com")
+      const client = new PetstoreClientFetch("https://api.test.com")
 
       const newPet = { name: "Buddy", tag: "dog" }
 
@@ -173,7 +173,7 @@ describe("PetstoreClient", () => {
     it("should get a pet by ID", async () => {
       const mockPet = { id: 1, name: "Fluffy", tag: "cat" }
       const fetchMock = setupFetchMock()
-      const client = new PetstoreClient("https://api.test.com")
+      const client = new PetstoreClientFetch("https://api.test.com")
 
       fetchMock.mockResolvedValue(new Response(JSON.stringify(mockPet)))
 
@@ -194,7 +194,7 @@ describe("PetstoreClient", () => {
 
     it("should handle not found errors", async () => {
       const fetchMock = setupFetchMock()
-      const client = new PetstoreClient("https://api.test.com")
+      const client = new PetstoreClientFetch("https://api.test.com")
 
       fetchMock.mockResolvedValue(
         new Response(JSON.stringify({ code: 404, message: "Not Found" }), {

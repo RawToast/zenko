@@ -2,7 +2,7 @@ import { paths, Pet, Pets, Error as ErrorSchema } from "./schema/petstore.gen"
 
 type ZodSchema<T = any> = { parse: (json: unknown) => T }
 
-export class PetstoreClient {
+export class PetstoreClientFetch {
   private baseUrl: string
 
   constructor(baseUrl: string = "http://petstore.swagger.io/v1") {
