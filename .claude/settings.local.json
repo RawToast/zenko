@@ -1,8 +1,23 @@
 {
   "permissions": {
     "allow": [
-      "Skill(superpowers:*)",
-      "Bash(bun check:*)",
+      "Skill(superpowers:brainstorming)",
+      "Skill(superpowers:systematic-debugging)",
+      "Skill(superpowers:using-git-worktrees)",
+      "Bash(if ! grep -q \"^\\.worktrees\" .gitignore)",
+      "Bash(then echo \".worktrees/\")",
+      "Bash(.gitignore)",
+      "Bash(fi)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git worktree:*)",
+      "Bash(mkdir:*)",
+      "Bash(bun install)",
+      "Bash(bun test)",
+      "Bash(bun test:*)",
+      "Bash(bun coverage)",
+      "Bash(turbo *)",
+      "Bash(bun check)",
       "WebSearch",
       "Bash(bun test:*)"
     ],
