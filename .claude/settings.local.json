@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Skill(superpowers:brainstorming)",
+      "Skill(superpowers:systematic-debugging)",
       "Skill(superpowers:using-git-worktrees)",
       "Bash(if ! grep -q \"^\\.worktrees\" .gitignore)",
       "Bash(then echo \".worktrees/\")",
@@ -16,7 +17,8 @@
       "Bash(bun test:*)",
       "Bash(bun coverage)",
       "Bash(turbo *)",
-      "Bash(bun check)"
+      "Bash(bun check)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []
