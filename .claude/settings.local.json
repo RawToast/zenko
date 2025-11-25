@@ -18,8 +18,7 @@
       "Bash(bun coverage)",
       "Bash(turbo *)",
       "Bash(bun check)",
-      "WebSearch",
-      "Bash(bun test:*)"
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

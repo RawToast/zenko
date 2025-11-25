@@ -73,7 +73,7 @@ export class PetstoreClientUndici {
       if (error.success) {
         throw new Error(`API Error: ${error.data.message} (${error.data.code})`)
       }
-      throw new Error(`HTTP Error: ${statusCode} ${await responseBody.text()}`)
+      throw new Error(`HTTP Error: ${statusCode} Unprocessable Entity`)
     }
 
     if (statusCode === 204 || responseSchema === undefined) {

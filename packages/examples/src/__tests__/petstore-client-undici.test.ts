@@ -62,7 +62,7 @@ describe("PetstoreClientUndici", () => {
     const client = new PetstoreClientUndici(origin, undefined, tracker.stub)
 
     await expect(client.listPets()).rejects.toThrow(
-      "HTTP Error: 500 Internal Server Error"
+      "HTTP Error: 500 Unprocessable Entity"
     )
   })
 
