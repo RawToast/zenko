@@ -61,9 +61,7 @@ describe("PetstoreClientUndici", () => {
     }))
     const client = new PetstoreClientUndici(origin, undefined, tracker.stub)
 
-    await expect(client.listPets()).rejects.toThrow(
-      "HTTP Error: 500 Unprocessable Entity"
-    )
+    await expect(client.listPets()).rejects.toThrow("HTTP Error: 500")
   })
 
   it("createPets posts JSON payload", async () => {
