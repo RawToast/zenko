@@ -1,0 +1,320 @@
+openapi: 3.0.0
+info:
+  title: Auth & Settings API
+  version: 1.0.0
+  description: API for authentication and user settings using form-based requests
+
+paths:
+  /auth/login:
+    post:
+      operationId: loginUser
+      summary: Authenticate user with credentials
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/LoginCredentials"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthToken"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/register:
+    post:
+      operationId: registerUser
+      summary: Register a new user account
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/RegistrationForm"
+      responses:
+        "201":
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /settings/avatar:
+    post:
+      operationId: uploadAvatar
+      summary: Upload user avatar image
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/AvatarUpload"
+      responses:
+        "200":
+          description: Avatar uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvatarResponse"
+
+  /settings/profile:
+    patch:
+      operationId: updateProfile
+      summary: Update user profile settings
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /feedback:
+    post:
+      operationId: submitFeedback
+      summary: Submit user feedback with optional screenshot
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/FeedbackForm"
+      responses:
+        "201":
+          description: Feedback submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackResponse"
+
+components:
+  schemas:
+    # URL-encoded login form
+    LoginCredentials:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        staySignedIn:
+          type: boolean
+          default: false
+
+    # URL-encoded registration form
+    RegistrationForm:
+      type: object
+      required:
+        - email
+        - password
+        - displayName
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+        displayName:
+          type: string
+          minLength: 2
+          maxLength: 50
+        acceptTerms:
+          type: boolean
+        referralCode:
+          type: string
+
+    # Multipart avatar upload
+    AvatarUpload:
+      type: object
+      required:
+        - image
+      properties:
+        image:
+          type: string
+          format: binary
+          description: Avatar image file (PNG, JPEG)
+        cropX:
+          type: integer
+          description: X coordinate for cropping
+        cropY:
+          type: integer
+          description: Y coordinate for cropping
+        cropSize:
+          type: integer
+          description: Size of crop square
+          minimum: 50
+          maximum: 500
+
+    # Multipart profile update with optional avatar
+    ProfileUpdate:
+      type: object
+      properties:
+        displayName:
+          type: string
+          minLength: 2
+          maxLength: 50
+        bio:
+          type: string
+          maxLength: 300
+        website:
+          type: string
+          format: uri
+        avatar:
+          type: string
+          format: binary
+        location:
+          type: string
+        notifications:
+          type: object
+          properties:
+            emailUpdates:
+              type: boolean
+            pushNotifications:
+              type: boolean
+            weeklyDigest:
+              type: boolean
+
+    # Multipart feedback form
+    FeedbackForm:
+      type: object
+      required:
+        - category
+        - message
+      properties:
+        category:
+          type: string
+          enum: [bug, feature, question, other]
+        message:
+          type: string
+          minLength: 10
+          maxLength: 2000
+        screenshot:
+          type: string
+          format: binary
+        attachments:
+          type: array
+          items:
+            type: string
+            format: binary
+        contactEmail:
+          type: string
+          format: email
+        priority:
+          type: string
+          enum: [low, medium, high]
+          default: medium
+
+    # Response schemas
+    AuthToken:
+      type: object
+      required:
+        - accessToken
+        - tokenType
+        - expiresIn
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+          enum: [Bearer]
+        expiresIn:
+          type: integer
+          description: Token lifetime in seconds
+        refreshToken:
+          type: string
+
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - displayName
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+        bio:
+          type: string
+        website:
+          type: string
+          format: uri
+        avatarUrl:
+          type: string
+          format: uri
+        location:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    AvatarResponse:
+      type: object
+      required:
+        - avatarUrl
+      properties:
+        avatarUrl:
+          type: string
+          format: uri
+        thumbnailUrl:
+          type: string
+          format: uri
+
+    FeedbackResponse:
+      type: object
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [received, reviewing, resolved]
+        ticketNumber:
+          type: string
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        details:
+          type: string

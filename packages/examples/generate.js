@@ -65,12 +65,13 @@ try {
       },
     }
   )
+  const authApiSuccess = generateSchema("auth-api.yaml", "auth-api.gen.ts")
 
-  if (!petstoreSuccess || !trainTravelSuccess) {
+  if (!petstoreSuccess || !trainTravelSuccess || !authApiSuccess) {
     process.exit(1)
   }
 
-  console.log("🎉 All schemas generated successfully!")
+  console.log("All schemas generated successfully!")
 } catch (error) {
   console.error("❌ Error during code generation:", error.message)
   process.exit(1)
