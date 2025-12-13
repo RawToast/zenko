@@ -137,7 +137,8 @@ describe("Form Data", () => {
     // DocumentUpload has tags array
     expect(result).toContain("export const DocumentUpload =")
 
-    // Arrays in form data are typically repeated fields or comma-separated
+    // Verify array field is present
+    expect(result).toContain("tags: z.array(z.string())")
   })
 
   test("generates all form schemas", () => {
@@ -191,9 +192,13 @@ describe("Form Data", () => {
     // ProfileForm has age constraints
     expect(result).toContain("export const ProfileForm =")
 
-    // Should include validation
-    // .min(18).max(120) for age
-    // .minLength(3).maxLength(20) for username
+    // Should include validation for age: minimum: 18, maximum: 120
+    expect(result).toContain(".min(18)")
+    expect(result).toContain(".max(120)")
+
+    // Should include validation for username: minLength: 3, maxLength: 20
+    expect(result).toContain(".min(3)")
+    expect(result).toContain(".max(20)")
   })
 
   test("handles password format", () => {
