@@ -158,7 +158,7 @@ describe("parseOperations", () => {
     expect(pathOp?.errors).toBeUndefined()
 
     expect(webhookOp?.path).toBe("onPetStatus")
-    expect(webhookOp?.requestType).toBe("PetStatus")
+    expect(webhookOp?.requestType).toBe("petStatus")
     expect(webhookOp?.responseType).toBe("undefined")
     expect(webhookOp?.errors).toEqual({
       internalServerError: "error",

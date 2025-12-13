@@ -1,0 +1,355 @@
+openapi: 3.0.0
+info:
+  title: Form Data Test API
+  version: 1.0.0
+  description: Tests multipart/form-data and application/x-www-form-urlencoded
+
+paths:
+  /upload:
+    post:
+      operationId: uploadFile
+      summary: Upload a single file with metadata
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/FileUpload"
+      responses:
+        "201":
+          description: File uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+
+  /upload-multiple:
+    post:
+      operationId: uploadMultipleFiles
+      summary: Upload multiple files
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/MultiFileUpload"
+      responses:
+        "201":
+          description: Files uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MultiUploadResponse"
+
+  /profile:
+    post:
+      operationId: createProfile
+      summary: Create user profile with avatar
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ProfileForm"
+            encoding:
+              avatar:
+                contentType: image/png, image/jpeg
+      responses:
+        "201":
+          description: Profile created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  /contact:
+    post:
+      operationId: submitContactForm
+      summary: Submit contact form
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/ContactForm"
+      responses:
+        "200":
+          description: Form submitted
+
+  /login:
+    post:
+      operationId: login
+      summary: User login with form data
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/LoginForm"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+
+  /documents:
+    post:
+      operationId: uploadDocument
+      summary: Upload document with metadata and tags
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/DocumentUpload"
+      responses:
+        "201":
+          description: Document uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+
+components:
+  schemas:
+    # Simple file upload with metadata
+    FileUpload:
+      type: object
+      required:
+        - file
+        - filename
+      properties:
+        file:
+          type: string
+          format: binary
+          description: The file to upload
+        filename:
+          type: string
+          description: Name of the file
+        description:
+          type: string
+          description: Optional description
+
+    # Multiple file upload
+    MultiFileUpload:
+      type: object
+      required:
+        - files
+      properties:
+        files:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: Multiple files to upload
+        category:
+          type: string
+          enum: [documents, images, videos]
+
+    # Profile form with mixed data types
+    ProfileForm:
+      type: object
+      required:
+        - username
+        - email
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+        email:
+          type: string
+          format: email
+        bio:
+          type: string
+          maxLength: 500
+        age:
+          type: integer
+          minimum: 18
+          maximum: 120
+        avatar:
+          type: string
+          format: binary
+          description: Profile picture
+        preferences:
+          type: object
+          properties:
+            newsletter:
+              type: boolean
+            theme:
+              type: string
+              enum: [light, dark]
+
+    # URL-encoded contact form
+    ContactForm:
+      type: object
+      required:
+        - name
+        - email
+        - message
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        message:
+          type: string
+          minLength: 10
+          maxLength: 1000
+        subject:
+          type: string
+          enum: [general, support, sales, feedback]
+
+    # URL-encoded login form
+    LoginForm:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+        rememberMe:
+          type: boolean
+          default: false
+
+    # Document upload with complex metadata
+    DocumentUpload:
+      type: object
+      required:
+        - document
+        - title
+      properties:
+        document:
+          type: string
+          format: binary
+        title:
+          type: string
+        author:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        isPublic:
+          type: boolean
+          default: false
+        metadata:
+          type: object
+          properties:
+            category:
+              type: string
+            department:
+              type: string
+
+    # Response schemas
+    UploadResponse:
+      type: object
+      required:
+        - id
+        - url
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        filename:
+          type: string
+        size:
+          type: integer
+          description: File size in bytes
+        contentType:
+          type: string
+
+    MultiUploadResponse:
+      type: object
+      required:
+        - files
+      properties:
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/UploadResponse"
+        totalSize:
+          type: integer
+
+    Profile:
+      type: object
+      required:
+        - id
+        - username
+        - email
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        bio:
+          type: string
+        age:
+          type: integer
+        avatarUrl:
+          type: string
+          format: uri
+        preferences:
+          type: object
+          properties:
+            newsletter:
+              type: boolean
+            theme:
+              type: string
+
+    LoginResponse:
+      type: object
+      required:
+        - token
+        - userId
+      properties:
+        token:
+          type: string
+        userId:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+
+    Document:
+      type: object
+      required:
+        - id
+        - title
+        - url
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        author:
+          type: string
+        url:
+          type: string
+          format: uri
+        tags:
+          type: array
+          items:
+            type: string
+        isPublic:
+          type: boolean
+        uploadedAt:
+          type: string
+          format: date-time

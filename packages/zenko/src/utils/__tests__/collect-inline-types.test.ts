@@ -172,7 +172,7 @@ describe("collectInlineTypes", () => {
       expect(result.size).toBe(0)
     })
 
-    test("should not collect request schemas without application/json content", () => {
+    test("should not collect request schemas without json or form content", () => {
       const operations = [mockOperation]
       const spec = {
         paths: {
