@@ -1,0 +1,294 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Form Data generates complete TypeScript output: form-data-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const FileUpload = z.object({
+  file: (typeof Blob === "undefined" ? z.unknown() : z.instanceof(Blob)),
+  filename: z.string(),
+  description: z.string().optional(),
+});
+
+export type FileUpload = z.infer<typeof FileUpload>;
+
+export const MultiFileUpload = z.object({
+  files: z.array((typeof Blob === "undefined" ? z.unknown() : z.instanceof(Blob))),
+  category: z.enum(["documents", "images", "videos"]).optional(),
+});
+
+export type MultiFileUpload = z.infer<typeof MultiFileUpload>;
+
+export const ProfileForm = z.object({
+  username: z.string(),
+  email: z.string().email(),
+  bio: z.string().optional(),
+  age: z.number().int().optional(),
+  avatar: (typeof Blob === "undefined" ? z.unknown() : z.instanceof(Blob)).optional(),
+  preferences: z.object({
+  newsletter: z.boolean().optional(),
+  theme: z.enum(["light", "dark"]).optional(),
+}).optional(),
+});
+
+export type ProfileForm = z.infer<typeof ProfileForm>;
+
+export const ContactForm = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  phone: z.string().optional(),
+  message: z.string(),
+  subject: z.enum(["general", "support", "sales", "feedback"]).optional(),
+});
+
+export type ContactForm = z.infer<typeof ContactForm>;
+
+export const LoginForm = z.object({
+  username: z.string(),
+  password: z.string(),
+  rememberMe: z.boolean().optional().default(false),
+});
+
+export type LoginForm = z.infer<typeof LoginForm>;
+
+export const DocumentUpload = z.object({
+  document: (typeof Blob === "undefined" ? z.unknown() : z.instanceof(Blob)),
+  title: z.string(),
+  author: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  isPublic: z.boolean().optional().default(false),
+  metadata: z.object({
+  category: z.string().optional(),
+  department: z.string().optional(),
+}).optional(),
+});
+
+export type DocumentUpload = z.infer<typeof DocumentUpload>;
+
+export const UploadResponse = z.object({
+  id: z.string().uuid(),
+  url: z.string().url(),
+  filename: z.string().optional(),
+  size: z.number().int().optional(),
+  contentType: z.string().optional(),
+});
+
+export type UploadResponse = z.infer<typeof UploadResponse>;
+
+export const MultiUploadResponse = z.object({
+  files: z.array(UploadResponse),
+  totalSize: z.number().int().optional(),
+});
+
+export type MultiUploadResponse = z.infer<typeof MultiUploadResponse>;
+
+export const Profile = z.object({
+  id: z.string().uuid(),
+  username: z.string(),
+  email: z.string().email(),
+  bio: z.string().optional(),
+  age: z.number().int().optional(),
+  avatarUrl: z.string().url().optional(),
+  preferences: z.object({
+  newsletter: z.boolean().optional(),
+  theme: z.string().optional(),
+}).optional(),
+});
+
+export type Profile = z.infer<typeof Profile>;
+
+export const LoginResponse = z.object({
+  token: z.string(),
+  userId: z.string(),
+  expiresAt: z.string().optional(),
+});
+
+export type LoginResponse = z.infer<typeof LoginResponse>;
+
+export const Document = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  author: z.string().optional(),
+  url: z.string().url(),
+  tags: z.array(z.string()).optional(),
+  isPublic: z.boolean().optional(),
+  uploadedAt: z.string().optional(),
+});
+
+export type Document = z.infer<typeof Document>;
+
+// Path Functions
+export const paths = {
+  uploadFile: () => "/upload",
+  uploadMultipleFiles: () => "/upload-multiple",
+  createProfile: () => "/profile",
+  submitContactForm: () => "/contact",
+  login: () => "/login",
+  uploadDocument: () => "/documents",
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  uploadFile: z.object({}),
+  uploadMultipleFiles: z.object({}),
+  createProfile: z.object({}),
+  submitContactForm: z.object({}),
+  login: z.object({}),
+  uploadDocument: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  uploadFile: () => headerSchemas.uploadFile.parse({}),
+  uploadMultipleFiles: () => headerSchemas.uploadMultipleFiles.parse({}),
+  createProfile: () => headerSchemas.createProfile.parse({}),
+  submitContactForm: () => headerSchemas.submitContactForm.parse({}),
+  login: () => headerSchemas.login.parse({}),
+  uploadDocument: () => headerSchemas.uploadDocument.parse({}),
+} as const;
+
+// Operation Types
+export type UploadFileOperation = OperationDefinition<
+  "post",
+  typeof paths.uploadFile,
+  typeof FileUpload,
+  typeof UploadResponse,
+  undefined,
+  OperationErrors
+>;
+
+export type UploadMultipleFilesOperation = OperationDefinition<
+  "post",
+  typeof paths.uploadMultipleFiles,
+  typeof MultiFileUpload,
+  typeof MultiUploadResponse,
+  undefined,
+  OperationErrors
+>;
+
+export type CreateProfileOperation = OperationDefinition<
+  "post",
+  typeof paths.createProfile,
+  typeof ProfileForm,
+  typeof Profile,
+  undefined,
+  OperationErrors
+>;
+
+export type SubmitContactFormOperation = OperationDefinition<
+  "post",
+  typeof paths.submitContactForm,
+  typeof ContactForm,
+  undefined,
+  undefined,
+  OperationErrors
+>;
+
+export type LoginOperation = OperationDefinition<
+  "post",
+  typeof paths.login,
+  typeof LoginForm,
+  typeof LoginResponse,
+  undefined,
+  OperationErrors
+>;
+
+export type UploadDocumentOperation = OperationDefinition<
+  "post",
+  typeof paths.uploadDocument,
+  typeof DocumentUpload,
+  typeof Document,
+  undefined,
+  OperationErrors
+>;
+
+// Operation Objects
+export const uploadFile: UploadFileOperation = {
+  method: "post",
+  path: paths.uploadFile,
+  request: FileUpload,
+  response: UploadResponse,
+} as const;
+
+export const uploadMultipleFiles: UploadMultipleFilesOperation = {
+  method: "post",
+  path: paths.uploadMultipleFiles,
+  request: MultiFileUpload,
+  response: MultiUploadResponse,
+} as const;
+
+export const createProfile: CreateProfileOperation = {
+  method: "post",
+  path: paths.createProfile,
+  request: ProfileForm,
+  response: Profile,
+} as const;
+
+export const submitContactForm: SubmitContactFormOperation = {
+  method: "post",
+  path: paths.submitContactForm,
+  request: ContactForm,
+} as const;
+
+export const login: LoginOperation = {
+  method: "post",
+  path: paths.login,
+  request: LoginForm,
+  response: LoginResponse,
+} as const;
+
+export const uploadDocument: UploadDocumentOperation = {
+  method: "post",
+  path: paths.uploadDocument,
+  request: DocumentUpload,
+  response: Document,
+} as const;
+"
+`;
+
+exports[`Form Data snapshots operation objects for form requests: form-data-operation-objects 1`] = `
+"
+export const uploadFile: UploadFileOperation = {
+  method: "post",
+  path: paths.uploadFile,
+  request: FileUpload,
+  response: UploadResponse,
+} as const;
+
+export const uploadMultipleFiles: UploadMultipleFilesOperation = {
+  method: "post",
+  path: paths.uploadMultipleFiles,
+  request: MultiFileUpload,
+  response: MultiUploadResponse,
+} as const;
+
+export const createProfile: CreateProfileOperation = {
+  method: "post",
+  path: paths.createProfile,
+  request: ProfileForm,
+  response: Profile,
+} as const;
+
+export const submitContactForm: SubmitContactFormOperation = {
+  method: "post",
+  path: paths.submitContactForm,
+  request: ContactForm,
+} as const;
+
+export const login: LoginOperation = {
+  method: "post",
+  path: paths.login,
+  request: LoginForm,
+  response: LoginResponse,
+} as const;
+
+export const uploadDocument: UploadDocumentOperation = {
+  method: "post",
+  path: paths.uploadDocument,
+  request: DocumentUpload,
+  response: Document,
+} as const;
+"
+`;

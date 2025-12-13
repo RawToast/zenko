@@ -30,7 +30,7 @@ export function parseOperations(
         if (!(operation as { operationId?: string }).operationId) continue
 
         const pathParams = extractPathParams(path)
-        const requestType = getRequestType(operation)
+        const requestType = getRequestType(operation, nameMap)
         const { successResponse, errors } = getResponseTypes(
           operation,
           (operation as { operationId: string }).operationId,
@@ -64,7 +64,7 @@ export function parseOperations(
 
         const path = webhookName
         const pathParams = extractPathParams(path)
-        const requestType = getRequestType(operation)
+        const requestType = getRequestType(operation, nameMap)
         const { successResponse, errors } = getResponseTypes(
           operation,
           (operation as { operationId: string }).operationId,
@@ -137,17 +137,39 @@ function extractPathParams(path: string): PathParam[] {
   return params
 }
 
-function getRequestType(operation: any): string | undefined {
-  const requestBody =
-    operation.requestBody?.content?.["application/json"]?.schema
-  if (!requestBody) return undefined
+function getRequestType(
+  operation: any,
+  nameMap?: Map<string, string>
+): string | undefined {
+  const requestBodySchema = getRequestBodySchema(operation)
+  if (!requestBodySchema) return undefined
 
-  if (requestBody.$ref) {
-    return extractRefName(requestBody.$ref)
+  if (requestBodySchema.$ref) {
+    const refName = extractRefName(requestBodySchema.$ref)
+    return nameMap?.get(refName) || refName
   }
 
   const typeName = `${capitalize(toCamelCase(operation.operationId))}Request`
   return typeName
+}
+
+function getRequestBodySchema(operation: any): any | undefined {
+  const content: Record<string, any> | undefined =
+    operation?.requestBody?.content
+  if (!content || Object.keys(content).length === 0) return undefined
+
+  const preferredTypes = [
+    "application/json",
+    "multipart/form-data",
+    "application/x-www-form-urlencoded",
+  ]
+
+  for (const t of preferredTypes) {
+    const schema = content[t]?.schema
+    if (schema) return schema
+  }
+
+  return undefined
 }
 
 function getResponseTypes(

@@ -160,10 +160,11 @@ export function buildZodObject(
     schema.properties || {}
   )) {
     const isRequired = schema.required?.includes(propName) ?? false
-    const zodType = getZodTypeFromSchema(propSchema as any, options, nameMap)
-    const finalType = isRequired
-      ? zodType
-      : applyOptionalModifier(zodType, options.optionalType)
+    const baseType = getZodTypeFromSchema(propSchema as any, options, nameMap)
+    const withOptionality = isRequired
+      ? baseType
+      : applyOptionalModifier(baseType, options.optionalType)
+    const finalType = applyDefaultModifier(withOptionality, propSchema as any)
     properties.push(`  ${formatPropertyName(propName)}: ${finalType},`)
   }
 
@@ -178,6 +179,11 @@ export function buildZodObject(
  * Builds a Zod string schema with format validators and constraints.
  */
 export function buildString(schema: any, options: SchemaOptions): string {
+  // OpenAPI binary (multipart uploads) - keep runtime-safe across Node/Bun/Browser
+  if (schema.format === "binary") {
+    return '(typeof Blob === "undefined" ? z.unknown() : z.instanceof(Blob))'
+  }
+
   if (options.strictDates) {
     switch (schema.format) {
       case "date-time":
@@ -222,6 +228,11 @@ export function buildString(schema: any, options: SchemaOptions): string {
     default:
       return builder
   }
+}
+
+function applyDefaultModifier(zodType: string, schema: any): string {
+  if (!schema || schema.default === undefined) return zodType
+  return `${zodType}.default(${JSON.stringify(schema.default)})`
 }
 
 /**

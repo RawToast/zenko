@@ -71,22 +71,37 @@ export function collectInlineRequestTypes(
     const requestBody = operation.requestBody
     if (requestBody && requestBody.content) {
       const content = requestBody.content
-      const jsonContent = content["application/json"]
+      const schema = findRequestBodySchema(content)
+      if (!schema) continue
 
-      if (jsonContent && jsonContent.schema) {
-        const schema = jsonContent.schema
-        const typeName = `${capitalize(toCamelCase(op.operationId))}Request`
+      const typeName = `${capitalize(toCamelCase(op.operationId))}Request`
 
-        // Generate if it's not a simple $ref (those are already handled)
-        // This includes allOf, oneOf, anyOf, and complex inline schemas
-        if (!schema.$ref || schema.allOf || schema.oneOf || schema.anyOf) {
-          requestTypesToGenerate.set(typeName, schema)
-        }
+      // Generate if it's not a simple $ref (those are already handled)
+      // This includes allOf, oneOf, anyOf, and complex inline schemas
+      if (!schema.$ref || schema.allOf || schema.oneOf || schema.anyOf) {
+        requestTypesToGenerate.set(typeName, schema)
       }
     }
   }
 
   return requestTypesToGenerate
+}
+
+function findRequestBodySchema(
+  content: Record<string, { schema?: OpenAPISchema }>
+): OpenAPISchema | undefined {
+  const preferredTypes = [
+    "application/json",
+    "multipart/form-data",
+    "application/x-www-form-urlencoded",
+  ]
+
+  for (const t of preferredTypes) {
+    const schema = content[t]?.schema
+    if (schema) return schema
+  }
+
+  return undefined
 }
 
 /**
