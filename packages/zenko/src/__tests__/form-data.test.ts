@@ -117,11 +117,16 @@ describe("Form Data", () => {
     const result = generate(specYaml)
 
     // ProfileForm has nested preferences object
-    // DocumentUpload has nested metadata object
     expect(result).toContain("export const ProfileForm =")
-    expect(result).toContain("export const DocumentUpload =")
+    expect(result).toContain("preferences: z.object({")
+    expect(result).toContain("newsletter:")
+    expect(result).toContain("theme:")
 
-    // Nested objects in form data might be flattened or serialized as JSON strings
+    // DocumentUpload has nested metadata object
+    expect(result).toContain("export const DocumentUpload =")
+    expect(result).toContain("metadata: z.object({")
+    expect(result).toContain("category:")
+    expect(result).toContain("department:")
   })
 
   test("handles arrays in form data", () => {
