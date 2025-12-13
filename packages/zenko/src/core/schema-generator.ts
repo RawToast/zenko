@@ -146,8 +146,17 @@ export function getZodTypeFromSchema(
 }
 
 /**
- * Builds a Zod object schema from an OpenAPI object schema.
- * Handles required/optional properties.
+ * Constructs a Zod object schema expression from an OpenAPI object schema.
+ *
+ * For each property in `schema.properties` the function:
+ * - Keeps required properties as required in the resulting Zod schema.
+ * - Applies the optional modifier based on `options.optionalType` for non-required properties.
+ * - Applies the property's OpenAPI `default` value as a `.default(...)` on non-required properties except when `options.optionalType` is `"nullable"`.
+ *
+ * @param schema - The OpenAPI object schema to convert into a Zod object expression.
+ * @param options - Schema generation options that control optional/null/default handling.
+ * @param nameMap - Optional map translating referenced schema names to target type names.
+ * @returns A string containing the Zod object schema expression (for example: `z.object({...})`).
  */
 export function buildZodObject(
   schema: any,
@@ -182,7 +191,13 @@ export function buildZodObject(
 }
 
 /**
- * Builds a Zod string schema with format validators and constraints.
+ * Builds a Zod schema expression for an OpenAPI string schema.
+ *
+ * Constructs an appropriate Zod string validator based on the schema's `format`, length and pattern constraints, and generation options.
+ *
+ * @param schema - OpenAPI schema object describing the string (may include `format`, `minLength`, `maxLength`, `pattern`, etc.)
+ * @param options - Generation options that control date-related format handling and application of length/pattern constraints
+ * @returns A string containing the Zod schema expression corresponding to `schema`
  */
 export function buildString(schema: any, options: SchemaOptions): string {
   // OpenAPI binary (multipart uploads) - keep runtime-safe across Node/Bun/Browser
@@ -236,6 +251,13 @@ export function buildString(schema: any, options: SchemaOptions): string {
   }
 }
 
+/**
+ * Appends a default value to a Zod type expression when the OpenAPI schema defines one.
+ *
+ * @param zodType - The Zod type expression to modify (as a string)
+ * @param schema - The OpenAPI schema object that may contain a `default` value
+ * @returns The original `zodType` with `.default(<value>)` appended if `schema.default` is defined, otherwise the unmodified `zodType`
+ */
 function applyDefaultModifier(zodType: string, schema: any): string {
   if (!schema || schema.default === undefined) return zodType
   return `${zodType}.default(${JSON.stringify(schema.default)})`
