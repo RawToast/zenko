@@ -1,11 +1,14 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
+import * as path from "path"
 import jsYaml from "js-yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
 describe("Form Data", () => {
+  const specPath = path.join(import.meta.dir, "../resources/form-data.yaml")
+
   test("generates complete TypeScript output", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -13,7 +16,7 @@ describe("Form Data", () => {
   })
 
   test("snapshots operation objects for form requests", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -26,7 +29,7 @@ describe("Form Data", () => {
   })
 
   test("handles multipart/form-data content type", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -39,7 +42,7 @@ describe("Form Data", () => {
   })
 
   test("handles binary file format", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -52,7 +55,7 @@ describe("Form Data", () => {
   })
 
   test("handles array of binary files", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -65,7 +68,7 @@ describe("Form Data", () => {
   })
 
   test("handles application/x-www-form-urlencoded", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -81,7 +84,7 @@ describe("Form Data", () => {
   })
 
   test("handles mixed data types in form data", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -96,7 +99,7 @@ describe("Form Data", () => {
   })
 
   test("handles encoding specification", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -109,7 +112,7 @@ describe("Form Data", () => {
   })
 
   test("handles nested objects in form data", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -122,7 +125,7 @@ describe("Form Data", () => {
   })
 
   test("handles arrays in form data", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -133,7 +136,7 @@ describe("Form Data", () => {
   })
 
   test("generates all form schemas", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -154,7 +157,7 @@ describe("Form Data", () => {
   })
 
   test("generates operation objects with correct content types", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -176,7 +179,7 @@ describe("Form Data", () => {
   })
 
   test("applies validation constraints to form fields", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml, { strictNumeric: true })
 
@@ -189,7 +192,7 @@ describe("Form Data", () => {
   })
 
   test("handles password format", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -201,7 +204,7 @@ describe("Form Data", () => {
   })
 
   test("handles default values in forms", () => {
-    const specContent = fs.readFileSync("src/resources/form-data.yaml", "utf8")
+    const specContent = fs.readFileSync(specPath, "utf8")
     const specYaml = jsYaml.load(specContent) as OpenAPISpec
     const result = generate(specYaml)
 

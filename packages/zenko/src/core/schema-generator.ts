@@ -161,10 +161,18 @@ export function buildZodObject(
   )) {
     const isRequired = schema.required?.includes(propName) ?? false
     const baseType = getZodTypeFromSchema(propSchema as any, options, nameMap)
+    // Only apply .default() to non-required properties.
+    // In Zod, .default(x) accepts undefined input, effectively making the field
+    // optional. Required fields should remain required regardless of defaults.
     const withOptionality = isRequired
       ? baseType
-      : applyOptionalModifier(baseType, options.optionalType)
-    const finalType = applyDefaultModifier(withOptionality, propSchema as any)
+      : applyDefaultModifier(
+          applyOptionalModifier(baseType, options.optionalType),
+          propSchema as any
+        )
+
+    const finalType = withOptionality
+
     properties.push(`  ${formatPropertyName(propName)}: ${finalType},`)
   }
 
