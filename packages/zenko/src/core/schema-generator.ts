@@ -171,7 +171,6 @@ export function buildZodObject(
         ? applyDefaultModifier(withOptional, propSchema as any)
         : withOptional
     const finalType = isRequired ? baseType : withDefault
-
     properties.push(`  ${formatPropertyName(propName)}: ${finalType},`)
   }
 
@@ -188,7 +187,7 @@ export function buildZodObject(
 export function buildString(schema: any, options: SchemaOptions): string {
   // OpenAPI binary (multipart uploads) - keep runtime-safe across Node/Bun/Browser
   if (schema.format === "binary") {
-    return '(typeof Blob === "undefined" ? z.unknown() : z.instanceof(Blob))'
+    return `(typeof Blob === "undefined" ? z.unknown() : z.instanceof(Blob))`
   }
 
   if (options.strictDates) {
