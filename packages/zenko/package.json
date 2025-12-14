@@ -45,7 +45,7 @@
   ],
   "homepage": "https://github.com/RawToast/zenko#readme",
   "engines": {
-    "bun": ">=1.2.21"
+    "bun": ">=1.2.22"
   },
   "publishConfig": {
     "access": "public"

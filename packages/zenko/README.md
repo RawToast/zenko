@@ -17,7 +17,7 @@ Unlike most OpenAPI generators, Zenko does not create a client. Instead you are 
 
 ## Installation
 
-Note: Zenko requires Bun 1.2.21 or higher.
+Note: Zenko requires Bun 1.2.22 or higher.
 
 An npm package may be available in the future if there is demand.
 

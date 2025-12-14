@@ -9,7 +9,7 @@
   "type": "module",
   "license": "MIT",
   "engines": {
-    "bun": ">=1.2.21"
+    "bun": ">=1.2.22"
   },
   "scripts": {
     "format": "prettier --write '**/*'{js,ts,tsx,json,yaml} --experimental-cli",
