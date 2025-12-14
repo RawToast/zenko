@@ -17,13 +17,14 @@ Unlike most OpenAPI generators, Zenko does not create a client. Instead you are 
 
 ## Installation
 
+Note: Zenko requires Bun 1.2.21 or higher.
+
+An npm package may be available in the future if there is demand.
+
 ### One-time Usage
 
 ```bash
-# Use directly with npx (no installation required)
-npx zenko input.yaml output.ts
-
-# Or with bunx
+# Use directly with bunx (no installation required)
 bunx zenko input.yaml output.ts
 ```
 
@@ -31,14 +32,10 @@ bunx zenko input.yaml output.ts
 
 ```bash
 # Install globally
-npm install -g zenko
 bun install -g zenko
 
 # Or install locally
-npm install zenko
 bun add zenko
-yarn add zenko
-pnpm add zenko
 ```
 
 ## Usage
@@ -61,7 +58,6 @@ zenko --help
 zenko -h
 
 # One-time usage (no installation)
-npx zenko input.yaml output.ts
 bunx zenko input.yaml output.ts
 ```
 

@@ -4,7 +4,6 @@ import {
   extractDependencies,
   extractRefName,
 } from "../topological-sort"
-import * as yaml from "js-yaml"
 import * as fs from "fs"
 
 describe("topologicalSort", () => {
@@ -76,7 +75,7 @@ describe("topologicalSort", () => {
       "src/resources/petstore.yaml",
       "utf8"
     )
-    const petstore = yaml.load(petstoreContent) as any
+    const petstore = Bun.YAML.parse(petstoreContent) as any
     const schemas = petstore.components.schemas
 
     const result = topologicalSort(schemas)
