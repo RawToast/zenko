@@ -87,6 +87,12 @@ export function collectInlineRequestTypes(
   return requestTypesToGenerate
 }
 
+/**
+ * Selects the preferred request body schema from a media-type-to-content mapping.
+ *
+ * @param content - A mapping from media type (e.g. "application/json") to an object that may contain a `schema` property
+ * @returns The first found schema for a preferred media type (`application/json`, `multipart/form-data`, `application/x-www-form-urlencoded`) or `undefined` if none is present
+ */
 function findRequestBodySchema(
   content: Record<string, { schema?: OpenAPISchema }>
 ): OpenAPISchema | undefined {

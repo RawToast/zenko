@@ -16,6 +16,13 @@ import type {
 } from "../types/operation"
 import type { OpenAPISpec } from "../zenko"
 
+/**
+ * Converts an OpenAPI spec into a flat list of Operation objects describing each path, method, and webhook operation.
+ *
+ * @param spec - The OpenAPI document to parse
+ * @param nameMap - Optional map from internal reference names to public type names used when resolving referenced request/response schemas
+ * @returns An array of Operation objects containing operationId, path, HTTP method, extracted path/query/header parameters, request type (if any), resolved success response type (if any), and grouped error types
+ */
 export function parseOperations(
   spec: OpenAPISpec,
   nameMap?: Map<string, string>
@@ -120,6 +127,12 @@ function collectParameters(
   return Array.from(parametersMap.values())
 }
 
+/**
+ * Extracts path parameter descriptors from a path template.
+ *
+ * @param path - URL path template containing parameters in `{name}` braces
+ * @returns An array of PathParam objects for each `{name}` occurrence; each entry contains `name` and `type` ("string")
+ */
 function extractPathParams(path: string): PathParam[] {
   const params: PathParam[] = []
   const matches = path.match(/{([^}]+)}/g)
@@ -137,6 +150,13 @@ function extractPathParams(path: string): PathParam[] {
   return params
 }
 
+/**
+ * Resolve the TypeScript type name for an operation's request body.
+ *
+ * @param operation - The OpenAPI OperationObject to inspect for a request body
+ * @param nameMap - Optional map from internal `$ref` names to public type names; used when the request schema is a `$ref`
+ * @returns The resolved request type name, or `undefined` when the operation has no request body
+ */
 function getRequestType(
   operation: any,
   nameMap?: Map<string, string>
@@ -153,6 +173,12 @@ function getRequestType(
   return typeName
 }
 
+/**
+ * Selects the preferred request body schema from an OpenAPI Operation's content.
+ *
+ * @param operation - OpenAPI Operation object to inspect for a `requestBody`
+ * @returns The first available schema for content types `application/json`, `multipart/form-data`, or `application/x-www-form-urlencoded`, or `undefined` if none is present
+ */
 function getRequestBodySchema(operation: any): any | undefined {
   const content: Record<string, any> | undefined =
     operation?.requestBody?.content
@@ -172,6 +198,14 @@ function getRequestBodySchema(operation: any): any | undefined {
   return undefined
 }
 
+/**
+ * Determines the primary success response type and grouped error types for an operation.
+ *
+ * @param operation - The OpenAPI operation object to analyze (operation.responses is inspected).
+ * @param operationId - Identifier used to derive fallback type names when a schema cannot be resolved.
+ * @param nameMap - Optional map from internal reference names to public type names used to resolve referenced schemas.
+ * @returns An object containing `successResponse`, the chosen success response type name (if any), and `errors`, a mapping of error identifiers to error type names (if any).
+ */
 function getResponseTypes(
   operation: any,
   operationId: string,
