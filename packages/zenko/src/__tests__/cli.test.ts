@@ -2,7 +2,6 @@ import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import { execSync } from "child_process"
 import * as fs from "fs"
 import * as path from "path"
-import * as jsYaml from "js-yaml"
 
 describe("CLI", () => {
   const tempDir = path.join(process.cwd(), "temp-test")
@@ -172,7 +171,7 @@ describe("CLI", () => {
     }
 
     const specPath = path.join(tempDir, "strict-spec.yaml")
-    fs.writeFileSync(specPath, jsYaml.dump(strictSpec))
+    fs.writeFileSync(specPath, Bun.YAML.stringify(strictSpec))
 
     execSync(
       `bun run ${cliPath} ${specPath} ${outputFile} --strict-dates --strict-numeric`,

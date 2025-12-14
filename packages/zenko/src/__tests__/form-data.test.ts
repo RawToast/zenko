@@ -1,7 +1,6 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
 import * as path from "path"
-import jsYaml from "js-yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
 describe("Form Data", () => {
@@ -9,7 +8,7 @@ describe("Form Data", () => {
 
   test("generates complete TypeScript output", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("form-data-complete-output")
@@ -17,7 +16,7 @@ describe("Form Data", () => {
 
   test("snapshots operation objects for form requests", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     const operationObjectsSection =
@@ -30,7 +29,7 @@ describe("Form Data", () => {
 
   test("handles multipart/form-data content type", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // FileUpload is used with multipart/form-data
@@ -43,7 +42,7 @@ describe("Form Data", () => {
 
   test("handles binary file format", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // FileUpload has a file field with format: binary
@@ -56,7 +55,7 @@ describe("Form Data", () => {
 
   test("handles array of binary files", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // MultiFileUpload has files: array of binary
@@ -69,7 +68,7 @@ describe("Form Data", () => {
 
   test("handles application/x-www-form-urlencoded", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // ContactForm and LoginForm use application/x-www-form-urlencoded
@@ -85,7 +84,7 @@ describe("Form Data", () => {
 
   test("handles mixed data types in form data", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // ProfileForm has string, integer, boolean, binary, and object fields
@@ -100,7 +99,7 @@ describe("Form Data", () => {
 
   test("handles encoding specification", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // createProfile operation has encoding specification for avatar
@@ -113,7 +112,7 @@ describe("Form Data", () => {
 
   test("handles nested objects in form data", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // ProfileForm has nested preferences object
@@ -131,7 +130,7 @@ describe("Form Data", () => {
 
   test("handles arrays in form data", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // DocumentUpload has tags array
@@ -143,7 +142,7 @@ describe("Form Data", () => {
 
   test("generates all form schemas", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // All form schemas should be generated
@@ -164,7 +163,7 @@ describe("Form Data", () => {
 
   test("generates operation objects with correct content types", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Operations should reference the correct schemas
@@ -186,7 +185,7 @@ describe("Form Data", () => {
 
   test("applies validation constraints to form fields", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml, { strictNumeric: true })
 
     // ProfileForm has age constraints
@@ -203,7 +202,7 @@ describe("Form Data", () => {
 
   test("handles password format", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // LoginForm has password field with format: password
@@ -215,7 +214,7 @@ describe("Form Data", () => {
 
   test("handles default values in forms", () => {
     const specContent = fs.readFileSync(specPath, "utf8")
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // LoginForm has rememberMe with default: false

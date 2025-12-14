@@ -1,6 +1,5 @@
 import { readFileSync, writeFileSync, mkdirSync } from "fs"
 import { dirname, resolve } from "path"
-import { load } from "js-yaml"
 import { generate } from "zenko"
 
 function generateSchema(inputFile, outputFile, options) {
@@ -18,7 +17,7 @@ function generateSchema(inputFile, outputFile, options) {
       throw new Error(`Spec file ${inputFile} is empty or could not be read`)
     }
     // load
-    const spec = load(specContent)
+    const spec = Bun.YAML.parse(specContent)
 
     // Validate parsed spec
     if (!spec || typeof spec !== "object" || Array.isArray(spec)) {
