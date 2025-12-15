@@ -22,7 +22,7 @@
     "//#format:check": {},
     "check-types": {
       "dependsOn": ["codegen", "^check-types"],
-      "inputs": ["**/*.{ts,tsx}", "**/*.yaml"]
+      "inputs": ["**/*.{ts,tsx}", "**/*.gen.ts", "**/*.yaml"]
     },
     "test": {
       "inputs": ["$TURBO_DEFAULT$", "**/*.ts", "**/*.yaml"],
