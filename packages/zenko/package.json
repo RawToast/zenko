@@ -10,7 +10,10 @@
     "zenko": "dist/cli.cjs"
   },
   "files": [
-    "dist",
+    "dist/**/*.cjs",
+    "dist/**/*.mjs",
+    "dist/**/*.d.ts",
+    "dist/**/*.d.cts",
     "README.md",
     "LICENSE"
   ],
