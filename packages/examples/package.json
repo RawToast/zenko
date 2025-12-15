@@ -8,12 +8,12 @@
     "codegen": "bun run --bun generate.js",
     "test": "bun test",
     "coverage": "bun test --coverage",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsgo --noEmit"
   },
   "devDependencies": {
-    "typescript": "5.9.3",
-    "zenko": "workspace:*",
-    "@types/bun": "1.3.2"
+    "@typescript/native-preview": "7.0.0-dev.20251212.1",
+    "@types/bun": "1.3.2",
+    "zenko": "workspace:*"
   },
   "dependencies": {
     "@effect/platform": "0.93.3",

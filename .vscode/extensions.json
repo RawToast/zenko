@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "yoavbls.pretty-ts-errors",
+    "oxc.oxc-vscode",
+    "esbenp.prettier-vscode",
+    "TypeScriptTeam.native-preview"
+  ],
+  "unwantedRecommendations": ["biomejs.biome"]
+}
