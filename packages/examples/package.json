@@ -11,9 +11,9 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/bun": "1.3.2",
     "typescript": "5.9.3",
-    "zenko": "workspace:*",
-    "@types/bun": "1.3.2"
+    "zenko": "workspace:*"
   },
   "dependencies": {
     "@effect/platform": "0.93.3",

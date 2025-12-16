@@ -10,7 +10,7 @@
         "!**/build/**",
         "generate.js"
       ],
-      "cache": false
+      "cache": true
     },
     "build": {
       "outputs": ["dist/**"],
@@ -22,7 +22,7 @@
     "//#format:check": {},
     "check-types": {
       "dependsOn": ["codegen", "^check-types"],
-      "inputs": ["**/*.{ts,tsx}"]
+      "inputs": ["**/*.{ts,tsx}", "**/*.gen.ts", "**/*.yaml"]
     },
     "test": {
       "inputs": ["$TURBO_DEFAULT$", "**/*.ts", "**/*.yaml"],

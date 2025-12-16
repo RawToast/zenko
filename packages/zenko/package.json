@@ -66,11 +66,16 @@
   },
   "devDependencies": {
     "@types/bun": "1.3.2",
-    "tsup": "8.5.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "tsup": "8.5.1"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
   },
   "dependencies": {}
 }

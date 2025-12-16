@@ -1,0 +1,31 @@
+{
+  "search.exclude": {
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/build": true,
+    "**/dist": true,
+    "**/.output": true
+  },
+  "files.readonlyInclude": {
+    "**/bun.lock": true
+  },
+  "typescript.experimental.expandableHover": true,
+  // always choose typescript from node_modules
+  "typescript.tsdk": "./node_modules/@typescript/native-preview/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "[javascript][javascriptreact][typescript][typescriptreact][json][jsonc][html][css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.prettier": "explicit",
+    "source.fixAll.oxc": "explicit"
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "tsconfig.json": "tsconfig.*.json, env.d.ts",
+    "package.json": "package-lock.json, .editorconfig, bun.lock, bunfig.toml",
+    ".prettierrc.json": ".prettier*, prettier*, .oxlintrc.json"
+  },
+  "oxc.enable": true,
+  "typescript.experimental.useTsgo": true
+}
