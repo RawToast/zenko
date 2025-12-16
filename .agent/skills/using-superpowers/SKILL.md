@@ -93,8 +93,8 @@ Your human partner's specific instructions describe WHAT to do, not HOW.
 
 **Starting any task:**
 1. If relevant skill exists → Use the skill
-3. Announce you're using it
-4. Follow what it says
+2. Announce you're using it
+3. Follow what it says
 
 **Skill has checklist?** TodoWrite for every item.
 
