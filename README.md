@@ -9,21 +9,26 @@ Unlike most OpenAPI generators, Zenko does not create a client. Instead you are 
 
 ## Quick Start
 
-````bash
+```bash
 # One-time usage (no installation required)
 bunx zenko input.yaml output.ts
+```
 
+```bash
 # Or install globally
 bun install -g zenko
 zenko input.yaml output.ts
+```
 
+```bash
 # Or as a script in your package.json
 bun add -d zenko
-```json
+
+# Then in your package.json
 "scripts": {
   "generate": "zenko --config resources/zenko.config.json"
 }
-````
+```
 
 ## Features
 
