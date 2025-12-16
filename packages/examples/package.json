@@ -11,8 +11,8 @@
     "check-types": "tsgo --noEmit"
   },
   "devDependencies": {
-    "@typescript/native-preview": "7.0.0-dev.20251212.1",
     "@types/bun": "1.3.2",
+    "typescript": "5.9.3",
     "zenko": "workspace:*"
   },
   "dependencies": {
