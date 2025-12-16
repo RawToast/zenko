@@ -67,9 +67,12 @@ The config file controls generation for multiple specs and can also configure ty
 
 ```json
 {
+  "$schema": "https://raw.githubusercontent.com/RawToast/zenko/refs/heads/master/packages/zenko/zenko-config.schema.json",
   "types": {
     "emit": true,
-    "helpers": "package"
+    "helpers": "package",
+    "treeShake": true,
+    "optionalType": "optional"
   },
   "schemas": [
     {
@@ -84,6 +87,16 @@ The config file controls generation for multiple specs and can also configure ty
       "types": {
         "helpers": "inline"
       }
+    },
+    {
+      "input": "my-custom-api.yaml",
+      "output": "my-custom-api.gen.ts",
+      "operationIds": ["getUser", "createUser", "updateUser"],
+      "types": {
+        "helpers": "file",
+        "helpersOutput": "./shared/api-helpers.ts",
+        "treeShake": false
+      }
     }
   ]
 }
@@ -95,6 +108,31 @@ The config file controls generation for multiple specs and can also configure ty
 - `helpers: "inline"` writes the helper definitions into each generated file
 - `helpers: "file"` imports from a custom module (`helpersOutput` path)
 - `emit: false` disables per-operation type aliases entirely
+
+#### Additional Type Configuration
+
+- `treeShake: true` (default) - Only generates types used in operations
+- `treeShake: false` - Generates all types from the schema
+- `optionalType: "optional"` (default) - Fields can be undefined (`z.optional()`)
+- `optionalType: "nullable"` - Fields can be null (`z.nullable()`)
+- `optionalType: "nullish"` - Fields can be undefined or null (`z.nullish()`)
+
+#### Selective Operations
+
+Generate only specific operations using `operationIds`:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/RawToast/zenko/refs/heads/master/packages/zenko/zenko-config.schema.json",
+  "schemas": [
+    {
+      "input": "api.yaml",
+      "output": "api.gen.ts",
+      "operationIds": ["getUser", "createUser", "updateUser"]
+    }
+  ]
+}
+```
 
 ### Programmatic Usage
 
@@ -230,6 +268,9 @@ if (validation.success) {
 
 ### Building a Generic Client
 
+Below is an example of a generic client that can be used to run operations.
+See [examples package](../examples/README.md) for a more complete examples with tests, using undici, fetch, ts-effect.
+
 ```typescript
 import type { OperationDefinition } from "zenko"
 
@@ -256,7 +297,7 @@ async function runOperation<
 
 ### Dependency Resolution
 
-Zenko automatically resolves schema dependencies using topological sorting, ensuring that referenced types are defined before they're used. This eliminates "used before declaration" errors.
+Zenko automatically resolves schema dependencies using topological sorting, ensuring that referenced types are defined before they're used. This eliminates "used before declaration" errors. Alongside excessive duplicate schema generation, as found in other generators.
 
 ### Zod Integration
 
