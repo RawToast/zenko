@@ -24,7 +24,7 @@ export default defineConfig({
   sourcemap: true,
 
   // Split dependencies into separate chunks when needed
-  splitting: false,
+  splitting: true,
 
   // Target Node.js environment
   target: "node20",
@@ -39,7 +39,7 @@ export default defineConfig({
   cjsInterop: true,
 
   // Minify output for smaller bundles
-  minify: false, // Keep readable for now
+  minify: true,
 
   // Custom output extensions - use .cjs for CommonJS to avoid module conflicts
   outExtension({ format }) {
