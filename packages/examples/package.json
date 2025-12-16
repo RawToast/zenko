@@ -8,7 +8,7 @@
     "codegen": "bun run --bun generate.js",
     "test": "bun test",
     "coverage": "bun test --coverage",
-    "check-types": "tsgo --noEmit"
+    "check-types": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/bun": "1.3.2",
