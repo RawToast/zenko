@@ -48,6 +48,7 @@ export type GenerateOptions = {
   strictNumeric?: boolean
   types?: TypesConfig
   operationIds?: string[]
+  openEnums?: boolean | string[]
 }
 
 export type GenerateResult = {
@@ -71,12 +72,18 @@ export function generateWithMetadata(
 ): GenerateResult {
   const output: string[] = []
   const generatedTypes = new Set<string>()
-  const { strictDates = false, strictNumeric = false, operationIds } = options
+  const {
+    strictDates = false,
+    strictNumeric = false,
+    operationIds,
+    openEnums = false,
+  } = options
   const typesConfig = normalizeTypesConfig(options.types)
   const schemaOptions: SchemaOptions = {
     strictDates,
     strictNumeric,
     optionalType: typesConfig.optionalType,
+    openEnums,
   }
 
   output.push('import { z } from "zod";')

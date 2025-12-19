@@ -190,4 +190,56 @@ describe("DateEnum", () => {
     expect(result).toContain("errorType:")
     expect(result).toContain("message:")
   })
+
+  test("generates open enums with openEnums: true", () => {
+    const dateEnumContent = fs.readFileSync(
+      "src/resources/date-enum.yaml",
+      "utf8"
+    )
+    const specYaml = parseYaml(dateEnumContent)
+    const result = generate(specYaml, { openEnums: true })
+
+    // Should generate open enum with Unknown template literal
+    expect(result).toContain(
+      'const StatusKnown = ["enabled", "disabled", "closed"] as const;'
+    )
+    expect(result).toContain("export const Status = z.enum(StatusKnown).or(")
+    expect(result).toContain(
+      "z.string().transform((v): `Unknown:${string}` => `Unknown:${v}`)"
+    )
+
+    // Version should also be open
+    expect(result).toContain("const VersionKnown =")
+    expect(result).toContain("export const Version = z.enum(VersionKnown).or(")
+  })
+
+  test("generates open enums only for specified enum names", () => {
+    const dateEnumContent = fs.readFileSync(
+      "src/resources/date-enum.yaml",
+      "utf8"
+    )
+    const specYaml = parseYaml(dateEnumContent)
+    const result = generate(specYaml, { openEnums: ["Status"] })
+
+    // Status should be open
+    expect(result).toContain(
+      'const StatusKnown = ["enabled", "disabled", "closed"] as const;'
+    )
+    expect(result).toContain("export const Status = z.enum(StatusKnown).or(")
+
+    // Version should NOT be open (using standard z.enum)
+    expect(result).toContain("export const Version = z.enum([")
+    expect(result).not.toContain("const VersionKnown =")
+  })
+
+  test("generates complete output with open enums", () => {
+    const dateEnumContent = fs.readFileSync(
+      "src/resources/date-enum.yaml",
+      "utf8"
+    )
+    const specYaml = parseYaml(dateEnumContent)
+    const result = generate(specYaml, { openEnums: true })
+
+    expect(result).toMatchSnapshot("date-enum-open-enums")
+  })
 })

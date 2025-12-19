@@ -90,6 +90,16 @@
           "items": {
             "type": "string"
           }
+        },
+        "openEnums": {
+          "oneOf": [
+            { "type": "boolean" },
+            {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          ],
+          "description": "Make enums 'open' to accept unknown string values. If true, all enums are open. If array, only named enums in the list are open. Unknown values are transformed to template literals like `Unknown:${value}`."
         }
       }
     }

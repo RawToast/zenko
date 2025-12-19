@@ -147,3 +147,83 @@ export const createSomething: CreateSomethingOperation = {
 } as const;
 "
 `;
+
+exports[`DateEnum generates complete output with open enums: date-enum-open-enums 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const ErrorResponseStatus = z.string();
+
+export type ErrorResponseStatus = z.infer<typeof ErrorResponseStatus>;
+
+const StatusKnown = ["enabled", "disabled", "closed"] as const;
+export const Status = z.enum(StatusKnown).or(
+  z.string().transform((v): \`Unknown:\${string}\` => \`Unknown:\${v}\`)
+);
+
+export type Status = z.infer<typeof Status>;
+
+const VersionKnown = ["2016-01-19", "2016-07-01", "2018-04-10", "2023-08-01"] as const;
+export const Version = z.enum(VersionKnown).or(
+  z.string().transform((v): \`Unknown:\${string}\` => \`Unknown:\${v}\`)
+);
+
+export type Version = z.infer<typeof Version>;
+
+export const CreateSomethingRequest = z.object({
+  status: Status,
+  version: Version,
+});
+
+export type CreateSomethingRequest = z.infer<typeof CreateSomethingRequest>;
+
+export const DateTime = z.string();
+
+export type DateTime = z.infer<typeof DateTime>;
+
+export const CreateSomethingErrorResponse = z.object({
+  statusCode: z.number().int(),
+  errorType: z.string(),
+  message: z.string(),
+});
+
+export type CreateSomethingErrorResponse = z.infer<typeof CreateSomethingErrorResponse>;
+
+// Path Functions
+export const paths = {
+  createSomething: ({ someId }: { someId: string }) => \`/my-service/\${someId}/create\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  createSomething: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  createSomething: () => headerSchemas.createSomething.parse({}),
+} as const;
+
+// Operation Types
+export type CreateSomethingOperation = OperationDefinition<
+  "post",
+  typeof paths.createSomething,
+  typeof CreateSomethingRequest,
+  undefined,
+  undefined,
+  OperationErrors<{ internalServerError: typeof CreateSomethingErrorResponse }>
+>;
+
+// Operation Objects
+export const createSomething: CreateSomethingOperation = {
+  method: "post",
+  path: paths.createSomething,
+  request: CreateSomethingRequest,
+    errors: {
+      internalServerError: CreateSomethingErrorResponse,
+    },
+} as const;
+"
+`;
