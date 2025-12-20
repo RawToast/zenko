@@ -65,8 +65,16 @@ try {
     }
   )
   const authApiSuccess = generateSchema("auth-api.yaml", "auth-api.gen.ts")
+  const enumDemoSuccess = generateSchema("enum-demo.yaml", "enum-demo.gen.ts", {
+    openEnums: ["ProductStatus"], // Make ProductStatus open, Category remains closed
+  })
 
-  if (!petstoreSuccess || !trainTravelSuccess || !authApiSuccess) {
+  if (
+    !petstoreSuccess ||
+    !trainTravelSuccess ||
+    !authApiSuccess ||
+    !enumDemoSuccess
+  ) {
     process.exit(1)
   }
 
