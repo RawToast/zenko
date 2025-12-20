@@ -6,7 +6,7 @@ import * as Headers from "@effect/platform/Headers"
 import * as HttpBody from "@effect/platform/HttpBody"
 import { Effect } from "effect"
 import * as Option from "effect/Option"
-import { PetstoreClientTsEffect } from "../petstore-client-ts-effect"
+import { PetstoreClientTsEffect } from "~/petstore-client-ts-effect"
 
 describe("PetstoreClientTsEffect", () => {
   const origin = "https://api.test.com"

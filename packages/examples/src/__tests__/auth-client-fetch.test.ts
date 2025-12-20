@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, mock } from "bun:test"
-import { AuthClientFetch } from "../auth-client-fetch"
+import { AuthClientFetch } from "~/auth-client-fetch"
 
 describe("AuthClientFetch", () => {
   const originalFetch = global.fetch
