@@ -134,6 +134,85 @@ Generate only specific operations using `operationIds`:
 }
 ```
 
+#### Open Enums
+
+By default, enums are "closed" - they only accept the values defined in your OpenAPI spec. Open enums allow unknown string values to pass through, which is useful when APIs may add new enum values without breaking existing clients.
+
+Unknown values are transformed to a prefixed string (default: `` `Unknown:${value}` ``), making them easy to identify and handle.
+
+**Basic usage:**
+
+```json
+{
+  "schemas": [
+    {
+      "input": "api.yaml",
+      "output": "api.gen.ts",
+      "openEnums": true
+    }
+  ]
+}
+```
+
+**Selective enums:**
+
+```json
+{
+  "schemas": [
+    {
+      "input": "api.yaml",
+      "output": "api.gen.ts",
+      "openEnums": ["Status", "Category"]
+    }
+  ]
+}
+```
+
+**Custom prefix:**
+
+If `"Unknown:"` conflicts with your schema values or you prefer a different convention, use the object form:
+
+```json
+{
+  "schemas": [
+    {
+      "input": "api.yaml",
+      "output": "api.gen.ts",
+      "openEnums": {
+        "open": true,
+        "unknownPrefix": "unrecognized_"
+      }
+    }
+  ]
+}
+```
+
+Or combine selective enums with a custom prefix:
+
+```json
+{
+  "openEnums": { "open": ["Status"], "unknownPrefix": "x-" }
+}
+```
+
+**Generated output:**
+
+```typescript
+// Closed enum (default)
+export const Category = z.enum(["electronics", "clothing", "books"])
+
+// Open enum
+const StatusKnown = ["active", "inactive", "pending"] as const
+export const Status = z
+  .enum(StatusKnown)
+  .or(z.string().transform((v): `Unknown:${string}` => `Unknown:${v}`))
+
+// TypeScript type includes both known and unknown values
+type Status = "active" | "inactive" | "pending" | `Unknown:${string}`
+```
+
+**Note:** When specifying enum names in `openEnums`, use the sanitized TypeScript name (e.g., `"LinksSelf"` not `"Links-Self"`). Schema names with hyphens are converted to camelCase.
+
 ### Programmatic Usage
 
 ```typescript

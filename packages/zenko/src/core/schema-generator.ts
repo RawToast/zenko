@@ -5,6 +5,20 @@ export type SchemaOptions = {
   strictDates: boolean
   strictNumeric: boolean
   optionalType: "optional" | "nullable" | "nullish"
+  openEnums: boolean | string[]
+  openEnumPrefix: string
+}
+
+/**
+ * Checks if a named enum should be generated as "open" (accepting unknown values).
+ */
+export function isOpenEnum(
+  name: string,
+  openEnums: boolean | string[]
+): boolean {
+  if (openEnums === true) return true
+  if (Array.isArray(openEnums)) return openEnums.includes(name)
+  return false
 }
 
 /**
@@ -40,6 +54,10 @@ export function generateZodSchema(
 
   if (schema.enum) {
     const enumValues = schema.enum.map((v: string) => `"${v}"`).join(", ")
+    if (isOpenEnum(name, options.openEnums)) {
+      const p = options.openEnumPrefix
+      return `const ${name}Known = [${enumValues}] as const;\nexport const ${name} = z.enum(${name}Known).or(\n  z.string().transform((v): \`${p}\${string}\` => \`${p}\${v}\`)\n);`
+    }
     return `export const ${name} = z.enum([${enumValues}]);`
   }
 

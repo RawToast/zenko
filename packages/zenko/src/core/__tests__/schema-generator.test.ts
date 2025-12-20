@@ -11,12 +11,15 @@ import {
   applyStrictArrayBounds,
   isPrimitiveLike,
   applyNumericBounds,
+  isOpenEnum,
 } from "../schema-generator"
 
 const defaultOptions: SchemaOptions = {
   strictDates: false,
   strictNumeric: false,
   optionalType: "optional",
+  openEnums: false,
+  openEnumPrefix: "Unknown:",
 }
 
 describe("applyOptionalModifier", () => {
@@ -576,5 +579,163 @@ describe("generateZodSchema", () => {
       nameMap
     )
     expect(result).toBe("export const Test = userProfile;")
+  })
+
+  test("should generate open enum schema when openEnums is true", () => {
+    const generatedTypes = new Set<string>()
+    const options = { ...defaultOptions, openEnums: true as boolean | string[] }
+    const result = generateZodSchema(
+      "Color",
+      { enum: ["red", "green", "blue"] },
+      generatedTypes,
+      options
+    )
+    expect(result).toContain('const ColorKnown = ["red", "green", "blue"]')
+    expect(result).toContain("as const")
+    expect(result).toContain("export const Color = z.enum(ColorKnown).or(")
+    expect(result).toContain(
+      "z.string().transform((v): `Unknown:${string}` => `Unknown:${v}`)"
+    )
+  })
+
+  test("should generate open enum only for specified names", () => {
+    const generatedTypes = new Set<string>()
+    const options = {
+      ...defaultOptions,
+      openEnums: ["Status"] as boolean | string[],
+    }
+
+    // Status should be open
+    const statusResult = generateZodSchema(
+      "Status",
+      { enum: ["active", "inactive"] },
+      generatedTypes,
+      options
+    )
+    expect(statusResult).toContain("const StatusKnown =")
+    expect(statusResult).toContain("z.enum(StatusKnown).or(")
+
+    // Color should remain closed
+    generatedTypes.clear()
+    const colorResult = generateZodSchema(
+      "Color",
+      { enum: ["red", "green", "blue"] },
+      generatedTypes,
+      options
+    )
+    expect(colorResult).toBe(
+      'export const Color = z.enum(["red", "green", "blue"]);'
+    )
+    expect(colorResult).not.toContain("ColorKnown")
+  })
+
+  test("should use default prefix when no custom prefix specified", () => {
+    const generatedTypes = new Set<string>()
+    const options = {
+      ...defaultOptions,
+      openEnums: true as boolean | string[],
+      openEnumPrefix: "Unknown:",
+    }
+    const result = generateZodSchema(
+      "Color",
+      { enum: ["red", "green", "blue"] },
+      generatedTypes,
+      options
+    )
+    expect(result).toContain(
+      "z.string().transform((v): `Unknown:${string}` => `Unknown:${v}`)"
+    )
+  })
+
+  test("should use custom prefix when specified", () => {
+    const generatedTypes = new Set<string>()
+    const options = {
+      ...defaultOptions,
+      openEnums: true as boolean | string[],
+      openEnumPrefix: "unknown-",
+    }
+    const result = generateZodSchema(
+      "Color",
+      { enum: ["red", "green", "blue"] },
+      generatedTypes,
+      options
+    )
+    expect(result).toContain(
+      "z.string().transform((v): `unknown-${string}` => `unknown-${v}`)"
+    )
+  })
+
+  test("should use custom prefix in type annotation", () => {
+    const generatedTypes = new Set<string>()
+    const options = {
+      ...defaultOptions,
+      openEnums: true as boolean | string[],
+      openEnumPrefix: "unrecognized_",
+    }
+    const result = generateZodSchema(
+      "Status",
+      { enum: ["active", "inactive"] },
+      generatedTypes,
+      options
+    )
+    expect(result).toContain(
+      "z.string().transform((v): `unrecognized_${string}` => `unrecognized_${v}`)"
+    )
+  })
+
+  test("should handle empty string prefix", () => {
+    const generatedTypes = new Set<string>()
+    const options = {
+      ...defaultOptions,
+      openEnums: true as boolean | string[],
+      openEnumPrefix: "",
+    }
+    const result = generateZodSchema(
+      "Color",
+      { enum: ["red", "green", "blue"] },
+      generatedTypes,
+      options
+    )
+    expect(result).toContain("z.string().transform((v): `${string}` => `${v}`)")
+  })
+
+  test("should handle special characters in prefix", () => {
+    const generatedTypes = new Set<string>()
+    const options = {
+      ...defaultOptions,
+      openEnums: true as boolean | string[],
+      openEnumPrefix: "x-",
+    }
+    const result = generateZodSchema(
+      "Color",
+      { enum: ["red", "green", "blue"] },
+      generatedTypes,
+      options
+    )
+    expect(result).toContain(
+      "z.string().transform((v): `x-${string}` => `x-${v}`)"
+    )
+  })
+})
+
+describe("isOpenEnum", () => {
+  test("should return true when openEnums is true", () => {
+    expect(isOpenEnum("Status", true)).toBe(true)
+    expect(isOpenEnum("AnyEnum", true)).toBe(true)
+  })
+
+  test("should return false when openEnums is false", () => {
+    expect(isOpenEnum("Status", false)).toBe(false)
+    expect(isOpenEnum("AnyEnum", false)).toBe(false)
+  })
+
+  test("should return true when enum name is in the array", () => {
+    expect(isOpenEnum("Status", ["Status", "Color"])).toBe(true)
+    expect(isOpenEnum("Color", ["Status", "Color"])).toBe(true)
+  })
+
+  test("should return false when enum name is not in the array", () => {
+    expect(isOpenEnum("Other", ["Status", "Color"])).toBe(false)
+    expect(isOpenEnum("NotInList", [])).toBe(false)
   })
 })

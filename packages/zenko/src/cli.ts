@@ -7,6 +7,7 @@ import {
   generateWithMetadata,
   type OpenAPISpec,
   type TypesConfig,
+  type EnumConfig,
 } from "./zenko.js"
 
 type CliConfigEntry = {
@@ -16,6 +17,7 @@ type CliConfigEntry = {
   strictNumeric?: boolean
   types?: TypesConfig
   operationIds?: string[]
+  openEnums?: boolean | string[] | EnumConfig
 }
 
 type CliConfigFile = {
@@ -158,6 +160,7 @@ async function runFromConfig(parsed: ParsedArgs) {
       strictNumeric: entry.strictNumeric ?? parsed.strictNumeric,
       typesConfig,
       operationIds: entry.operationIds,
+      openEnums: entry.openEnums,
     })
   }
 }
@@ -221,6 +224,7 @@ async function generateSingle(options: {
   strictNumeric: boolean
   typesConfig?: TypesConfig
   operationIds?: string[]
+  openEnums?: boolean | string[] | EnumConfig
 }) {
   const {
     inputFile,
@@ -229,6 +233,7 @@ async function generateSingle(options: {
     strictNumeric,
     typesConfig,
     operationIds,
+    openEnums,
   } = options
   const resolvedInput = path.resolve(inputFile)
   const resolvedOutput = path.resolve(outputFile)
@@ -239,6 +244,7 @@ async function generateSingle(options: {
     strictNumeric,
     types: typesConfig,
     operationIds,
+    openEnums,
   })
 
   fs.mkdirSync(path.dirname(resolvedOutput), { recursive: true })

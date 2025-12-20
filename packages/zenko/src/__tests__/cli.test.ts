@@ -221,4 +221,154 @@ describe("CLI", () => {
     expect(output).toContain("export const Pets =")
     expect(output).toContain("export const Error =")
   })
+
+  test("supports openEnums in config file", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+    const dateEnumPath = path.join(
+      process.cwd(),
+      "src/resources/date-enum.yaml"
+    )
+
+    const configDir = path.join(tempDir, "open-enums-config")
+    const configOutput = path.join(configDir, "open-enums-output.ts")
+    fs.mkdirSync(configDir, { recursive: true })
+
+    const configPath = path.join(configDir, "zenko.config.json")
+    const config = {
+      schemas: [
+        {
+          input: path.relative(configDir, dateEnumPath),
+          output: "open-enums-output.ts",
+          openEnums: ["Status"],
+        },
+      ],
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+
+    execSync(`bun run ${cliPath} --config ${configPath}`, {
+      encoding: "utf8",
+    })
+
+    const output = fs.readFileSync(configOutput, "utf8")
+    expect(output).toContain('import { z } from "zod"')
+    // Status should be open enum
+    expect(output).toContain("const StatusKnown =")
+    expect(output).toContain("z.enum(StatusKnown).or(")
+    // Version should remain closed
+    expect(output).toContain("export const Version = z.enum([")
+    expect(output).not.toContain("const VersionKnown =")
+  })
+
+  test("supports openEnums: true in config file", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+    const dateEnumPath = path.join(
+      process.cwd(),
+      "src/resources/date-enum.yaml"
+    )
+
+    const configDir = path.join(tempDir, "open-enums-all-config")
+    const configOutput = path.join(configDir, "open-enums-all-output.ts")
+    fs.mkdirSync(configDir, { recursive: true })
+
+    const configPath = path.join(configDir, "zenko.config.json")
+    const config = {
+      schemas: [
+        {
+          input: path.relative(configDir, dateEnumPath),
+          output: "open-enums-all-output.ts",
+          openEnums: true,
+        },
+      ],
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+
+    execSync(`bun run ${cliPath} --config ${configPath}`, {
+      encoding: "utf8",
+    })
+
+    const output = fs.readFileSync(configOutput, "utf8")
+    expect(output).toContain('import { z } from "zod"')
+    // Both Status and Version should be open
+    expect(output).toContain("const StatusKnown =")
+    expect(output).toContain("const VersionKnown =")
+    expect(output).toContain("z.enum(StatusKnown).or(")
+    expect(output).toContain("z.enum(VersionKnown).or(")
+  })
+
+  test("supports openEnums object config form with custom prefix", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+    const dateEnumPath = path.join(
+      process.cwd(),
+      "src/resources/date-enum.yaml"
+    )
+
+    const configDir = path.join(tempDir, "open-enums-object-config")
+    const configOutput = path.join(configDir, "open-enums-object-output.ts")
+    fs.mkdirSync(configDir, { recursive: true })
+
+    const configPath = path.join(configDir, "zenko.config.json")
+    const config = {
+      schemas: [
+        {
+          input: path.relative(configDir, dateEnumPath),
+          output: "open-enums-object-output.ts",
+          openEnums: { open: true, unknownPrefix: "unrecognized_" },
+        },
+      ],
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+
+    execSync(`bun run ${cliPath} --config ${configPath}`, {
+      encoding: "utf8",
+    })
+
+    const output = fs.readFileSync(configOutput, "utf8")
+    expect(output).toContain('import { z } from "zod"')
+    // Should use custom prefix
+    expect(output).toContain(
+      "z.string().transform((v): `unrecognized_${string}` => `unrecognized_${v}`)"
+    )
+    // Both Status and Version should be open
+    expect(output).toContain("const StatusKnown =")
+    expect(output).toContain("const VersionKnown =")
+  })
+
+  test("supports openEnums object config form with selective enums", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+    const dateEnumPath = path.join(
+      process.cwd(),
+      "src/resources/date-enum.yaml"
+    )
+
+    const configDir = path.join(tempDir, "open-enums-selective-config")
+    const configOutput = path.join(configDir, "open-enums-selective-output.ts")
+    fs.mkdirSync(configDir, { recursive: true })
+
+    const configPath = path.join(configDir, "zenko.config.json")
+    const config = {
+      schemas: [
+        {
+          input: path.relative(configDir, dateEnumPath),
+          output: "open-enums-selective-output.ts",
+          openEnums: { open: ["Status"], unknownPrefix: "x-" },
+        },
+      ],
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+
+    execSync(`bun run ${cliPath} --config ${configPath}`, {
+      encoding: "utf8",
+    })
+
+    const output = fs.readFileSync(configOutput, "utf8")
+    expect(output).toContain('import { z } from "zod"')
+    // Status should be open with custom prefix
+    expect(output).toContain("const StatusKnown =")
+    expect(output).toContain(
+      "z.string().transform((v): `x-${string}` => `x-${v}`)"
+    )
+    // Version should remain closed
+    expect(output).toContain("export const Version = z.enum([")
+    expect(output).not.toContain("const VersionKnown =")
+  })
 })

@@ -90,6 +90,33 @@
           "items": {
             "type": "string"
           }
+        },
+        "openEnums": {
+          "oneOf": [
+            { "type": "boolean" },
+            {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "oneOf": [
+                    { "type": "boolean" },
+                    {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  ]
+                },
+                "unknownPrefix": { "type": "string" }
+              },
+              "additionalProperties": false,
+              "description": "Object form allows customizing the prefix for unknown enum values. 'open' controls which enums are open (boolean or array of enum names). 'unknownPrefix' sets the prefix for unknown values (default: 'Unknown:')."
+            }
+          ],
+          "description": "Make enums 'open' to accept unknown string values. If true, all enums are open. If array, only named enums in the list are open. If object, use 'open' to specify which enums are open and 'unknownPrefix' to customize the prefix. Unknown values are transformed to template literals like `${prefix}${value}`."
         }
       }
     }
