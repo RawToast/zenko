@@ -242,4 +242,99 @@ describe("DateEnum", () => {
 
     expect(result).toMatchSnapshot("date-enum-open-enums")
   })
+
+  test("generates open enums with object config form and custom prefix", () => {
+    const dateEnumContent = fs.readFileSync(
+      "src/resources/date-enum.yaml",
+      "utf8"
+    )
+    const specYaml = parseYaml(dateEnumContent)
+    const result = generate(specYaml, {
+      openEnums: { open: true, unknownPrefix: "unrecognized_" },
+    })
+
+    // Should generate open enum with custom prefix
+    expect(result).toContain(
+      'const StatusKnown = ["enabled", "disabled", "closed"] as const;'
+    )
+    expect(result).toContain("export const Status = z.enum(StatusKnown).or(")
+    expect(result).toContain(
+      "z.string().transform((v): `unrecognized_${string}` => `unrecognized_${v}`)"
+    )
+
+    // Version should also use custom prefix
+    expect(result).toContain("const VersionKnown =")
+    expect(result).toContain("export const Version = z.enum(VersionKnown).or(")
+    expect(result).toContain(
+      "z.string().transform((v): `unrecognized_${string}` => `unrecognized_${v}`)"
+    )
+  })
+
+  test("generates open enums with object config form and selective enums", () => {
+    const dateEnumContent = fs.readFileSync(
+      "src/resources/date-enum.yaml",
+      "utf8"
+    )
+    const specYaml = parseYaml(dateEnumContent)
+    const result = generate(specYaml, {
+      openEnums: { open: ["Status"], unknownPrefix: "x-" },
+    })
+
+    // Status should be open with custom prefix
+    expect(result).toContain(
+      'const StatusKnown = ["enabled", "disabled", "closed"] as const;'
+    )
+    expect(result).toContain("export const Status = z.enum(StatusKnown).or(")
+    expect(result).toContain(
+      "z.string().transform((v): `x-${string}` => `x-${v}`)"
+    )
+
+    // Version should NOT be open (using standard z.enum)
+    expect(result).toContain("export const Version = z.enum([")
+    expect(result).not.toContain("const VersionKnown =")
+  })
+
+  test("generates open enums with object config form and default prefix", () => {
+    const dateEnumContent = fs.readFileSync(
+      "src/resources/date-enum.yaml",
+      "utf8"
+    )
+    const specYaml = parseYaml(dateEnumContent)
+    const result = generate(specYaml, {
+      openEnums: { open: true },
+    })
+
+    // Should use default "Unknown:" prefix when not specified
+    expect(result).toContain(
+      "z.string().transform((v): `Unknown:${string}` => `Unknown:${v}`)"
+    )
+  })
+
+  test("backwards compatibility: openEnums: true still works", () => {
+    const dateEnumContent = fs.readFileSync(
+      "src/resources/date-enum.yaml",
+      "utf8"
+    )
+    const specYaml = parseYaml(dateEnumContent)
+    const result = generate(specYaml, { openEnums: true })
+
+    // Should use default "Unknown:" prefix
+    expect(result).toContain(
+      "z.string().transform((v): `Unknown:${string}` => `Unknown:${v}`)"
+    )
+  })
+
+  test('backwards compatibility: openEnums: ["Status"] still works', () => {
+    const dateEnumContent = fs.readFileSync(
+      "src/resources/date-enum.yaml",
+      "utf8"
+    )
+    const specYaml = parseYaml(dateEnumContent)
+    const result = generate(specYaml, { openEnums: ["Status"] })
+
+    // Should use default "Unknown:" prefix
+    expect(result).toContain(
+      "z.string().transform((v): `Unknown:${string}` => `Unknown:${v}`)"
+    )
+  })
 })

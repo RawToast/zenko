@@ -19,6 +19,7 @@ const defaultOptions: SchemaOptions = {
   strictNumeric: false,
   optionalType: "optional",
   openEnums: false,
+  openEnumPrefix: "Unknown:",
 }
 
 describe("applyOptionalModifier", () => {
@@ -626,6 +627,94 @@ describe("generateZodSchema", () => {
       'export const Color = z.enum(["red", "green", "blue"]);'
     )
     expect(colorResult).not.toContain("ColorKnown")
+  })
+
+  test("should use default prefix when no custom prefix specified", () => {
+    const generatedTypes = new Set<string>()
+    const options = {
+      ...defaultOptions,
+      openEnums: true as boolean | string[],
+      openEnumPrefix: "Unknown:",
+    }
+    const result = generateZodSchema(
+      "Color",
+      { enum: ["red", "green", "blue"] },
+      generatedTypes,
+      options
+    )
+    expect(result).toContain(
+      "z.string().transform((v): `Unknown:${string}` => `Unknown:${v}`)"
+    )
+  })
+
+  test("should use custom prefix when specified", () => {
+    const generatedTypes = new Set<string>()
+    const options = {
+      ...defaultOptions,
+      openEnums: true as boolean | string[],
+      openEnumPrefix: "unknown-",
+    }
+    const result = generateZodSchema(
+      "Color",
+      { enum: ["red", "green", "blue"] },
+      generatedTypes,
+      options
+    )
+    expect(result).toContain(
+      "z.string().transform((v): `unknown-${string}` => `unknown-${v}`)"
+    )
+  })
+
+  test("should use custom prefix in type annotation", () => {
+    const generatedTypes = new Set<string>()
+    const options = {
+      ...defaultOptions,
+      openEnums: true as boolean | string[],
+      openEnumPrefix: "unrecognized_",
+    }
+    const result = generateZodSchema(
+      "Status",
+      { enum: ["active", "inactive"] },
+      generatedTypes,
+      options
+    )
+    expect(result).toContain(
+      "z.string().transform((v): `unrecognized_${string}` => `unrecognized_${v}`)"
+    )
+  })
+
+  test("should handle empty string prefix", () => {
+    const generatedTypes = new Set<string>()
+    const options = {
+      ...defaultOptions,
+      openEnums: true as boolean | string[],
+      openEnumPrefix: "",
+    }
+    const result = generateZodSchema(
+      "Color",
+      { enum: ["red", "green", "blue"] },
+      generatedTypes,
+      options
+    )
+    expect(result).toContain("z.string().transform((v): `${string}` => `${v}`)")
+  })
+
+  test("should handle special characters in prefix", () => {
+    const generatedTypes = new Set<string>()
+    const options = {
+      ...defaultOptions,
+      openEnums: true as boolean | string[],
+      openEnumPrefix: "x-",
+    }
+    const result = generateZodSchema(
+      "Color",
+      { enum: ["red", "green", "blue"] },
+      generatedTypes,
+      options
+    )
+    expect(result).toContain(
+      "z.string().transform((v): `x-${string}` => `x-${v}`)"
+    )
   })
 })
 

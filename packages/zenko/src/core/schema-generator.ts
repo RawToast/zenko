@@ -6,6 +6,7 @@ export type SchemaOptions = {
   strictNumeric: boolean
   optionalType: "optional" | "nullable" | "nullish"
   openEnums: boolean | string[]
+  openEnumPrefix: string
 }
 
 /**
@@ -54,7 +55,8 @@ export function generateZodSchema(
   if (schema.enum) {
     const enumValues = schema.enum.map((v: string) => `"${v}"`).join(", ")
     if (isOpenEnum(name, options.openEnums)) {
-      return `const ${name}Known = [${enumValues}] as const;\nexport const ${name} = z.enum(${name}Known).or(\n  z.string().transform((v): \`Unknown:\${string}\` => \`Unknown:\${v}\`)\n);`
+      const p = options.openEnumPrefix
+      return `const ${name}Known = [${enumValues}] as const;\nexport const ${name} = z.enum(${name}Known).or(\n  z.string().transform((v): \`${p}\${string}\` => \`${p}\${v}\`)\n);`
     }
     return `export const ${name} = z.enum([${enumValues}]);`
   }

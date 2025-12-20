@@ -43,12 +43,17 @@ export type TypesConfig = {
   optionalType?: "optional" | "nullable" | "nullish"
 }
 
+export type EnumConfig = {
+  open?: boolean | string[]
+  unknownPrefix?: string
+}
+
 export type GenerateOptions = {
   strictDates?: boolean
   strictNumeric?: boolean
   types?: TypesConfig
   operationIds?: string[]
-  openEnums?: boolean | string[]
+  openEnums?: boolean | string[] | EnumConfig
 }
 
 export type GenerateResult = {
@@ -56,6 +61,26 @@ export type GenerateResult = {
   helperFile?: {
     path: string
     content: string
+  }
+}
+
+/**
+ * Resolves enum configuration from various input formats to normalized form.
+ *
+ * @param openEnums - Enum configuration: boolean, string array, or EnumConfig object
+ * @returns Normalized enum configuration with open flag and prefix
+ */
+function resolveEnumConfig(openEnums?: boolean | string[] | EnumConfig): {
+  open: boolean | string[]
+  prefix: string
+} {
+  if (openEnums === undefined) return { open: false, prefix: "Unknown:" }
+  if (typeof openEnums === "boolean")
+    return { open: openEnums, prefix: "Unknown:" }
+  if (Array.isArray(openEnums)) return { open: openEnums, prefix: "Unknown:" }
+  return {
+    open: openEnums.open ?? false,
+    prefix: openEnums.unknownPrefix ?? "Unknown:",
   }
 }
 
@@ -79,11 +104,13 @@ export function generateWithMetadata(
     openEnums = false,
   } = options
   const typesConfig = normalizeTypesConfig(options.types)
+  const enumConfig = resolveEnumConfig(openEnums)
   const schemaOptions: SchemaOptions = {
     strictDates,
     strictNumeric,
     optionalType: typesConfig.optionalType,
-    openEnums,
+    openEnums: enumConfig.open,
+    openEnumPrefix: enumConfig.prefix,
   }
 
   output.push('import { z } from "zod";')

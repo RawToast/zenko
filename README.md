@@ -37,6 +37,7 @@ bun add -d zenko
 - 📋 **Operation Objects** - Path functions, request validation, and response types
 - 🧰 **Operation Type Helpers** - Reusable type definitions for building generic clients
 - 🔄 **Dependency Resolution** - Automatic topological sorting eliminates "used before declaration" errors
+- 🔓 **Open Enums** - Accept unknown enum values gracefully with configurable prefixes
 - ⚡ **CLI & Programmatic API** - Use via command line or import as a library
 
 ## Basic Usage
@@ -92,6 +93,7 @@ if (validation.success) {
 - **[Full Documentation](packages/zenko/README.md)** - Complete API reference, configuration options, and advanced usage
 - **[Installation](packages/zenko/README.md#installation)** - Installation and setup guide
 - **[Config File](packages/zenko/README.md#config-file)** - Configuration options and examples
+- **[Open Enums](packages/zenko/README.md#open-enums)** - Handle unknown enum values gracefully
 - **[Generated Output](packages/zenko/README.md#generated-output)** - Understanding the generated code
 - **[Building a Generic Client](packages/zenko/README.md#building-a-generic-client)** - Creating reusable HTTP clients
 - **[Examples](packages/examples/README.md)** - Example clients using fetch, undici, and ts-effect
