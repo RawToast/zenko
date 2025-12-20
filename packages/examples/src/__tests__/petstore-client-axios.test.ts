@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test"
-import { PetstoreClientAxios } from "../petstore-client-axios"
+import { PetstoreClientAxios } from "~/petstore-client-axios"
 
 describe("PetstoreClientAxios", () => {
   const origin = "https://api.test.com"
