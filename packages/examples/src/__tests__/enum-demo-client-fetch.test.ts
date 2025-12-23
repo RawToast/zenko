@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, mock } from "bun:test"
-import { EnumDemoClientFetch } from "../enum-demo-client-fetch"
+import { EnumDemoClientFetch } from "~/enum-demo-client-fetch"
 
 describe("EnumDemoClientFetch", () => {
   const originalFetch = global.fetch

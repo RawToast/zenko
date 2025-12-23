@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, mock } from "bun:test"
-import { PetstoreClientFetch } from "../petstore-client-fetch"
+import { PetstoreClientFetch } from "~/petstore-client-fetch"
 
 describe("PetstoreClientFetch", () => {
   const originalFetch = global.fetch

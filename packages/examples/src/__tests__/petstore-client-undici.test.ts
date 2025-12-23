@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test"
-import { PetstoreClientUndici } from "../petstore-client-undici"
+import { PetstoreClientUndici } from "~/petstore-client-undici"
 
 describe("PetstoreClientUndici", () => {
   const origin = "https://api.test.com"
