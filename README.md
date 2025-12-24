@@ -24,9 +24,9 @@ zenko input.yaml output.ts
 # Or as a script in your package.json
 bun add -d zenko
 
-# Then in your package.json
+# Then in your package.json, note the `-b` flag to run the command with Bun and not Node.
 "scripts": {
-  "generate": "zenko --config resources/zenko.config.json"
+  "generate": "bun -b zenko --config resources/zenko.config.json"
 }
 ```
 
