@@ -1,0 +1,212 @@
+openapi: 3.0.0
+info:
+  title: anyOf Combinations Test API
+  version: 1.0.0
+  description: Tests anyOf for flexible schema matching and combinations
+
+paths:
+  /contacts:
+    post:
+      operationId: createContact
+      summary: Create a contact with flexible communication methods
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Contact"
+      responses:
+        "201":
+          description: Contact created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+        "400":
+          description: Invalid contact data
+
+  /search:
+    get:
+      operationId: searchItems
+      summary: Search with flexible query parameters
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: filter
+          in: query
+          schema:
+            $ref: "#/components/schemas/SearchFilter"
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SearchResult"
+
+components:
+  schemas:
+    # Contact can have email, phone, or both
+    Contact:
+      type: object
+      required:
+        - name
+      anyOf:
+        - required: [email]
+        - required: [phone]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          pattern: '^\+?[1-9]\d{1,14}$'
+        address:
+          type: string
+
+    # SearchFilter accepts different filter types
+    SearchFilter:
+      anyOf:
+        - $ref: "#/components/schemas/TextFilter"
+        - $ref: "#/components/schemas/DateRangeFilter"
+        - $ref: "#/components/schemas/NumericRangeFilter"
+      description: Flexible search filter that can be text, date range, or numeric range
+
+    TextFilter:
+      type: object
+      required:
+        - type
+        - value
+      properties:
+        type:
+          type: string
+          enum: [text]
+        value:
+          type: string
+        caseSensitive:
+          type: boolean
+          default: false
+
+    DateRangeFilter:
+      type: object
+      required:
+        - type
+        - startDate
+        - endDate
+      properties:
+        type:
+          type: string
+          enum: [dateRange]
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+
+    NumericRangeFilter:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [numericRange]
+        min:
+          type: number
+        max:
+          type: number
+
+    # SearchResult can be various types of items
+    SearchResult:
+      anyOf:
+        - $ref: "#/components/schemas/DocumentResult"
+        - $ref: "#/components/schemas/UserResult"
+        - $ref: "#/components/schemas/ProductResult"
+
+    DocumentResult:
+      type: object
+      required:
+        - id
+        - title
+        - resultType
+      properties:
+        resultType:
+          type: string
+          enum: [document]
+        id:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        author:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    UserResult:
+      type: object
+      required:
+        - id
+        - username
+        - resultType
+      properties:
+        resultType:
+          type: string
+          enum: [user]
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+
+    ProductResult:
+      type: object
+      required:
+        - id
+        - name
+        - resultType
+      properties:
+        resultType:
+          type: string
+          enum: [product]
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          minimum: 0
+        inStock:
+          type: boolean
+
+    # Complex anyOf with nested schemas
+    FlexibleData:
+      anyOf:
+        - type: string
+        - type: number
+        - type: boolean
+        - type: array
+          items:
+            type: string
+        - type: object
+          properties:
+            key:
+              type: string
+            value:
+              type: string

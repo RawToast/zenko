@@ -375,11 +375,44 @@ describe("getZodTypeFromSchema", () => {
     )
   })
 
+  test("should use z.lazy for mutual recursion", () => {
+    const schemaRegistry = {
+      A: {
+        type: "object",
+        properties: { b: { $ref: "#/components/schemas/B" } },
+      },
+      B: {
+        type: "object",
+        properties: { a: { $ref: "#/components/schemas/A" } },
+      },
+    }
+    const schema = { $ref: "#/components/schemas/B" }
+    const result = getZodTypeFromSchema(
+      schema,
+      defaultOptions,
+      undefined,
+      schemaRegistry,
+      "A"
+    )
+    expect(result).toBe("z.lazy(() => B)")
+  })
+
   test("should handle enum", () => {
     const schema = { enum: ["red", "green", "blue"] }
     expect(getZodTypeFromSchema(schema, defaultOptions)).toBe(
       'z.enum(["red", "green", "blue"])'
     )
+  })
+
+  test("should preserve base constraints with not", () => {
+    const schema = {
+      type: "string",
+      format: "email",
+      not: { type: "string", maxLength: 0 },
+    }
+    const result = getZodTypeFromSchema(schema, defaultOptions)
+    expect(result).toContain(".email()")
+    expect(result).toContain(".refine(")
   })
 
   test("should handle allOf with single schema", () => {
@@ -395,7 +428,20 @@ describe("getZodTypeFromSchema", () => {
       ],
     }
     const result = getZodTypeFromSchema(schema, defaultOptions)
-    expect(result).toContain(".and(")
+    expect(result).toContain(".merge(")
+  })
+
+  test("should include sibling properties with allOf", () => {
+    const schema = {
+      allOf: [{ type: "object", properties: { a: { type: "string" } } }],
+      type: "object",
+      properties: { b: { type: "number" } },
+      required: ["b"],
+    }
+    const result = getZodTypeFromSchema(schema, defaultOptions)
+    expect(result).toContain("a")
+    expect(result).toContain("b")
+    expect(result).toContain(".merge(")
   })
 
   test("should handle empty allOf", () => {
@@ -552,7 +598,7 @@ describe("generateZodSchema", () => {
       defaultOptions
     )
     expect(result).toContain("export const Combined =")
-    expect(result).toContain(".and(")
+    expect(result).toContain(".merge(")
   })
 
   test("should generate empty allOf", () => {
@@ -715,6 +761,205 @@ describe("generateZodSchema", () => {
     expect(result).toContain(
       "z.string().transform((v): `x-${string}` => `x-${v}`)"
     )
+  })
+})
+
+describe("schemaReferencesName - uncovered branches", () => {
+  test("should detect self-reference through oneOf", () => {
+    const schemaRegistry = {
+      Parent: {
+        oneOf: [{ $ref: "#/components/schemas/Child" }],
+      },
+      Child: {
+        type: "object",
+        properties: { parent: { $ref: "#/components/schemas/Parent" } },
+      },
+    }
+    // When generating Child and referencing Parent, it should detect the
+    // mutual recursion through oneOf
+    const schema = { $ref: "#/components/schemas/Parent" }
+    const result = getZodTypeFromSchema(
+      schema,
+      defaultOptions,
+      undefined,
+      schemaRegistry,
+      "Child"
+    )
+    expect(result).toBe("z.lazy(() => Parent)")
+  })
+
+  test("should detect self-reference through not schema", () => {
+    const schemaRegistry = {
+      NotWrapper: {
+        not: { $ref: "#/components/schemas/Target" },
+      },
+      Target: {
+        type: "object",
+        properties: { wrapper: { $ref: "#/components/schemas/NotWrapper" } },
+      },
+    }
+    const schema = { $ref: "#/components/schemas/NotWrapper" }
+    const result = getZodTypeFromSchema(
+      schema,
+      defaultOptions,
+      undefined,
+      schemaRegistry,
+      "Target"
+    )
+    expect(result).toBe("z.lazy(() => NotWrapper)")
+  })
+
+  test("should use z.lazy for recursion via resolved schema in registry", () => {
+    // This tests line 221: when resolvedSchema is found in registry
+    // and references the target name
+    const schemaRegistry = {
+      Wrapper: {
+        $ref: "#/components/schemas/Inner",
+      },
+      Inner: {
+        type: "object",
+        properties: { self: { $ref: "#/components/schemas/Self" } },
+      },
+      Self: {
+        type: "object",
+        properties: { wrapper: { $ref: "#/components/schemas/Wrapper" } },
+      },
+    }
+    const schema = { $ref: "#/components/schemas/Wrapper" }
+    const result = getZodTypeFromSchema(
+      schema,
+      defaultOptions,
+      undefined,
+      schemaRegistry,
+      "Self"
+    )
+    expect(result).toBe("z.lazy(() => Wrapper)")
+  })
+})
+
+describe("not schema - general refine", () => {
+  test("should generate refine for general not schema", () => {
+    // This tests lines 570-578: general not schema that isn't maxLength: 0
+    const schema = {
+      not: { type: "number" },
+    }
+    const result = getZodTypeFromSchema(schema, defaultOptions)
+    expect(result).toContain(".refine(")
+    expect(result).toContain("z.number().safeParse(value).success")
+    expect(result).toContain("Value must not match schema")
+  })
+
+  test("should generate refine for not with object schema", () => {
+    const schema = {
+      type: "string",
+      not: { enum: ["forbidden", "banned"] },
+    }
+    const result = getZodTypeFromSchema(schema, defaultOptions)
+    expect(result).toContain("z.string()")
+    expect(result).toContain(".refine(")
+    expect(result).toContain("safeParse(value).success")
+  })
+
+  test("should generate refine for not with ref schema", () => {
+    const schemaRegistry = {
+      Forbidden: { type: "string", enum: ["x", "y"] },
+    }
+    const schema = {
+      not: { $ref: "#/components/schemas/Forbidden" },
+    }
+    const result = getZodTypeFromSchema(
+      schema,
+      defaultOptions,
+      undefined,
+      schemaRegistry
+    )
+    expect(result).toContain(".refine(")
+    expect(result).toContain("Forbidden.safeParse")
+  })
+})
+
+describe("discriminator with inline schemas", () => {
+  test("should handle oneOf with inline object schemas (non-ref)", () => {
+    // This tests lines 443-449: applyDiscriminatorMapping with non-ref parts
+    const schema = {
+      oneOf: [
+        {
+          type: "object",
+          properties: {
+            type: { const: "dog" },
+            bark: { type: "boolean" },
+          },
+          required: ["type"],
+        },
+        {
+          type: "object",
+          properties: {
+            type: { const: "cat" },
+            meow: { type: "boolean" },
+          },
+          required: ["type"],
+        },
+      ],
+      discriminator: {
+        propertyName: "type",
+      },
+    }
+    const result = getZodTypeFromSchema(schema, defaultOptions)
+    expect(result).toContain("z.discriminatedUnion")
+    expect(result).toContain('"type"')
+  })
+
+  test("should handle mixed ref and inline schemas in oneOf", () => {
+    const schemaRegistry = {
+      Dog: {
+        type: "object",
+        properties: {
+          type: { const: "dog" },
+          bark: { type: "boolean" },
+        },
+        required: ["type"],
+      },
+    }
+    const schema = {
+      oneOf: [
+        { $ref: "#/components/schemas/Dog" },
+        {
+          type: "object",
+          properties: {
+            type: { const: "cat" },
+            meow: { type: "boolean" },
+          },
+          required: ["type"],
+        },
+      ],
+      discriminator: {
+        propertyName: "type",
+      },
+    }
+    const result = getZodTypeFromSchema(
+      schema,
+      defaultOptions,
+      undefined,
+      schemaRegistry
+    )
+    expect(result).toContain("z.discriminatedUnion")
+  })
+
+  test("should handle discriminator with unresolvable ref", () => {
+    // This tests line 354: $ref that can't be resolved returns []
+    const schema = {
+      oneOf: [{ $ref: "#/components/schemas/NonExistent" }],
+      discriminator: {
+        propertyName: "type",
+        mapping: {
+          foo: "#/components/schemas/NonExistent",
+        },
+      },
+    }
+    // With an empty registry, the ref can't be resolved
+    const result = getZodTypeFromSchema(schema, defaultOptions)
+    // Should still generate something (falls back to union)
+    expect(result).toContain("NonExistent")
   })
 })
 

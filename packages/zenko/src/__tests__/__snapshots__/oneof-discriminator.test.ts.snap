@@ -1,0 +1,209 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`oneOf with Discriminator generates complete TypeScript output: oneof-discriminator-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const CreditCardPayment = z.object({
+  paymentType: z.literal("credit_card"),
+  cardNumber: z.string(),
+  expiryDate: z.string(),
+  cvv: z.string(),
+  cardholderName: z.string().optional(),
+});
+
+export type CreditCardPayment = z.infer<typeof CreditCardPayment>;
+
+export const BankTransferPayment = z.object({
+  paymentType: z.literal("bank_transfer"),
+  accountNumber: z.string(),
+  routingNumber: z.string(),
+  bankName: z.string().optional(),
+});
+
+export type BankTransferPayment = z.infer<typeof BankTransferPayment>;
+
+export const CryptoPayment = z.object({
+  paymentType: z.literal("crypto"),
+  walletAddress: z.string(),
+  cryptocurrency: z.enum(["BTC", "ETH", "USDT", "SOL"]),
+  network: z.string().optional(),
+});
+
+export type CryptoPayment = z.infer<typeof CryptoPayment>;
+
+export const Payment = z.discriminatedUnion("paymentType", [CreditCardPayment.merge(z.object({
+  paymentType: z.literal("credit_card"),
+})), BankTransferPayment.merge(z.object({
+  paymentType: z.literal("bank_transfer"),
+})), CryptoPayment.merge(z.object({
+  paymentType: z.literal("crypto"),
+}))]);
+
+export type Payment = z.infer<typeof Payment>;
+
+export const Car = z.object({
+  vehicleType: z.literal("car"),
+  make: z.string(),
+  model: z.string(),
+  doors: z.number().int(),
+  trunkCapacity: z.number().optional(),
+});
+
+export type Car = z.infer<typeof Car>;
+
+export const Motorcycle = z.object({
+  vehicleType: z.literal("motorcycle"),
+  make: z.string(),
+  model: z.string(),
+  engineSize: z.number().int(),
+  hasABS: z.boolean().optional(),
+});
+
+export type Motorcycle = z.infer<typeof Motorcycle>;
+
+export const Truck = z.object({
+  vehicleType: z.literal("truck"),
+  make: z.string(),
+  model: z.string(),
+  payloadCapacity: z.number(),
+  axles: z.number().int().optional(),
+});
+
+export type Truck = z.infer<typeof Truck>;
+
+export const Vehicle = z.discriminatedUnion("vehicleType", [Car.merge(z.object({
+  vehicleType: z.literal("car"),
+})), Motorcycle.merge(z.object({
+  vehicleType: z.literal("motorcycle"),
+})), Truck.merge(z.object({
+  vehicleType: z.literal("truck"),
+}))]);
+
+export type Vehicle = z.infer<typeof Vehicle>;
+
+export const Error = z.object({
+  message: z.string(),
+  code: z.string().optional(),
+});
+
+export type Error = z.infer<typeof Error>;
+
+// Path Functions
+export const paths = {
+  createPayment: () => "/payments",
+  getVehicle: ({ vehicleId }: { vehicleId: string }) => \`/vehicles/\${vehicleId}\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  createPayment: z.object({}),
+  getVehicle: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  createPayment: () => headerSchemas.createPayment.parse({}),
+  getVehicle: () => headerSchemas.getVehicle.parse({}),
+} as const;
+
+// Operation Types
+export type CreatePaymentOperation = OperationDefinition<
+  "post",
+  typeof paths.createPayment,
+  typeof Payment,
+  typeof Payment,
+  undefined,
+  OperationErrors<{ badRequest: typeof Error }>
+>;
+
+export type GetVehicleOperation = OperationDefinition<
+  "get",
+  typeof paths.getVehicle,
+  undefined,
+  typeof Vehicle,
+  undefined,
+  OperationErrors<{ notFound: typeof Error }>
+>;
+
+// Operation Objects
+export const createPayment: CreatePaymentOperation = {
+  method: "post",
+  path: paths.createPayment,
+  request: Payment,
+  response: Payment,
+    errors: {
+      badRequest: Error,
+    },
+} as const;
+
+export const getVehicle: GetVehicleOperation = {
+  method: "get",
+  path: paths.getVehicle,
+  response: Vehicle,
+    errors: {
+      notFound: Error,
+    },
+} as const;
+"
+`;
+
+exports[`oneOf with Discriminator handles discriminator mapping correctly: discriminator-mapping-output 1`] = `
+"import { z } from "zod";
+
+// Generated Zod Schemas
+
+export const Foo = z.object({
+  paymentType: z.literal("foo"),
+  fooValue: z.string(),
+});
+
+export type Foo = z.infer<typeof Foo>;
+
+export const Bar = z.object({
+  paymentType: z.literal("bar"),
+  barValue: z.string(),
+});
+
+export type Bar = z.infer<typeof Bar>;
+
+export const Extra = z.object({
+  paymentType: z.literal("extra"),
+  extraValue: z.string(),
+});
+
+export type Extra = z.infer<typeof Extra>;
+
+export const Payment = z.discriminatedUnion("paymentType", [Foo.merge(z.object({
+  paymentType: z.literal("foo_kind"),
+})), Foo.merge(z.object({
+  paymentType: z.literal("foo_alias"),
+})), Foo.merge(z.object({
+  paymentType: z.literal("foo"),
+})), Bar.merge(z.object({
+  paymentType: z.literal("bar_kind"),
+})), Bar.merge(z.object({
+  paymentType: z.literal("bar"),
+})), Extra.merge(z.object({
+  paymentType: z.literal("extra_kind"),
+}))]);
+
+export type Payment = z.infer<typeof Payment>;
+
+// Path Functions
+export const paths = {
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+} as const;
+
+// Header Functions
+export const headers = {
+} as const;
+
+// Operation Types
+// Operation Objects"
+`;

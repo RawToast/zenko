@@ -86,7 +86,27 @@ export const BookingPayment = z.object({
   id: z.string().uuid().optional(),
   amount: z.number().optional(),
   currency: z.enum(["bam", "bgn", "chf", "eur", "gbp", "nok", "sek", "try"]).optional(),
-  source: z.object({}).optional(),
+  source: z.union([z.object({
+  object: z.literal("card").optional(),
+  name: z.string(),
+  number: z.string(),
+  cvc: z.string(),
+  exp_month: z.number().int(),
+  exp_year: z.number().int(),
+  address_line1: z.string().optional(),
+  address_line2: z.string().optional(),
+  address_city: z.string().optional(),
+  address_country: z.string(),
+  address_post_code: z.string().optional(),
+}), z.object({
+  object: z.literal("bank_account").optional(),
+  name: z.string(),
+  number: z.string(),
+  sort_code: z.string().optional(),
+  account_type: z.enum(["individual", "company"]),
+  bank_name: z.string(),
+  country: z.string(),
+})]).optional(),
   status: z.enum(["pending", "succeeded", "failed"]).optional(),
 });
 

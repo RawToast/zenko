@@ -166,7 +166,8 @@ export function generateWithMetadata(
           schema,
           generatedTypes,
           schemaOptions,
-          nameMap
+          nameMap,
+          spec.components.schemas
         )
       )
       output.push("")

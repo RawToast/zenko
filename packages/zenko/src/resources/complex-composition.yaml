@@ -1,0 +1,416 @@
+openapi: 3.0.0
+info:
+  title: Complex Composition Test API
+  version: 1.0.0
+  description: Tests complex nested compositions with allOf, oneOf, anyOf, and not
+
+paths:
+  /entities:
+    post:
+      operationId: createEntity
+      summary: Create a complex entity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Entity"
+      responses:
+        "201":
+          description: Entity created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entity"
+
+  /resources/{resourceId}:
+    get:
+      operationId: getResource
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Resource details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resource"
+
+  /validate:
+    post:
+      operationId: validateData
+      summary: Validate complex data structures
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplexValidation"
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+
+components:
+  schemas:
+    # Base schemas for composition
+    Timestamped:
+      type: object
+      required:
+        - createdAt
+        - updatedAt
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Identifiable:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+
+    Versioned:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: integer
+          minimum: 1
+
+    # allOf with multiple schemas
+    BaseEntity:
+      allOf:
+        - $ref: "#/components/schemas/Identifiable"
+        - $ref: "#/components/schemas/Timestamped"
+        - $ref: "#/components/schemas/Versioned"
+        - type: object
+          required:
+            - type
+          properties:
+            type:
+              type: string
+            status:
+              type: string
+              enum: [active, inactive, archived]
+
+    # oneOf with allOf combinations
+    Entity:
+      oneOf:
+        - $ref: "#/components/schemas/UserEntity"
+        - $ref: "#/components/schemas/OrganizationEntity"
+        - $ref: "#/components/schemas/ProjectEntity"
+      discriminator:
+        propertyName: type
+        mapping:
+          user: "#/components/schemas/UserEntity"
+          organization: "#/components/schemas/OrganizationEntity"
+          project: "#/components/schemas/ProjectEntity"
+
+    UserEntity:
+      allOf:
+        - $ref: "#/components/schemas/BaseEntity"
+        - type: object
+          required:
+            - username
+            - email
+          properties:
+            type:
+              type: string
+              const: user
+            username:
+              type: string
+            email:
+              type: string
+              format: email
+            role:
+              type: string
+              enum: [admin, user, guest]
+
+    OrganizationEntity:
+      allOf:
+        - $ref: "#/components/schemas/BaseEntity"
+        - type: object
+          required:
+            - name
+            - domain
+          properties:
+            type:
+              type: string
+              const: organization
+            name:
+              type: string
+            domain:
+              type: string
+            memberCount:
+              type: integer
+              minimum: 0
+
+    ProjectEntity:
+      allOf:
+        - $ref: "#/components/schemas/BaseEntity"
+        - type: object
+          required:
+            - name
+            - owner
+          properties:
+            type:
+              type: string
+              const: project
+            name:
+              type: string
+            owner:
+              type: string
+              format: uuid
+            visibility:
+              type: string
+              enum: [public, private, internal]
+
+    # anyOf with allOf
+    Resource:
+      allOf:
+        - $ref: "#/components/schemas/Identifiable"
+        - type: object
+          properties:
+            name:
+              type: string
+            metadata:
+              anyOf:
+                - $ref: "#/components/schemas/SimpleMetadata"
+                - $ref: "#/components/schemas/ExtendedMetadata"
+
+    SimpleMetadata:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+
+    ExtendedMetadata:
+      allOf:
+        - $ref: "#/components/schemas/SimpleMetadata"
+        - type: object
+          properties:
+            customFields:
+              type: object
+              additionalProperties:
+                type: string
+            priority:
+              type: integer
+              minimum: 1
+              maximum: 5
+
+    # Complex nested composition
+    ComplexValidation:
+      type: object
+      properties:
+        data:
+          oneOf:
+            - allOf:
+                - $ref: "#/components/schemas/Identifiable"
+                - type: object
+                  properties:
+                    dataType:
+                      type: string
+                      const: structured
+                    fields:
+                      type: object
+            - allOf:
+                - type: object
+                  properties:
+                    dataType:
+                      type: string
+                      const: unstructured
+                    content:
+                      type: string
+
+    # allOf with oneOf inside
+    ConfigurableItem:
+      allOf:
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+            enabled:
+              type: boolean
+        - type: object
+          properties:
+            config:
+              oneOf:
+                - $ref: "#/components/schemas/BasicConfig"
+                - $ref: "#/components/schemas/AdvancedConfig"
+
+    BasicConfig:
+      type: object
+      required:
+        - configType
+      properties:
+        configType:
+          type: string
+          const: basic
+        value:
+          type: string
+
+    AdvancedConfig:
+      type: object
+      required:
+        - configType
+      properties:
+        configType:
+          type: string
+          const: advanced
+        settings:
+          type: object
+          properties:
+            timeout:
+              type: integer
+            retries:
+              type: integer
+            options:
+              type: array
+              items:
+                type: string
+
+    # not keyword example
+    NotEmptyString:
+      allOf:
+        - type: string
+        - not:
+            type: string
+            maxLength: 0
+
+    # Complex anyOf with different types
+    FlexibleValue:
+      anyOf:
+        - type: string
+          minLength: 1
+        - type: number
+          minimum: 0
+        - allOf:
+            - type: object
+              required:
+                - key
+                - value
+              properties:
+                key:
+                  type: string
+                value:
+                  type: string
+
+    # Deeply nested composition
+    HierarchicalData:
+      allOf:
+        - $ref: "#/components/schemas/Identifiable"
+        - type: object
+          properties:
+            parent:
+              anyOf:
+                - type: "null"
+                - $ref: "#/components/schemas/Identifiable"
+            children:
+              type: array
+              items:
+                $ref: "#/components/schemas/HierarchicalData"
+
+    # Multiple discriminators
+    ContentBlock:
+      oneOf:
+        - $ref: "#/components/schemas/TextBlock"
+        - $ref: "#/components/schemas/ImageBlock"
+        - $ref: "#/components/schemas/CodeBlock"
+      discriminator:
+        propertyName: blockType
+
+    TextBlock:
+      allOf:
+        - type: object
+          required:
+            - blockType
+            - content
+          properties:
+            blockType:
+              type: string
+              const: text
+            content:
+              type: string
+            formatting:
+              anyOf:
+                - $ref: "#/components/schemas/PlainFormat"
+                - $ref: "#/components/schemas/RichFormat"
+
+    ImageBlock:
+      type: object
+      required:
+        - blockType
+        - url
+      properties:
+        blockType:
+          type: string
+          const: image
+        url:
+          type: string
+          format: uri
+        alt:
+          type: string
+        caption:
+          type: string
+
+    CodeBlock:
+      type: object
+      required:
+        - blockType
+        - code
+        - language
+      properties:
+        blockType:
+          type: string
+          const: code
+        code:
+          type: string
+        language:
+          type: string
+        lineNumbers:
+          type: boolean
+          default: true
+
+    PlainFormat:
+      type: object
+      properties:
+        formatType:
+          type: string
+          const: plain
+
+    RichFormat:
+      type: object
+      properties:
+        formatType:
+          type: string
+          const: rich
+        bold:
+          type: boolean
+        italic:
+          type: boolean
+        underline:
+          type: boolean

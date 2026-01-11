@@ -1,0 +1,175 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Additional Properties generates complete TypeScript output: additional-properties-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const Metadata = z.object({
+  id: z.string().uuid(),
+  type: z.enum(["user", "system", "custom"]),
+  createdAt: z.string().optional(),
+}).passthrough();
+
+export type Metadata = z.infer<typeof Metadata>;
+
+export const MetadataInput = z.object({
+  type: z.enum(["user", "system", "custom"]),
+}).catchall(z.string());
+
+export type MetadataInput = z.infer<typeof MetadataInput>;
+
+export const Config = z.object({
+  version: z.string().optional(),
+  environment: z.enum(["development", "staging", "production"]).optional(),
+}).catchall(z.object({
+  enabled: z.boolean().optional(),
+  value: z.string().optional(),
+}));
+
+export type Config = z.infer<typeof Config>;
+
+export const Labels = z.object({}).catchall(z.string());
+
+export type Labels = z.infer<typeof Labels>;
+
+export const StrictObject = z.object({
+  name: z.string(),
+  value: z.string(),
+  description: z.string().optional(),
+}).strict();
+
+export type StrictObject = z.infer<typeof StrictObject>;
+
+export const ComplexAdditionalProps = z.object({
+  id: z.string().optional(),
+  metadata: z.object({
+  created: z.string().optional(),
+}).catchall(z.object({
+  key: z.string().optional(),
+  value: z.union([z.string(), z.number(), z.boolean()]).optional(),
+})).optional(),
+}).catchall(z.array(z.string()));
+
+export type ComplexAdditionalProps = z.infer<typeof ComplexAdditionalProps>;
+
+export const TypedDictionary = z.object({}).catchall(z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]));
+
+export type TypedDictionary = z.infer<typeof TypedDictionary>;
+
+export const MixedConstraints = z.object({
+  requiredField: z.string(),
+  optionalField: z.number().optional(),
+}).catchall(z.string());
+
+export type MixedConstraints = z.infer<typeof MixedConstraints>;
+
+export const NumericDictionary = z.object({}).catchall(z.number());
+
+export type NumericDictionary = z.infer<typeof NumericDictionary>;
+
+export const BooleanFlags = z.object({}).catchall(z.boolean());
+
+export type BooleanFlags = z.infer<typeof BooleanFlags>;
+
+export const ArrayDictionary = z.object({}).catchall(z.array(z.string()).min(1));
+
+export type ArrayDictionary = z.infer<typeof ArrayDictionary>;
+
+export const NoAdditionalProps = z.object({
+  field1: z.string().optional(),
+  field2: z.number().optional(),
+}).strict();
+
+export type NoAdditionalProps = z.infer<typeof NoAdditionalProps>;
+
+// Path Functions
+export const paths = {
+  createMetadata: () => "/metadata",
+  getConfig: () => "/config",
+  updateConfig: () => "/config",
+  createLabels: () => "/labels",
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  createMetadata: z.object({}),
+  getConfig: z.object({}),
+  updateConfig: z.object({}),
+  createLabels: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  createMetadata: () => headerSchemas.createMetadata.parse({}),
+  getConfig: () => headerSchemas.getConfig.parse({}),
+  updateConfig: () => headerSchemas.updateConfig.parse({}),
+  createLabels: () => headerSchemas.createLabels.parse({}),
+} as const;
+
+// Operation Types
+export type CreateMetadataOperation = OperationDefinition<
+  "post",
+  typeof paths.createMetadata,
+  typeof MetadataInput,
+  typeof Metadata,
+  undefined,
+  OperationErrors
+>;
+
+export type GetConfigOperation = OperationDefinition<
+  "get",
+  typeof paths.getConfig,
+  undefined,
+  typeof Config,
+  undefined,
+  OperationErrors
+>;
+
+export type UpdateConfigOperation = OperationDefinition<
+  "put",
+  typeof paths.updateConfig,
+  typeof Config,
+  typeof Config,
+  undefined,
+  OperationErrors
+>;
+
+export type CreateLabelsOperation = OperationDefinition<
+  "post",
+  typeof paths.createLabels,
+  typeof Labels,
+  undefined,
+  undefined,
+  OperationErrors
+>;
+
+// Operation Objects
+export const createMetadata: CreateMetadataOperation = {
+  method: "post",
+  path: paths.createMetadata,
+  request: MetadataInput,
+  response: Metadata,
+} as const;
+
+export const getConfig: GetConfigOperation = {
+  method: "get",
+  path: paths.getConfig,
+  response: Config,
+} as const;
+
+export const updateConfig: UpdateConfigOperation = {
+  method: "put",
+  path: paths.updateConfig,
+  request: Config,
+  response: Config,
+} as const;
+
+export const createLabels: CreateLabelsOperation = {
+  method: "post",
+  path: paths.createLabels,
+  request: Labels,
+} as const;
+"
+`;

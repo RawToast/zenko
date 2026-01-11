@@ -176,6 +176,21 @@ describe("extractDependencies", () => {
     expect(deps).toEqual(["Item"])
   })
 
+  test("should include discriminator mapping dependencies", () => {
+    const schema = {
+      oneOf: [{ $ref: "#/components/schemas/Payment" }],
+      discriminator: {
+        propertyName: "paymentType",
+        mapping: {
+          extra_kind: "#/components/schemas/Extra",
+        },
+      },
+    }
+
+    const deps = extractDependencies(schema)
+    expect(deps).toContain("Extra")
+  })
+
   test("should handle no dependencies", () => {
     const schema = {
       type: "object",

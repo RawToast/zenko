@@ -51,6 +51,13 @@ export function extractDependencies(schema: any): string[] {
     if (Array.isArray(obj)) {
       obj.forEach(traverse)
     } else {
+      if (obj.mapping && typeof obj.mapping === "object") {
+        for (const value of Object.values(obj.mapping)) {
+          if (typeof value === "string") {
+            dependencies.push(extractRefName(value))
+          }
+        }
+      }
       Object.values(obj).forEach(traverse)
     }
   }

@@ -1,0 +1,187 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Property Metadata generates complete TypeScript output: property-metadata-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const User = z.object({
+  id: z.string().uuid(),
+  username: z.string(),
+  email: z.string().email(),
+  role: z.enum(["user", "admin", "moderator"]),
+  status: z.literal("active").optional().default("active"),
+  createdAt: z.string(),
+  updatedAt: z.string().optional(),
+  passwordHash: z.string().optional(),
+});
+
+export type User = z.infer<typeof User>;
+
+export const UserInput = z.object({
+  username: z.string(),
+  email: z.string().email(),
+  password: z.string(),
+  role: z.enum(["user", "admin", "moderator"]).optional().default("user"),
+});
+
+export type UserInput = z.infer<typeof UserInput>;
+
+export const UserUpdate = z.object({
+  username: z.string().optional(),
+  email: z.string().email().optional(),
+  password: z.string().optional(),
+  role: z.enum(["user", "admin", "moderator"]).optional(),
+});
+
+export type UserUpdate = z.infer<typeof UserUpdate>;
+
+export const Settings = z.object({
+  version: z.string().optional(),
+  maintenanceMode: z.boolean().optional().default(false),
+  maxUploadSize: z.number().int().optional().default(10485760),
+  apiKey: z.string().optional(),
+  sessionTimeout: z.number().int().optional().default(3600),
+  enableNotifications: z.boolean().optional().default(true),
+  theme: z.enum(["light", "dark", "auto"]).optional().default("auto"),
+  deprecatedField: z.string().optional(),
+});
+
+export type Settings = z.infer<typeof Settings>;
+
+export const SettingsUpdate = z.object({
+  maintenanceMode: z.boolean().optional(),
+  maxUploadSize: z.number().int().optional(),
+  apiKey: z.string().optional(),
+  sessionTimeout: z.number().int().optional(),
+  enableNotifications: z.boolean().optional(),
+  theme: z.enum(["light", "dark", "auto"]).optional(),
+});
+
+export type SettingsUpdate = z.infer<typeof SettingsUpdate>;
+
+export const Product = z.object({
+  id: z.string(),
+  sku: z.literal("CONST_SKU").optional(),
+  name: z.string(),
+  description: z.string().optional(),
+  price: z.number(),
+  currency: z.literal("USD").optional(),
+  internalCost: z.number().optional(),
+  stockLevel: z.number().int().optional(),
+  featured: z.boolean().optional().default(false),
+  tags: z.array(z.string()).optional(),
+  createdBy: z.string().optional(),
+});
+
+export type Product = z.infer<typeof Product>;
+
+// Path Functions
+export const paths = {
+  createUser: () => "/users",
+  getUser: ({ userId }: { userId: string }) => \`/users/\${userId}\`,
+  updateUser: ({ userId }: { userId: string }) => \`/users/\${userId}\`,
+  getSettings: () => "/settings",
+  updateSettings: () => "/settings",
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  createUser: z.object({}),
+  getUser: z.object({}),
+  updateUser: z.object({}),
+  getSettings: z.object({}),
+  updateSettings: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  createUser: () => headerSchemas.createUser.parse({}),
+  getUser: () => headerSchemas.getUser.parse({}),
+  updateUser: () => headerSchemas.updateUser.parse({}),
+  getSettings: () => headerSchemas.getSettings.parse({}),
+  updateSettings: () => headerSchemas.updateSettings.parse({}),
+} as const;
+
+// Operation Types
+export type CreateUserOperation = OperationDefinition<
+  "post",
+  typeof paths.createUser,
+  typeof UserInput,
+  typeof User,
+  undefined,
+  OperationErrors
+>;
+
+export type GetUserOperation = OperationDefinition<
+  "get",
+  typeof paths.getUser,
+  undefined,
+  typeof User,
+  undefined,
+  OperationErrors
+>;
+
+export type UpdateUserOperation = OperationDefinition<
+  "put",
+  typeof paths.updateUser,
+  typeof UserUpdate,
+  typeof User,
+  undefined,
+  OperationErrors
+>;
+
+export type GetSettingsOperation = OperationDefinition<
+  "get",
+  typeof paths.getSettings,
+  undefined,
+  typeof Settings,
+  undefined,
+  OperationErrors
+>;
+
+export type UpdateSettingsOperation = OperationDefinition<
+  "put",
+  typeof paths.updateSettings,
+  typeof SettingsUpdate,
+  typeof Settings,
+  undefined,
+  OperationErrors
+>;
+
+// Operation Objects
+export const createUser: CreateUserOperation = {
+  method: "post",
+  path: paths.createUser,
+  request: UserInput,
+  response: User,
+} as const;
+
+export const getUser: GetUserOperation = {
+  method: "get",
+  path: paths.getUser,
+  response: User,
+} as const;
+
+export const updateUser: UpdateUserOperation = {
+  method: "put",
+  path: paths.updateUser,
+  request: UserUpdate,
+  response: User,
+} as const;
+
+export const getSettings: GetSettingsOperation = {
+  method: "get",
+  path: paths.getSettings,
+  response: Settings,
+} as const;
+
+export const updateSettings: UpdateSettingsOperation = {
+  method: "put",
+  path: paths.updateSettings,
+  request: SettingsUpdate,
+  response: Settings,
+} as const;
+"
+`;

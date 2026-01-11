@@ -1,0 +1,211 @@
+openapi: 3.0.0
+info:
+  title: oneOf Discriminator Test API
+  version: 1.0.0
+  description: Tests oneOf with discriminator for polymorphic types
+
+paths:
+  /payments:
+    post:
+      operationId: createPayment
+      summary: Create a payment with polymorphic payment methods
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Payment"
+      responses:
+        "201":
+          description: Payment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "400":
+          description: Invalid payment data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /vehicles/{vehicleId}:
+    get:
+      operationId: getVehicle
+      summary: Get vehicle by ID (returns different vehicle types)
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Vehicle details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+        "404":
+          description: Vehicle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    # Polymorphic Payment with discriminator
+    Payment:
+      oneOf:
+        - $ref: "#/components/schemas/CreditCardPayment"
+        - $ref: "#/components/schemas/BankTransferPayment"
+        - $ref: "#/components/schemas/CryptoPayment"
+      discriminator:
+        propertyName: paymentType
+        mapping:
+          credit_card: "#/components/schemas/CreditCardPayment"
+          bank_transfer: "#/components/schemas/BankTransferPayment"
+          crypto: "#/components/schemas/CryptoPayment"
+
+    CreditCardPayment:
+      type: object
+      required:
+        - paymentType
+        - cardNumber
+        - expiryDate
+        - cvv
+      properties:
+        paymentType:
+          type: string
+          enum: [credit_card]
+        cardNumber:
+          type: string
+          pattern: '^\d{16}$'
+        expiryDate:
+          type: string
+          pattern: '^\d{2}/\d{2}$'
+        cvv:
+          type: string
+          pattern: '^\d{3,4}$'
+        cardholderName:
+          type: string
+
+    BankTransferPayment:
+      type: object
+      required:
+        - paymentType
+        - accountNumber
+        - routingNumber
+      properties:
+        paymentType:
+          type: string
+          enum: [bank_transfer]
+        accountNumber:
+          type: string
+        routingNumber:
+          type: string
+        bankName:
+          type: string
+
+    CryptoPayment:
+      type: object
+      required:
+        - paymentType
+        - walletAddress
+        - cryptocurrency
+      properties:
+        paymentType:
+          type: string
+          enum: [crypto]
+        walletAddress:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        cryptocurrency:
+          type: string
+          enum: [BTC, ETH, USDT, SOL]
+        network:
+          type: string
+
+    # Polymorphic Vehicle without explicit discriminator mapping
+    Vehicle:
+      oneOf:
+        - $ref: "#/components/schemas/Car"
+        - $ref: "#/components/schemas/Motorcycle"
+        - $ref: "#/components/schemas/Truck"
+      discriminator:
+        propertyName: vehicleType
+
+    Car:
+      type: object
+      required:
+        - vehicleType
+        - make
+        - model
+        - doors
+      properties:
+        vehicleType:
+          type: string
+          const: car
+        make:
+          type: string
+        model:
+          type: string
+        doors:
+          type: integer
+          minimum: 2
+          maximum: 5
+        trunkCapacity:
+          type: number
+
+    Motorcycle:
+      type: object
+      required:
+        - vehicleType
+        - make
+        - model
+        - engineSize
+      properties:
+        vehicleType:
+          type: string
+          const: motorcycle
+        make:
+          type: string
+        model:
+          type: string
+        engineSize:
+          type: integer
+          description: Engine size in CC
+        hasABS:
+          type: boolean
+
+    Truck:
+      type: object
+      required:
+        - vehicleType
+        - make
+        - model
+        - payloadCapacity
+      properties:
+        vehicleType:
+          type: string
+          const: truck
+        make:
+          type: string
+        model:
+          type: string
+        payloadCapacity:
+          type: number
+          description: Payload capacity in tons
+        axles:
+          type: integer
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        code:
+          type: string

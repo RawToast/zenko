@@ -47,7 +47,8 @@ export function generateZodSchema(
   schema: any,
   generatedTypes: Set<string>,
   options: SchemaOptions,
-  nameMap?: Map<string, string>
+  nameMap?: Map<string, string>,
+  schemaRegistry?: Record<string, unknown>
 ): string {
   if (generatedTypes.has(name)) return ""
   generatedTypes.add(name)
@@ -63,37 +64,451 @@ export function generateZodSchema(
 
   // Handle allOf schemas
   if (schema.allOf && Array.isArray(schema.allOf)) {
-    const allOfParts = schema.allOf.map((part: any) =>
-      getZodTypeFromSchema(part, options, nameMap)
+    const allOfSchemas = buildAllOfSchemas(schema)
+    const allOfParts = allOfSchemas.map((part: any) =>
+      getZodTypeFromSchema(part, options, nameMap, schemaRegistry, name)
     )
     if (allOfParts.length === 0) return `export const ${name} = z.object({});`
     if (allOfParts.length === 1)
       return `export const ${name} = ${allOfParts[0]};`
+    const shouldMerge = allOfSchemas.every((part: any) =>
+      isObjectSchema(part, schemaRegistry)
+    )
+    const joinMethod = shouldMerge ? "merge" : "and"
     const first = allOfParts[0]
     const rest = allOfParts
       .slice(1)
-      .map((part: string) => `.and(${part})`)
+      .map((part: string) => `.${joinMethod}(${part})`)
       .join("")
     return `export const ${name} = ${first}${rest};`
   }
 
   if (schema.type === "object" || schema.properties) {
-    return `export const ${name} = ${buildZodObject(schema, options, nameMap)};`
+    return `export const ${name} = ${buildZodObject(
+      schema,
+      options,
+      nameMap,
+      schemaRegistry,
+      name
+    )};`
   }
 
   if (schema.type === "array") {
     const itemSchema = schema.items ?? { type: "unknown" }
-    const itemType = getZodTypeFromSchema(itemSchema, options, nameMap)
+    const itemType = getZodTypeFromSchema(
+      itemSchema,
+      options,
+      nameMap,
+      schemaRegistry,
+      name
+    )
+    const enforceBounds =
+      options.strictNumeric ||
+      schema.minItems !== undefined ||
+      schema.maxItems !== undefined ||
+      schema.uniqueItems === true
     const builder = applyStrictArrayBounds(
       schema,
       `z.array(${itemType})`,
       itemSchema,
-      options.strictNumeric
+      enforceBounds
     )
     return `export const ${name} = ${builder};`
   }
 
-  return `export const ${name} = ${getZodTypeFromSchema(schema, options, nameMap)};`
+  return `export const ${name} = ${getZodTypeFromSchema(
+    schema,
+    options,
+    nameMap,
+    schemaRegistry,
+    name
+  )};`
+}
+
+function buildZodUnion(
+  schemas: any[],
+  options: SchemaOptions,
+  nameMap?: Map<string, string>,
+  schemaRegistry?: Record<string, unknown>,
+  currentSchemaName?: string
+): string {
+  const unionParts = schemas.map((part) =>
+    getZodTypeFromSchema(
+      part,
+      options,
+      nameMap,
+      schemaRegistry,
+      currentSchemaName
+    )
+  )
+
+  if (unionParts.length === 0) return "z.unknown()"
+  if (unionParts.length === 1) return unionParts[0] ?? "z.unknown()"
+  return `z.union([${unionParts.join(", ")}])`
+}
+
+function isPrimitiveConstValue(
+  value: unknown
+): value is string | number | boolean | null {
+  return (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  )
+}
+
+function resolveRefSchema(
+  schema: any,
+  schemaRegistry?: Record<string, unknown>
+): any {
+  if (!schema?.$ref) return schema
+  const refName = extractRefName(schema.$ref)
+  return schemaRegistry?.[refName] ?? schema
+}
+
+function hasMeaningfulSchemaKeys(schema: any): boolean {
+  const meaningfulKeys = [
+    "$ref",
+    "type",
+    "properties",
+    "required",
+    "additionalProperties",
+    "items",
+    "enum",
+    "const",
+    "oneOf",
+    "anyOf",
+    "not",
+  ]
+
+  return meaningfulKeys.some((key) => schema?.[key] !== undefined)
+}
+
+function buildAllOfSchemas(schema: any): any[] {
+  const allOfSchemas = Array.isArray(schema.allOf) ? [...schema.allOf] : []
+  const baseSchema = { ...schema }
+  delete baseSchema.allOf
+  if (hasMeaningfulSchemaKeys(baseSchema)) {
+    allOfSchemas.push(baseSchema)
+  }
+  return allOfSchemas
+}
+
+function schemaReferencesName(
+  schema: any,
+  targetName: string,
+  schemaRegistry?: Record<string, unknown>,
+  nameMap?: Map<string, string>,
+  visited = new Set<unknown>()
+): boolean {
+  if (!schema || visited.has(schema)) return false
+  visited.add(schema)
+
+  if (schema.$ref) {
+    const refName = extractRefName(schema.$ref)
+    const resolvedName = nameMap?.get(refName) || refName
+    if (resolvedName === targetName) return true
+    const resolvedSchema = schemaRegistry?.[refName]
+    if (resolvedSchema) {
+      return schemaReferencesName(
+        resolvedSchema,
+        targetName,
+        schemaRegistry,
+        nameMap,
+        visited
+      )
+    }
+  }
+
+  if (Array.isArray(schema.allOf)) {
+    return schema.allOf.some((part: any) =>
+      schemaReferencesName(part, targetName, schemaRegistry, nameMap, visited)
+    )
+  }
+
+  if (Array.isArray(schema.oneOf)) {
+    return schema.oneOf.some((part: any) =>
+      schemaReferencesName(part, targetName, schemaRegistry, nameMap, visited)
+    )
+  }
+
+  if (Array.isArray(schema.anyOf)) {
+    return schema.anyOf.some((part: any) =>
+      schemaReferencesName(part, targetName, schemaRegistry, nameMap, visited)
+    )
+  }
+
+  if (schema.not) {
+    return schemaReferencesName(
+      schema.not,
+      targetName,
+      schemaRegistry,
+      nameMap,
+      visited
+    )
+  }
+
+  if (schema.items) {
+    return schemaReferencesName(
+      schema.items,
+      targetName,
+      schemaRegistry,
+      nameMap,
+      visited
+    )
+  }
+
+  if (schema.properties) {
+    return Object.values(schema.properties).some((value) =>
+      schemaReferencesName(value, targetName, schemaRegistry, nameMap, visited)
+    )
+  }
+
+  if (
+    schema.additionalProperties &&
+    typeof schema.additionalProperties === "object"
+  ) {
+    return schemaReferencesName(
+      schema.additionalProperties,
+      targetName,
+      schemaRegistry,
+      nameMap,
+      visited
+    )
+  }
+
+  return false
+}
+
+function isObjectSchema(
+  schema: any,
+  schemaRegistry?: Record<string, unknown>
+): boolean {
+  const resolvedSchema = resolveRefSchema(schema, schemaRegistry)
+  if (!resolvedSchema) return false
+  if (resolvedSchema.allOf && Array.isArray(resolvedSchema.allOf)) {
+    const allOfSchemas = buildAllOfSchemas(resolvedSchema)
+    return allOfSchemas.every((part: any) =>
+      isObjectSchema(part, schemaRegistry)
+    )
+  }
+
+  return (
+    resolvedSchema.type === "object" ||
+    resolvedSchema.properties !== undefined ||
+    resolvedSchema.additionalProperties !== undefined
+  )
+}
+
+type DiscriminatorMappingEntry = {
+  ref: string
+  values: string[]
+}
+
+function buildDiscriminatorMapping(
+  discriminator: { mapping?: Record<string, string> } | undefined
+): Map<string, DiscriminatorMappingEntry> {
+  const mapping = new Map<string, DiscriminatorMappingEntry>()
+  if (!discriminator?.mapping) return mapping
+
+  for (const [discriminatorValue, schemaRef] of Object.entries(
+    discriminator.mapping
+  )) {
+    if (typeof schemaRef !== "string") continue
+    const refName = extractRefName(schemaRef)
+    const existing = mapping.get(refName)
+    if (existing) {
+      if (!existing.values.includes(discriminatorValue)) {
+        existing.values.push(discriminatorValue)
+      }
+      continue
+    }
+    mapping.set(refName, { ref: schemaRef, values: [discriminatorValue] })
+  }
+
+  return mapping
+}
+
+type DiscriminatorValue = string | number | boolean | null
+
+function extractDiscriminatorValuesFromSchema(
+  schema: any,
+  discriminator: string,
+  schemaRegistry?: Record<string, unknown>,
+  visited = new Set<unknown>()
+): DiscriminatorValue[] {
+  if (!schema || typeof schema !== "object" || visited.has(schema)) return []
+  visited.add(schema)
+
+  if (schema.$ref && typeof schema.$ref === "string") {
+    const refName = extractRefName(schema.$ref)
+    const resolvedSchema = schemaRegistry?.[refName]
+    return resolvedSchema
+      ? extractDiscriminatorValuesFromSchema(
+          resolvedSchema,
+          discriminator,
+          schemaRegistry,
+          visited
+        )
+      : []
+  }
+
+  const values: DiscriminatorValue[] = []
+  const propSchema = schema.properties?.[discriminator]
+  if (propSchema) {
+    const propConst = (propSchema as { const?: unknown }).const
+    if (propConst !== undefined && isPrimitiveConstValue(propConst)) {
+      values.push(propConst)
+    } else if (
+      Array.isArray((propSchema as { enum?: unknown[] }).enum) &&
+      (propSchema as { enum?: unknown[] }).enum?.length === 1 &&
+      isPrimitiveConstValue((propSchema as { enum?: unknown[] }).enum?.[0])
+    ) {
+      values.push(
+        (propSchema as { enum?: DiscriminatorValue[] })
+          .enum?.[0] as DiscriminatorValue
+      )
+    }
+  }
+
+  if (Array.isArray(schema.allOf)) {
+    for (const part of schema.allOf) {
+      values.push(
+        ...extractDiscriminatorValuesFromSchema(
+          part,
+          discriminator,
+          schemaRegistry,
+          visited
+        )
+      )
+    }
+  }
+
+  return Array.from(new Set(values))
+}
+
+function buildMappedDiscriminatorSchema(
+  schema: any,
+  discriminator: string,
+  mappedValue: DiscriminatorValue
+): any {
+  return {
+    allOf: [
+      schema,
+      {
+        type: "object",
+        properties: {
+          [discriminator]: {
+            const: mappedValue,
+          },
+        },
+        required: [discriminator],
+      },
+    ],
+  }
+}
+
+function applyDiscriminatorMapping(
+  schemas: any[],
+  discriminator: string,
+  mapping: Map<string, DiscriminatorMappingEntry>,
+  schemaRegistry?: Record<string, unknown>
+): { schemas: any[]; hasUnmapped: boolean } {
+  const oneOfRefNames = new Set<string>()
+  for (const part of schemas) {
+    if (part?.$ref) {
+      oneOfRefNames.add(extractRefName(part.$ref))
+    }
+  }
+
+  const mappedSchemas: any[] = []
+  let hasUnmapped = false
+
+  for (const part of schemas) {
+    const mappedValues: DiscriminatorValue[] = []
+    if (part?.$ref) {
+      const refName = extractRefName(part.$ref)
+      const mappedEntry = mapping.get(refName)
+      if (mappedEntry?.values.length) {
+        mappedValues.push(...mappedEntry.values)
+      }
+      mappedValues.push(
+        ...extractDiscriminatorValuesFromSchema(
+          part,
+          discriminator,
+          schemaRegistry
+        )
+      )
+    } else {
+      mappedValues.push(
+        ...extractDiscriminatorValuesFromSchema(
+          part,
+          discriminator,
+          schemaRegistry
+        )
+      )
+    }
+
+    const uniqueValues = Array.from(new Set(mappedValues))
+
+    if (uniqueValues.length === 0) {
+      hasUnmapped = true
+      mappedSchemas.push(part)
+      continue
+    }
+
+    for (const value of uniqueValues) {
+      mappedSchemas.push(
+        buildMappedDiscriminatorSchema(part, discriminator, value)
+      )
+    }
+  }
+
+  for (const [refName, mappedEntry] of mapping.entries()) {
+    if (oneOfRefNames.has(refName)) continue
+    const refSchema = { $ref: mappedEntry.ref }
+    for (const value of mappedEntry.values) {
+      mappedSchemas.push(
+        buildMappedDiscriminatorSchema(refSchema, discriminator, value)
+      )
+    }
+  }
+
+  return { schemas: mappedSchemas, hasUnmapped }
+}
+
+function buildZodDiscriminatedUnion(
+  schemas: any[],
+  discriminator: string,
+  options: SchemaOptions,
+  nameMap?: Map<string, string>,
+  schemaRegistry?: Record<string, unknown>,
+  currentSchemaName?: string,
+  mapping?: Map<string, DiscriminatorMappingEntry>
+): string {
+  const { schemas: mappedSchemas, hasUnmapped } = applyDiscriminatorMapping(
+    schemas,
+    discriminator,
+    mapping ?? new Map(),
+    schemaRegistry
+  )
+  const unionParts = mappedSchemas.map((part) =>
+    getZodTypeFromSchema(
+      part,
+      options,
+      nameMap,
+      schemaRegistry,
+      currentSchemaName
+    )
+  )
+
+  if (unionParts.length === 0) return "z.unknown()"
+  if (unionParts.length === 1) return unionParts[0] ?? "z.unknown()"
+  if (hasUnmapped) {
+    return `z.union([${unionParts.join(", ")}])`
+  }
+  return `z.discriminatedUnion(${JSON.stringify(discriminator)}, [${unionParts.join(", ")}])`
 }
 
 /**
@@ -103,42 +518,133 @@ export function generateZodSchema(
 export function getZodTypeFromSchema(
   schema: any,
   options: SchemaOptions,
-  nameMap?: Map<string, string>
+  nameMap?: Map<string, string>,
+  schemaRegistry?: Record<string, unknown>,
+  currentSchemaName?: string
 ): string {
   if (schema.$ref) {
     const refName = extractRefName(schema.$ref)
-    return nameMap?.get(refName) || refName
+    const resolvedName = nameMap?.get(refName) || refName
+    if (
+      currentSchemaName &&
+      (resolvedName === currentSchemaName ||
+        schemaReferencesName(
+          schemaRegistry?.[refName],
+          currentSchemaName,
+          schemaRegistry,
+          nameMap
+        ))
+    ) {
+      return `z.lazy(() => ${resolvedName})`
+    }
+    return resolvedName
+  }
+
+  if (schema.const !== undefined && isPrimitiveConstValue(schema.const)) {
+    return `z.literal(${JSON.stringify(schema.const)})`
   }
 
   if (schema.enum) {
+    if (schema.enum.length === 1) {
+      return `z.literal(${JSON.stringify(schema.enum[0])})`
+    }
     const enumValues = schema.enum.map((v: string) => `"${v}"`).join(", ")
     return `z.enum([${enumValues}])`
   }
 
+  if (schema.not) {
+    const notSchema = schema.not
+    const baseSchema = { ...schema }
+    delete baseSchema.not
+    const baseType = hasMeaningfulSchemaKeys(baseSchema)
+      ? getZodTypeFromSchema(
+          baseSchema,
+          options,
+          nameMap,
+          schemaRegistry,
+          currentSchemaName
+        )
+      : "z.any()"
+    if (notSchema?.type === "string" && notSchema.maxLength === 0) {
+      return `${baseType}.refine((value) => typeof value !== "string" || value.length > 0, { message: "Value must not be empty" })`
+    }
+    const notType = getZodTypeFromSchema(
+      notSchema,
+      options,
+      nameMap,
+      schemaRegistry,
+      currentSchemaName
+    )
+    return `${baseType}.refine((value) => !${notType}.safeParse(value).success, { message: "Value must not match schema" })`
+  }
+
   // Handle allOf schemas
   if (schema.allOf && Array.isArray(schema.allOf)) {
-    const allOfParts = schema.allOf.map((part: any) =>
-      getZodTypeFromSchema(part, options, nameMap)
+    const allOfSchemas = buildAllOfSchemas(schema)
+    const allOfParts = allOfSchemas.map((part: any) =>
+      getZodTypeFromSchema(
+        part,
+        options,
+        nameMap,
+        schemaRegistry,
+        currentSchemaName
+      )
     )
     if (allOfParts.length === 0) return "z.object({})"
-    if (allOfParts.length === 1) return allOfParts[0]
+    if (allOfParts.length === 1) return allOfParts[0] ?? "z.object({})"
+    const shouldMerge = allOfSchemas.every((part: any) =>
+      isObjectSchema(part, schemaRegistry)
+    )
+    const joinMethod = shouldMerge ? "merge" : "and"
     const first = allOfParts[0]
     const rest = allOfParts
       .slice(1)
-      .map((part: string) => `.and(${part})`)
+      .map((part: string) => `.${joinMethod}(${part})`)
       .join("")
     return `${first}${rest}`
   }
 
+  if (schema.oneOf && Array.isArray(schema.oneOf)) {
+    if (schema.discriminator?.propertyName) {
+      const mapping = buildDiscriminatorMapping(schema.discriminator)
+      return buildZodDiscriminatedUnion(
+        schema.oneOf,
+        schema.discriminator.propertyName,
+        options,
+        nameMap,
+        schemaRegistry,
+        currentSchemaName,
+        mapping
+      )
+    }
+    return buildZodUnion(
+      schema.oneOf,
+      options,
+      nameMap,
+      schemaRegistry,
+      currentSchemaName
+    )
+  }
+
+  if (schema.anyOf && Array.isArray(schema.anyOf)) {
+    return buildZodUnion(
+      schema.anyOf,
+      options,
+      nameMap,
+      schemaRegistry,
+      currentSchemaName
+    )
+  }
+
   // Check for object with properties (including those without explicit type)
-  if (
-    schema.type === "object" ||
-    schema.properties ||
-    schema.allOf ||
-    schema.oneOf ||
-    schema.anyOf
-  ) {
-    return buildZodObject(schema, options, nameMap)
+  if (schema.type === "object" || schema.properties || schema.allOf) {
+    return buildZodObject(
+      schema,
+      options,
+      nameMap,
+      schemaRegistry,
+      currentSchemaName
+    )
   }
 
   switch (schema.type) {
@@ -146,12 +652,27 @@ export function getZodTypeFromSchema(
       return buildString(schema, options)
     case "boolean":
       return "z.boolean()"
-    case "array":
-      return `z.array(${getZodTypeFromSchema(
-        schema.items ?? { type: "unknown" },
+    case "array": {
+      const itemSchema = schema.items ?? { type: "unknown" }
+      const itemType = getZodTypeFromSchema(
+        itemSchema,
         options,
-        nameMap
-      )})`
+        nameMap,
+        schemaRegistry,
+        currentSchemaName
+      )
+      const enforceBounds =
+        options.strictNumeric ||
+        schema.minItems !== undefined ||
+        schema.maxItems !== undefined ||
+        schema.uniqueItems === true
+      return applyStrictArrayBounds(
+        schema,
+        `z.array(${itemType})`,
+        itemSchema,
+        enforceBounds
+      )
+    }
     case "null":
       return "z.null()"
     case "number":
@@ -161,6 +682,39 @@ export function getZodTypeFromSchema(
     default:
       return "z.unknown()"
   }
+}
+
+function getDiscriminatorRequiredProperties(
+  schemaRegistry: Record<string, unknown> | undefined,
+  currentSchemaName: string | undefined
+): Set<string> {
+  if (!schemaRegistry || !currentSchemaName) return new Set()
+
+  const requiredProperties = new Set<string>()
+  for (const schema of Object.values(schemaRegistry)) {
+    if (!schema || typeof schema !== "object") continue
+    const discriminatorName = (schema as any).discriminator?.propertyName
+    if (!discriminatorName || !Array.isArray((schema as any).oneOf)) continue
+
+    const oneOfSchemas = (schema as any).oneOf as any[]
+    const matchesOneOf = oneOfSchemas.some(
+      (part) => part?.$ref && extractRefName(part.$ref) === currentSchemaName
+    )
+
+    const mappingValues = Object.values(
+      (schema as any).discriminator?.mapping ?? {}
+    )
+    const matchesMapping = mappingValues.some(
+      (value) =>
+        typeof value === "string" && extractRefName(value) === currentSchemaName
+    )
+
+    if (matchesOneOf || matchesMapping) {
+      requiredProperties.add(discriminatorName)
+    }
+  }
+
+  return requiredProperties
 }
 
 /**
@@ -179,15 +733,29 @@ export function getZodTypeFromSchema(
 export function buildZodObject(
   schema: any,
   options: SchemaOptions,
-  nameMap?: Map<string, string>
+  nameMap?: Map<string, string>,
+  schemaRegistry?: Record<string, unknown>,
+  currentSchemaName?: string
 ): string {
   const properties: string[] = []
+  const discriminatorRequiredProperties = getDiscriminatorRequiredProperties(
+    schemaRegistry,
+    currentSchemaName
+  )
 
   for (const [propName, propSchema] of Object.entries(
     schema.properties || {}
   )) {
-    const isRequired = schema.required?.includes(propName) ?? false
-    const baseType = getZodTypeFromSchema(propSchema as any, options, nameMap)
+    const isRequired =
+      (schema.required?.includes(propName) ?? false) ||
+      discriminatorRequiredProperties.has(propName)
+    const baseType = getZodTypeFromSchema(
+      propSchema as any,
+      options,
+      nameMap,
+      schemaRegistry,
+      currentSchemaName
+    )
     // Only apply .default() to non-required properties with "optional" or
     // "nullish" optionalType. When optionalType is "nullable", the field must
     // be present (but may be null), so .default() would break those semantics
@@ -201,11 +769,32 @@ export function buildZodObject(
     properties.push(`  ${formatPropertyName(propName)}: ${finalType},`)
   }
 
-  if (properties.length === 0) {
-    return "z.object({})"
+  const baseObject =
+    properties.length === 0
+      ? "z.object({})"
+      : `z.object({\n${properties.join("\n")}\n})`
+
+  if (schema.additionalProperties === undefined) {
+    return baseObject
   }
 
-  return `z.object({\n${properties.join("\n")}\n})`
+  if (schema.additionalProperties === false) {
+    return `${baseObject}.strict()`
+  }
+
+  if (schema.additionalProperties === true) {
+    return `${baseObject}.passthrough()`
+  }
+
+  const additionalType = getZodTypeFromSchema(
+    schema.additionalProperties,
+    options,
+    nameMap,
+    schemaRegistry,
+    currentSchemaName
+  )
+
+  return `${baseObject}.catchall(${additionalType})`
 }
 
 /**

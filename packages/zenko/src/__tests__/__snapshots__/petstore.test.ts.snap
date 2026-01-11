@@ -14,7 +14,7 @@ export const Pet = z.object({
 
 export type Pet = z.infer<typeof Pet>;
 
-export const Pets = z.array(Pet);
+export const Pets = z.array(Pet).max(100);
 
 export type Pets = z.infer<typeof Pets>;
 
@@ -125,7 +125,7 @@ export const Pet = z.object({
 
 export type Pet = z.infer<typeof Pet>;
 
-export const Pets = z.array(Pet);
+export const Pets = z.array(Pet).max(100);
 
 export type Pets = z.infer<typeof Pets>;
 
@@ -236,7 +236,7 @@ export const Pet = z.object({
 
 export type Pet = z.infer<typeof Pet>;
 
-export const Pets = z.array(Pet);
+export const Pets = z.array(Pet).max(100);
 
 export type Pets = z.infer<typeof Pets>;
 

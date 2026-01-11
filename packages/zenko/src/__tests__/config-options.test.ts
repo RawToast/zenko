@@ -127,10 +127,8 @@ describe("Configuration Options", () => {
       expect(result).not.toContain("z.string().max(")
       expect(result).not.toContain("z.string().regex(")
 
-      // Array constraints should be ignored
-      expect(result).toContain("tags: z.array(z.string())")
-      expect(result).not.toContain("z.array(z.string()).min(")
-      expect(result).not.toContain("z.array(z.string()).max(")
+      // Array constraints should still be applied when specified
+      expect(result).toContain("tags: z.array(z.string()).min(1).max(10)")
     })
 
     test("strictNumeric: true - numeric constraints enforced", () => {
@@ -447,7 +445,14 @@ describe("Configuration Options", () => {
       expect(result).toContain("website: z.string().url().optional()")
       expect(result).toContain("avatar: z.string().url().optional()")
       expect(result).toContain("username: z.string().optional()")
-      expect(result).toContain("tags: z.array(z.string()).optional()")
+      expect(result).toContain(
+        "tags: z.array(z.string()).min(1).max(10).refine"
+      )
+      expect(result).toContain("Items must be unique")
+
+      expect(result).toContain(
+        'tags: z.array(z.string()).min(1).max(10).refine((items) => new Set(items).size === items.length, { message: "Items must be unique" }).optional()'
+      )
 
       // Required fields should NOT have optional modifier
       expect(result).toContain("id: z.string().uuid()")
@@ -465,7 +470,10 @@ describe("Configuration Options", () => {
       expect(result).toContain("website: z.string().url().nullable()")
       expect(result).toContain("avatar: z.string().url().nullable()")
       expect(result).toContain("username: z.string().nullable()")
-      expect(result).toContain("tags: z.array(z.string()).nullable()")
+      expect(result).toContain(
+        "tags: z.array(z.string()).min(1).max(10).refine"
+      )
+      expect(result).toContain("Items must be unique")
 
       // Should NOT contain .optional() for optional fields
       expect(result).not.toContain("website: z.string().url().optional()")
@@ -485,7 +493,10 @@ describe("Configuration Options", () => {
       expect(result).toContain("website: z.string().url().nullish()")
       expect(result).toContain("avatar: z.string().url().nullish()")
       expect(result).toContain("username: z.string().nullish()")
-      expect(result).toContain("tags: z.array(z.string()).nullish()")
+      expect(result).toContain(
+        "tags: z.array(z.string()).min(1).max(10).refine"
+      )
+      expect(result).toContain("Items must be unique")
 
       // Should NOT contain .optional() or .nullable() for optional fields
       expect(result).not.toContain("website: z.string().url().optional()")
