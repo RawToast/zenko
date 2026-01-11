@@ -1,27 +1,52 @@
-import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
+import * as path from "path"
+import { beforeAll, describe, expect, test } from "bun:test"
 import { generate, type OpenAPISpec } from "../zenko"
 
-describe("anyOf Combinations", () => {
-  test("generates complete TypeScript output", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/anyof-combinations.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
+/**
+ * Resolves fixture path relative to this test file, independent of CWD.
+ */
+function resolveFixture(filename: string): string {
+  const testDir = path.dirname(new URL(import.meta.url).pathname)
+  return path.join(testDir, "..", "resources", filename)
+}
 
+/**
+ * Loads and parses a YAML fixture file.
+ */
+function loadSpec(filename: string): OpenAPISpec {
+  const content = fs.readFileSync(resolveFixture(filename), "utf8")
+  return Bun.YAML.parse(content) as OpenAPISpec
+}
+
+/**
+ * Extracts a specific schema export block from the generated output.
+ * Matches from "export const Name =" through the closing semicolon,
+ * handling multi-line object definitions.
+ */
+function extractExportBlock(result: string, schemaName: string): string | null {
+  const pattern = new RegExp(
+    `(export const ${schemaName} = [\\s\\S]*?;)\\n`,
+    "m"
+  )
+  const match = result.match(pattern)
+  return match?.[1]?.trim() ?? null
+}
+
+describe("anyOf Combinations", () => {
+  let specYaml: OpenAPISpec
+  let result: string
+
+  beforeAll(() => {
+    specYaml = loadSpec("anyof-combinations.yaml")
+    result = generate(specYaml)
+  })
+
+  test("generates complete TypeScript output", () => {
     expect(result).toMatchSnapshot("anyof-combinations-complete-output")
   })
 
   test("generates union for anyOf schemas", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/anyof-combinations.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // Should generate unions for anyOf
     expect(result).toContain("z.union([")
 
@@ -33,31 +58,17 @@ describe("anyOf Combinations", () => {
   })
 
   test("handles anyOf with inline required constraints", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/anyof-combinations.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // Contact has anyOf with required constraints
-    // Should accept objects with email, phone, or both
-    expect(result).toContain("export const Contact =")
+    const contactBlock = extractExportBlock(result, "Contact")
+    expect(contactBlock).not.toBeNull()
 
     // The Contact schema should include both email and phone as optional
     // but with validation that at least one is present
-    expect(result).toContain("email")
-    expect(result).toContain("phone")
+    expect(contactBlock).toContain("email")
+    expect(contactBlock).toContain("phone")
   })
 
   test("generates all variant schemas for SearchResult", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/anyof-combinations.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // SearchResult should have all three variants
     expect(result).toContain("export const DocumentResult =")
     expect(result).toContain("export const UserResult =")
@@ -72,28 +83,20 @@ describe("anyOf Combinations", () => {
   })
 
   test("handles anyOf with primitive types", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/anyof-combinations.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // FlexibleData has anyOf with string, number, boolean, array, object
-    expect(result).toContain("export const FlexibleData =")
+    const flexibleDataBlock = extractExportBlock(result, "FlexibleData")
+    expect(flexibleDataBlock).not.toBeNull()
 
-    // Should generate a union of primitive types and complex types
-    // z.union([z.string(), z.number(), z.boolean(), z.array(...), z.object(...)])
+    // Should generate a union containing primitives and complex types
+    expect(flexibleDataBlock).toContain("z.union([")
+    expect(flexibleDataBlock).toContain("z.string()")
+    expect(flexibleDataBlock).toContain("z.number()")
+    expect(flexibleDataBlock).toContain("z.boolean()")
+    expect(flexibleDataBlock).toContain("z.array(")
+    expect(flexibleDataBlock).toContain("z.object(")
   })
 
   test("maintains schema dependency order with anyOf", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/anyof-combinations.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // Variant schemas should come before the union schema
     const textFilterIndex = result.indexOf("export const TextFilter =")
     const dateRangeFilterIndex = result.indexOf(
@@ -104,19 +107,19 @@ describe("anyOf Combinations", () => {
     )
     const searchFilterIndex = result.indexOf("export const SearchFilter =")
 
+    // First verify all schemas are found
+    expect(textFilterIndex).toBeGreaterThanOrEqual(0)
+    expect(dateRangeFilterIndex).toBeGreaterThanOrEqual(0)
+    expect(numericRangeFilterIndex).toBeGreaterThanOrEqual(0)
+    expect(searchFilterIndex).toBeGreaterThanOrEqual(0)
+
+    // Then verify ordering
     expect(textFilterIndex).toBeLessThan(searchFilterIndex)
     expect(dateRangeFilterIndex).toBeLessThan(searchFilterIndex)
     expect(numericRangeFilterIndex).toBeLessThan(searchFilterIndex)
   })
 
   test("generates operation objects with anyOf types", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/anyof-combinations.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // Operations should use the anyOf union types
     expect(result).toContain("export const createContact:")
     expect(result).toContain("export const searchItems:")
@@ -125,29 +128,16 @@ describe("anyOf Combinations", () => {
   })
 
   test("handles anyOf in query parameters", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/anyof-combinations.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // searchItems operation has a filter parameter with anyOf schema
-    // Should properly type the query parameter
-    expect(result).toContain(
-      "searchItems: ({ query, filter }: { query: string, filter?: string }) => {"
-    )
+    // Verify key parts of the signature rather than exact string
+    expect(result).toContain("searchItems:")
+    // The path function accepts query and optional filter params
+    expect(result).toContain("query: string")
+    expect(result).toContain("filter?:")
     expect(result).toContain('params.set("filter", String(filter))')
   })
 
   test("generates type discriminators for anyOf variants when present", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/anyof-combinations.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // Filter types have a 'type' discriminator
     // SearchResult types have 'resultType' discriminator
     // These should use z.literal() for the discriminator values

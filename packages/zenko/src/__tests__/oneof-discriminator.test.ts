@@ -1,43 +1,44 @@
-import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
+import * as path from "path"
+import { beforeAll, describe, expect, test } from "bun:test"
 import { generate, type OpenAPISpec } from "../zenko"
 
-describe("oneOf with Discriminator", () => {
-  test("generates complete TypeScript output", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/oneof-discriminator.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
+/**
+ * Resolves fixture path relative to this test file, independent of CWD.
+ */
+function resolveFixture(filename: string): string {
+  const testDir = path.dirname(new URL(import.meta.url).pathname)
+  return path.join(testDir, "..", "resources", filename)
+}
 
+/**
+ * Loads and parses a YAML fixture file.
+ */
+function loadSpec(filename: string): OpenAPISpec {
+  const content = fs.readFileSync(resolveFixture(filename), "utf8")
+  return Bun.YAML.parse(content) as OpenAPISpec
+}
+
+describe("oneOf with Discriminator", () => {
+  let specYaml: OpenAPISpec
+  let result: string
+
+  beforeAll(() => {
+    specYaml = loadSpec("oneof-discriminator.yaml")
+    result = generate(specYaml)
+  })
+
+  test("generates complete TypeScript output", () => {
     expect(result).toMatchSnapshot("oneof-discriminator-complete-output")
   })
 
   test("generates discriminated union for Payment with z.discriminatedUnion", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/oneof-discriminator.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // Should generate a discriminated union using Zod's discriminatedUnion
     expect(result).toContain("z.discriminatedUnion(")
     expect(result).toContain('"paymentType"')
-
-    // Or alternatively, should generate a regular union
-    // expect(result).toContain("z.union([")
   })
 
   test("generates all payment variant schemas", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/oneof-discriminator.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // All payment types should be generated
     expect(result).toContain("export const CreditCardPayment =")
     expect(result).toContain("export const BankTransferPayment =")
@@ -52,13 +53,6 @@ describe("oneOf with Discriminator", () => {
   })
 
   test("generates discriminator property with literal types", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/oneof-discriminator.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // Should use z.literal() or z.enum() for discriminator values
     expect(result).toContain('z.literal("credit_card")')
     expect(result).toContain('z.literal("bank_transfer")')
@@ -71,13 +65,6 @@ describe("oneOf with Discriminator", () => {
   })
 
   test("generates Vehicle discriminated union with const discriminators", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/oneof-discriminator.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // Should generate all vehicle types
     expect(result).toContain("export const Car =")
     expect(result).toContain("export const Motorcycle =")
@@ -89,13 +76,6 @@ describe("oneOf with Discriminator", () => {
   })
 
   test("generates operation objects with discriminated union types", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/oneof-discriminator.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // Operations should use the discriminated union types
     expect(result).toContain("export const createPayment:")
     expect(result).toContain("export const getVehicle:")
@@ -104,6 +84,12 @@ describe("oneOf with Discriminator", () => {
   })
 
   test("handles discriminator mapping correctly", () => {
+    // This test exercises discriminator mapping where:
+    // - Multiple mapping values (foo_kind, foo_alias) point to the same schema (Foo)
+    // - A mapping entry (extra_kind -> Extra) references a schema not in oneOf
+    //
+    // This is technically invalid per OpenAPI 3.0 spec (mapping targets should be
+    // in oneOf), but we handle it gracefully by including Extra in the union.
     const specYaml = {
       openapi: "3.0.0",
       info: {
@@ -124,6 +110,7 @@ describe("oneOf with Discriminator", () => {
                 foo_kind: "#/components/schemas/Foo",
                 foo_alias: "#/components/schemas/Foo",
                 bar_kind: "#/components/schemas/Bar",
+                // Note: Extra is NOT in oneOf - tests graceful handling of edge case
                 extra_kind: "#/components/schemas/Extra",
               },
             },
@@ -170,13 +157,19 @@ describe("oneOf with Discriminator", () => {
         },
       },
     } as OpenAPISpec
-    const result = generate(specYaml)
+    const mappingResult = generate(specYaml)
 
-    expect(result).toContain('z.literal("foo_kind")')
-    expect(result).toContain('z.literal("foo_alias")')
-    expect(result).toContain('z.literal("extra_kind")')
-    expect((result.match(/Foo\.merge/g) ?? []).length).toBe(3)
-    expect(result).toContain("Extra.merge")
+    // Verify discriminator literal values are generated
+    expect(mappingResult).toContain('z.literal("foo_kind")')
+    expect(mappingResult).toContain('z.literal("foo_alias")')
+    expect(mappingResult).toContain('z.literal("extra_kind")')
+
+    // Foo should appear 3 times (for foo enum value, foo_kind, and foo_alias)
+    const fooMergeCount = (mappingResult.match(/Foo\.merge/g) ?? []).length
+    expect(fooMergeCount).toBe(3)
+
+    // Extra should be included despite not being in oneOf
+    expect(mappingResult).toContain("Extra.merge")
   })
 
   test("falls back to union when discriminator values are missing", () => {
@@ -218,20 +211,13 @@ describe("oneOf with Discriminator", () => {
         },
       },
     } as OpenAPISpec
-    const result = generate(specYaml)
+    const fallbackResult = generate(specYaml)
 
-    expect(result).toContain("z.union([")
-    expect(result).not.toContain("z.discriminatedUnion(")
+    expect(fallbackResult).toContain("z.union([")
+    expect(fallbackResult).not.toContain("z.discriminatedUnion(")
   })
 
   test("maintains schema dependency order with oneOf", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/oneof-discriminator.yaml",
-      "utf8"
-    )
-    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // Variant schemas should come before the union schema
     const creditCardIndex = result.indexOf("export const CreditCardPayment =")
     const bankTransferIndex = result.indexOf(
@@ -240,6 +226,13 @@ describe("oneOf with Discriminator", () => {
     const cryptoIndex = result.indexOf("export const CryptoPayment =")
     const paymentIndex = result.indexOf("export const Payment =")
 
+    // First verify all schemas are found
+    expect(creditCardIndex).toBeGreaterThanOrEqual(0)
+    expect(bankTransferIndex).toBeGreaterThanOrEqual(0)
+    expect(cryptoIndex).toBeGreaterThanOrEqual(0)
+    expect(paymentIndex).toBeGreaterThanOrEqual(0)
+
+    // Then verify ordering
     expect(creditCardIndex).toBeLessThan(paymentIndex)
     expect(bankTransferIndex).toBeLessThan(paymentIndex)
     expect(cryptoIndex).toBeLessThan(paymentIndex)

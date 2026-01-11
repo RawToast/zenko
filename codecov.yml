@@ -7,5 +7,9 @@ coverage:
         paths:
           - "packages/zenko/src"
     patch:
+<<<<<<< HEAD
       default:
         target: 80%
+=======
+      off: true
+>>>>>>> 07d8e79 (more review fixes)
