@@ -90,7 +90,7 @@ describe("oneOf with Discriminator", () => {
     //
     // This is technically invalid per OpenAPI 3.0 spec (mapping targets should be
     // in oneOf), but we handle it gracefully by including Extra in the union.
-    const specYaml = {
+    const mappingSpec = {
       openapi: "3.0.0",
       info: {
         title: "Discriminator Mapping Test",
@@ -157,19 +157,10 @@ describe("oneOf with Discriminator", () => {
         },
       },
     } as OpenAPISpec
-    const mappingResult = generate(specYaml)
+    const mappingResult = generate(mappingSpec)
 
-    // Verify discriminator literal values are generated
-    expect(mappingResult).toContain('z.literal("foo_kind")')
-    expect(mappingResult).toContain('z.literal("foo_alias")')
-    expect(mappingResult).toContain('z.literal("extra_kind")')
-
-    // Foo should appear 3 times (for foo enum value, foo_kind, and foo_alias)
-    const fooMergeCount = (mappingResult.match(/Foo\.merge/g) ?? []).length
-    expect(fooMergeCount).toBe(3)
-
-    // Extra should be included despite not being in oneOf
-    expect(mappingResult).toContain("Extra.merge")
+    // Use snapshot to capture full output structure - resilient to implementation changes
+    expect(mappingResult).toMatchSnapshot("discriminator-mapping-output")
   })
 
   test("falls back to union when discriminator values are missing", () => {

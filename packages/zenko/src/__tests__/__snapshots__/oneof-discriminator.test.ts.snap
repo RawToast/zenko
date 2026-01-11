@@ -149,3 +149,61 @@ export const getVehicle: GetVehicleOperation = {
 } as const;
 "
 `;
+
+exports[`oneOf with Discriminator handles discriminator mapping correctly: discriminator-mapping-output 1`] = `
+"import { z } from "zod";
+
+// Generated Zod Schemas
+
+export const Foo = z.object({
+  paymentType: z.literal("foo"),
+  fooValue: z.string(),
+});
+
+export type Foo = z.infer<typeof Foo>;
+
+export const Bar = z.object({
+  paymentType: z.literal("bar"),
+  barValue: z.string(),
+});
+
+export type Bar = z.infer<typeof Bar>;
+
+export const Extra = z.object({
+  paymentType: z.literal("extra"),
+  extraValue: z.string(),
+});
+
+export type Extra = z.infer<typeof Extra>;
+
+export const Payment = z.discriminatedUnion("paymentType", [Foo.merge(z.object({
+  paymentType: z.literal("foo_kind"),
+})), Foo.merge(z.object({
+  paymentType: z.literal("foo_alias"),
+})), Foo.merge(z.object({
+  paymentType: z.literal("foo"),
+})), Bar.merge(z.object({
+  paymentType: z.literal("bar_kind"),
+})), Bar.merge(z.object({
+  paymentType: z.literal("bar"),
+})), Extra.merge(z.object({
+  paymentType: z.literal("extra_kind"),
+}))]);
+
+export type Payment = z.infer<typeof Payment>;
+
+// Path Functions
+export const paths = {
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+} as const;
+
+// Header Functions
+export const headers = {
+} as const;
+
+// Operation Types
+// Operation Objects"
+`;
