@@ -210,10 +210,12 @@ describe.skip("Non-JSON Responses", () => {
       "utf8"
     )
     const specYaml = parseYaml(specContent) as OpenAPISpec
-    generate(specYaml)
+    const result = generate(specYaml)
 
     // Several endpoints use format: binary
-    // Should properly handle binary format in schemas
+    expect(result).toContain("export const DownloadFileResponse =")
+    expect(result).toContain('typeof Blob === "undefined"')
+    expect(result).toContain("z.instanceof(Blob)")
   })
 
   test("handles xml metadata in schemas", () => {
@@ -222,10 +224,13 @@ describe.skip("Non-JSON Responses", () => {
       "utf8"
     )
     const specYaml = parseYaml(specContent) as OpenAPISpec
-    generate(specYaml)
+    const result = generate(specYaml)
 
     // exportDataXml schema has xml metadata (name, wrapped)
-    // These could be used to generate XML-specific types or ignored
+    expect(result).toContain("export const ExportDataXmlResponse = z.object({")
+    expect(result).toContain("records: z.array(")
+    expect(result).toContain("id: z.string()")
+    expect(result).toContain("value: z.string()")
   })
 
   test("generates all expected operation objects", () => {
@@ -292,10 +297,15 @@ describe.skip("Non-JSON Responses", () => {
       "utf8"
     )
     const specYaml = parseYaml(specContent) as OpenAPISpec
-    generate(specYaml)
+    const result = generate(specYaml)
 
     // For content types that can't be properly typed in Zod
-    // Should fall back to z.string() or z.unknown()
+    expect(result).toContain("export const GetRssFeedResponse = z.string();")
+    expect(result).toContain(
+      "export const GetMarkdownDocResponse = z.string();"
+    )
+    expect(result).toContain("export const DownloadArchiveResponse =")
+    expect(result).toContain('typeof Blob === "undefined"')
 
     // This is acceptable behavior - non-JSON types are inherently
     // less structured than JSON schemas
