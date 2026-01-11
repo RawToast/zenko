@@ -17,7 +17,7 @@ paths:
             enum: [csv]
             default: csv
       responses:
-        '200':
+        "200":
           description: Users in CSV format
           content:
             text/csv:
@@ -34,7 +34,7 @@ paths:
       operationId: exportDataXml
       summary: Export data as XML
       responses:
-        '200':
+        "200":
           description: Data in XML format
           content:
             application/xml:
@@ -78,7 +78,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: File content
           content:
             application/octet-stream:
@@ -93,7 +93,7 @@ paths:
             Content-Length:
               schema:
                 type: integer
-        '404':
+        "404":
           description: File not found
 
   /documents/{documentId}/pdf:
@@ -107,7 +107,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: PDF document
           content:
             application/pdf:
@@ -131,7 +131,7 @@ paths:
             type: string
             enum: [thumbnail, medium, large]
       responses:
-        '200':
+        "200":
           description: Image file
           content:
             image/png:
@@ -163,7 +163,7 @@ paths:
             type: string
             enum: [debug, info, warn, error]
       responses:
-        '200':
+        "200":
           description: Log entries
           content:
             text/plain:
@@ -179,7 +179,7 @@ paths:
       operationId: streamEvents
       summary: Server-sent events stream
       responses:
-        '200':
+        "200":
           description: Event stream
           content:
             text/event-stream:
@@ -209,12 +209,12 @@ paths:
             enum: [json, xml, csv, html]
             default: json
       responses:
-        '200':
+        "200":
           description: Report in requested format
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Report'
+                $ref: "#/components/schemas/Report"
             application/xml:
               schema:
                 type: string
@@ -230,7 +230,7 @@ paths:
       operationId: getHealthText
       summary: Health check with plain text response
       responses:
-        '200':
+        "200":
           description: Service is healthy
           content:
             text/plain:
@@ -250,7 +250,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: ZIP archive
           content:
             application/zip:
@@ -269,7 +269,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Markdown document
           content:
             text/markdown:
@@ -285,7 +285,7 @@ paths:
       operationId: getRssFeed
       summary: Get RSS feed
       responses:
-        '200':
+        "200":
           description: RSS feed
           content:
             application/rss+xml:

@@ -1,15 +1,14 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
-describe.skip("Property Metadata", () => {
+describe("Property Metadata", () => {
   test("generates complete TypeScript output", () => {
     const specContent = fs.readFileSync(
       "src/resources/property-metadata.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("property-metadata-complete-output")
@@ -20,7 +19,7 @@ describe.skip("Property Metadata", () => {
       "src/resources/property-metadata.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // User has readOnly fields: id, createdAt, updatedAt
@@ -36,7 +35,7 @@ describe.skip("Property Metadata", () => {
       "src/resources/property-metadata.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // User has writeOnly field: passwordHash
@@ -52,7 +51,7 @@ describe.skip("Property Metadata", () => {
       "src/resources/property-metadata.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // UserInput should not have readOnly fields (id, createdAt, updatedAt)
@@ -68,7 +67,7 @@ describe.skip("Property Metadata", () => {
       "src/resources/property-metadata.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Product has const fields: sku, currency
@@ -84,7 +83,7 @@ describe.skip("Property Metadata", () => {
       "src/resources/property-metadata.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Settings has many default values
@@ -105,7 +104,7 @@ describe.skip("Property Metadata", () => {
       "src/resources/property-metadata.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Settings has deprecatedField
@@ -123,7 +122,7 @@ describe.skip("Property Metadata", () => {
       "src/resources/property-metadata.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Examples could be included in .describe() or as JSDoc
@@ -139,7 +138,7 @@ describe.skip("Property Metadata", () => {
       "src/resources/property-metadata.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // All schemas should be generated
@@ -164,7 +163,7 @@ describe.skip("Property Metadata", () => {
       "src/resources/property-metadata.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // createUser should use UserInput for request and User for response
@@ -181,7 +180,7 @@ describe.skip("Property Metadata", () => {
       "src/resources/property-metadata.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // User.status has both const: active and default: active
@@ -195,7 +194,7 @@ describe.skip("Property Metadata", () => {
       "src/resources/property-metadata.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml, { strictNumeric: true })
 
     // SettingsUpdate has constraints on some fields

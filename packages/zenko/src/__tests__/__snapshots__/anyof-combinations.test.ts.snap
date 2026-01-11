@@ -1,0 +1,157 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`anyOf Combinations generates complete TypeScript output: anyof-combinations-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const Contact = z.object({
+  name: z.string(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+});
+
+export type Contact = z.infer<typeof Contact>;
+
+export const TextFilter = z.object({
+  type: z.literal("text"),
+  value: z.string(),
+  caseSensitive: z.boolean().optional().default(false),
+});
+
+export type TextFilter = z.infer<typeof TextFilter>;
+
+export const DateRangeFilter = z.object({
+  type: z.literal("dateRange"),
+  startDate: z.string(),
+  endDate: z.string(),
+});
+
+export type DateRangeFilter = z.infer<typeof DateRangeFilter>;
+
+export const NumericRangeFilter = z.object({
+  type: z.literal("numericRange"),
+  min: z.number().optional(),
+  max: z.number().optional(),
+});
+
+export type NumericRangeFilter = z.infer<typeof NumericRangeFilter>;
+
+export const SearchFilter = z.union([TextFilter, DateRangeFilter, NumericRangeFilter]);
+
+export type SearchFilter = z.infer<typeof SearchFilter>;
+
+export const DocumentResult = z.object({
+  resultType: z.literal("document"),
+  id: z.string(),
+  title: z.string(),
+  content: z.string().optional(),
+  author: z.string().optional(),
+  createdAt: z.string().optional(),
+});
+
+export type DocumentResult = z.infer<typeof DocumentResult>;
+
+export const UserResult = z.object({
+  resultType: z.literal("user"),
+  id: z.string(),
+  username: z.string(),
+  email: z.string().email().optional(),
+  displayName: z.string().optional(),
+});
+
+export type UserResult = z.infer<typeof UserResult>;
+
+export const ProductResult = z.object({
+  resultType: z.literal("product"),
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  price: z.number().optional(),
+  inStock: z.boolean().optional(),
+});
+
+export type ProductResult = z.infer<typeof ProductResult>;
+
+export const SearchResult = z.union([DocumentResult, UserResult, ProductResult]);
+
+export type SearchResult = z.infer<typeof SearchResult>;
+
+export const FlexibleData = z.union([z.string(), z.number(), z.boolean(), z.array(z.string()), z.object({
+  key: z.string().optional(),
+  value: z.string().optional(),
+})]);
+
+export type FlexibleData = z.infer<typeof FlexibleData>;
+
+// Path Functions
+export const paths = {
+  createContact: () => "/contacts",
+  searchItems: ({ query, filter }: { query: string, filter?: string }) => {
+    const params = new URLSearchParams()
+    params.set("query", String(query))
+    if (filter !== undefined) {
+      params.set("filter", String(filter))
+    }
+    const _searchParams = params.toString()
+    return \`/search\${_searchParams ? \`?\${_searchParams}\` : ""}\`
+  },
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  createContact: z.object({}),
+  searchItems: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  createContact: () => headerSchemas.createContact.parse({}),
+  searchItems: () => headerSchemas.searchItems.parse({}),
+} as const;
+
+// Generated Response Types
+
+export const SearchItemsResponse = z.array(SearchResult);
+
+export type SearchItemsResponse = z.infer<typeof SearchItemsResponse>;
+
+// Operation Types
+export type CreateContactOperation = OperationDefinition<
+  "post",
+  typeof paths.createContact,
+  typeof Contact,
+  typeof Contact,
+  undefined,
+  OperationErrors<{ badRequest: undefined }>
+>;
+
+export type SearchItemsOperation = OperationDefinition<
+  "get",
+  typeof paths.searchItems,
+  undefined,
+  z.ZodArray<typeof SearchResult>,
+  undefined,
+  OperationErrors
+>;
+
+// Operation Objects
+export const createContact: CreateContactOperation = {
+  method: "post",
+  path: paths.createContact,
+  request: Contact,
+  response: Contact,
+    errors: {
+      badRequest: undefined,
+    },
+} as const;
+
+export const searchItems: SearchItemsOperation = {
+  method: "get",
+  path: paths.searchItems,
+  response: z.array(SearchResult),
+} as const;
+"
+`;

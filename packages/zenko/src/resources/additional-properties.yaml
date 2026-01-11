@@ -14,26 +14,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MetadataInput'
+              $ref: "#/components/schemas/MetadataInput"
       responses:
-        '201':
+        "201":
           description: Metadata created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Metadata'
+                $ref: "#/components/schemas/Metadata"
 
   /config:
     get:
       operationId: getConfig
       summary: Get configuration with arbitrary properties
       responses:
-        '200':
+        "200":
           description: Configuration
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Config'
+                $ref: "#/components/schemas/Config"
 
     put:
       operationId: updateConfig
@@ -43,14 +43,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Config'
+              $ref: "#/components/schemas/Config"
       responses:
-        '200':
+        "200":
           description: Configuration updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Config'
+                $ref: "#/components/schemas/Config"
 
   /labels:
     post:
@@ -61,9 +61,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Labels'
+              $ref: "#/components/schemas/Labels"
       responses:
-        '201':
+        "201":
           description: Labels created
 
 components:

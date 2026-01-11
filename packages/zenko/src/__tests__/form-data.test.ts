@@ -227,7 +227,7 @@ describe("Form Data", () => {
   })
 })
 
-describe.skip("Form Data (skipped coverage)", () => {
+describe("Form Data (skipped coverage)", () => {
   const specPath = path.join(import.meta.dir, "../resources/form-data.yaml")
 
   test("generates complete TypeScript output", () => {

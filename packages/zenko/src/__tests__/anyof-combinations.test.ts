@@ -1,15 +1,14 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
-describe.skip("anyOf Combinations", () => {
+describe("anyOf Combinations", () => {
   test("generates complete TypeScript output", () => {
     const specContent = fs.readFileSync(
       "src/resources/anyof-combinations.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("anyof-combinations-complete-output")
@@ -20,7 +19,7 @@ describe.skip("anyOf Combinations", () => {
       "src/resources/anyof-combinations.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Should generate unions for anyOf
@@ -38,7 +37,7 @@ describe.skip("anyOf Combinations", () => {
       "src/resources/anyof-combinations.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Contact has anyOf with required constraints
@@ -56,7 +55,7 @@ describe.skip("anyOf Combinations", () => {
       "src/resources/anyof-combinations.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // SearchResult should have all three variants
@@ -77,7 +76,7 @@ describe.skip("anyOf Combinations", () => {
       "src/resources/anyof-combinations.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // FlexibleData has anyOf with string, number, boolean, array, object
@@ -92,13 +91,17 @@ describe.skip("anyOf Combinations", () => {
       "src/resources/anyof-combinations.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Variant schemas should come before the union schema
     const textFilterIndex = result.indexOf("export const TextFilter =")
-    const dateRangeFilterIndex = result.indexOf("export const DateRangeFilter =")
-    const numericRangeFilterIndex = result.indexOf("export const NumericRangeFilter =")
+    const dateRangeFilterIndex = result.indexOf(
+      "export const DateRangeFilter ="
+    )
+    const numericRangeFilterIndex = result.indexOf(
+      "export const NumericRangeFilter ="
+    )
     const searchFilterIndex = result.indexOf("export const SearchFilter =")
 
     expect(textFilterIndex).toBeLessThan(searchFilterIndex)
@@ -111,7 +114,7 @@ describe.skip("anyOf Combinations", () => {
       "src/resources/anyof-combinations.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Operations should use the anyOf union types
@@ -126,7 +129,7 @@ describe.skip("anyOf Combinations", () => {
       "src/resources/anyof-combinations.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // searchItems operation has a filter parameter with anyOf schema
@@ -139,7 +142,7 @@ describe.skip("anyOf Combinations", () => {
       "src/resources/anyof-combinations.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Filter types have a 'type' discriminator

@@ -1,15 +1,15 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
+import { parseYaml } from "../utils/yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
-describe.skip("Complex Composition", () => {
+describe("Complex Composition", () => {
   test("generates complete TypeScript output", () => {
     const specContent = fs.readFileSync(
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("complex-composition-complete-output")
@@ -20,7 +20,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // BaseEntity uses allOf with three refs + inline object
@@ -29,7 +29,8 @@ describe.skip("Complex Composition", () => {
     expect(result).toContain("export const Timestamped =")
     expect(result).toContain("export const Versioned =")
 
-    // Should use z.intersection() or z.and() to combine schemas
+    // Should merge object schemas for discriminated unions
+    expect(result).toContain("Identifiable.merge(")
   })
 
   test("handles oneOf with allOf variants", () => {
@@ -37,7 +38,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Entity is oneOf with three variants, each using allOf
@@ -55,7 +56,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Entity has discriminator on 'type' property
@@ -63,6 +64,10 @@ describe.skip("Complex Composition", () => {
     expect(result).toContain('z.literal("user")')
     expect(result).toContain('z.literal("organization")')
     expect(result).toContain('z.literal("project")')
+
+    expect(result).not.toContain('type: z.literal("user").optional()')
+    expect(result).not.toContain('type: z.literal("organization").optional()')
+    expect(result).not.toContain('type: z.literal("project").optional()')
 
     // Should use z.discriminatedUnion("type", [...])
     expect(result).toContain("z.discriminatedUnion(")
@@ -73,7 +78,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Resource uses allOf with anyOf for metadata
@@ -90,7 +95,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // ConfigurableItem has allOf with oneOf inside
@@ -106,7 +111,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // ComplexValidation has oneOf with allOf inside
@@ -120,7 +125,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // NotEmptyString uses 'not' to exclude empty strings
@@ -128,6 +133,7 @@ describe.skip("Complex Composition", () => {
 
     // Should generate validation that excludes empty strings
     // Could use z.string().min(1) or custom refinement
+    expect(result).toMatch(/\.refine\(|\.min\(1\)/)
   })
 
   test("handles anyOf with mixed types", () => {
@@ -135,7 +141,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // FlexibleValue has anyOf with string, number, and object
@@ -149,13 +155,14 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // HierarchicalData references itself in children
     expect(result).toContain("export const HierarchicalData =")
 
     // Should handle circular references with z.lazy()
+    expect(result).toContain("z.lazy(() => HierarchicalData)")
   })
 
   test("handles null in anyOf", () => {
@@ -163,7 +170,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // HierarchicalData.parent is anyOf with null
@@ -178,7 +185,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // ContentBlock has blockType discriminator
@@ -196,7 +203,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // ExtendedMetadata extends SimpleMetadata using allOf
@@ -206,12 +213,56 @@ describe.skip("Complex Composition", () => {
     // Should properly combine both schemas
   })
 
+  test("does not emit z.literal for non-primitive const", () => {
+    const specContent = `openapi: 3.0.0
+info:
+  title: Const Object Test
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    ConstObject:
+      type: object
+      const:
+        foo: bar
+      properties:
+        foo:
+          type: string
+`
+    const specYaml = parseYaml(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    expect(result).toContain("export const ConstObject = z.object({")
+    expect(result).not.toContain("z.literal({")
+  })
+
+  test("treats single-value enums as optional", () => {
+    const specContent = `openapi: 3.0.0
+info:
+  title: Single Enum Property
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    SingleEnum:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum: ["only"]
+`
+    const specYaml = parseYaml(specContent) as OpenAPISpec
+    const result = generate(specYaml)
+
+    expect(result).toContain('kind: z.literal("only").optional()')
+  })
+
   test("maintains correct schema dependency order", () => {
     const specContent = fs.readFileSync(
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Base schemas should come before composed schemas
@@ -234,7 +285,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // All schemas should be present
@@ -276,7 +327,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     expect(result).toContain("export const createEntity:")
@@ -289,7 +340,7 @@ describe.skip("Complex Composition", () => {
       "src/resources/complex-composition.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // CodeBlock has lineNumbers with default: true

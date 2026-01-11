@@ -14,14 +14,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Entity'
+              $ref: "#/components/schemas/Entity"
       responses:
-        '201':
+        "201":
           description: Entity created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Entity'
+                $ref: "#/components/schemas/Entity"
 
   /resources/{resourceId}:
     get:
@@ -33,12 +33,12 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Resource details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Resource'
+                $ref: "#/components/schemas/Resource"
 
   /validate:
     post:
@@ -49,9 +49,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ComplexValidation'
+              $ref: "#/components/schemas/ComplexValidation"
       responses:
-        '200':
+        "200":
           description: Validation result
           content:
             application/json:
@@ -98,9 +98,9 @@ components:
     # allOf with multiple schemas
     BaseEntity:
       allOf:
-        - $ref: '#/components/schemas/Identifiable'
-        - $ref: '#/components/schemas/Timestamped'
-        - $ref: '#/components/schemas/Versioned'
+        - $ref: "#/components/schemas/Identifiable"
+        - $ref: "#/components/schemas/Timestamped"
+        - $ref: "#/components/schemas/Versioned"
         - type: object
           required:
             - type
@@ -114,19 +114,19 @@ components:
     # oneOf with allOf combinations
     Entity:
       oneOf:
-        - $ref: '#/components/schemas/UserEntity'
-        - $ref: '#/components/schemas/OrganizationEntity'
-        - $ref: '#/components/schemas/ProjectEntity'
+        - $ref: "#/components/schemas/UserEntity"
+        - $ref: "#/components/schemas/OrganizationEntity"
+        - $ref: "#/components/schemas/ProjectEntity"
       discriminator:
         propertyName: type
         mapping:
-          user: '#/components/schemas/UserEntity'
-          organization: '#/components/schemas/OrganizationEntity'
-          project: '#/components/schemas/ProjectEntity'
+          user: "#/components/schemas/UserEntity"
+          organization: "#/components/schemas/OrganizationEntity"
+          project: "#/components/schemas/ProjectEntity"
 
     UserEntity:
       allOf:
-        - $ref: '#/components/schemas/BaseEntity'
+        - $ref: "#/components/schemas/BaseEntity"
         - type: object
           required:
             - username
@@ -146,7 +146,7 @@ components:
 
     OrganizationEntity:
       allOf:
-        - $ref: '#/components/schemas/BaseEntity'
+        - $ref: "#/components/schemas/BaseEntity"
         - type: object
           required:
             - name
@@ -165,7 +165,7 @@ components:
 
     ProjectEntity:
       allOf:
-        - $ref: '#/components/schemas/BaseEntity'
+        - $ref: "#/components/schemas/BaseEntity"
         - type: object
           required:
             - name
@@ -186,15 +186,15 @@ components:
     # anyOf with allOf
     Resource:
       allOf:
-        - $ref: '#/components/schemas/Identifiable'
+        - $ref: "#/components/schemas/Identifiable"
         - type: object
           properties:
             name:
               type: string
             metadata:
               anyOf:
-                - $ref: '#/components/schemas/SimpleMetadata'
-                - $ref: '#/components/schemas/ExtendedMetadata'
+                - $ref: "#/components/schemas/SimpleMetadata"
+                - $ref: "#/components/schemas/ExtendedMetadata"
 
     SimpleMetadata:
       type: object
@@ -208,7 +208,7 @@ components:
 
     ExtendedMetadata:
       allOf:
-        - $ref: '#/components/schemas/SimpleMetadata'
+        - $ref: "#/components/schemas/SimpleMetadata"
         - type: object
           properties:
             customFields:
@@ -227,7 +227,7 @@ components:
         data:
           oneOf:
             - allOf:
-                - $ref: '#/components/schemas/Identifiable'
+                - $ref: "#/components/schemas/Identifiable"
                 - type: object
                   properties:
                     dataType:
@@ -259,8 +259,8 @@ components:
           properties:
             config:
               oneOf:
-                - $ref: '#/components/schemas/BasicConfig'
-                - $ref: '#/components/schemas/AdvancedConfig'
+                - $ref: "#/components/schemas/BasicConfig"
+                - $ref: "#/components/schemas/AdvancedConfig"
 
     BasicConfig:
       type: object
@@ -322,24 +322,24 @@ components:
     # Deeply nested composition
     HierarchicalData:
       allOf:
-        - $ref: '#/components/schemas/Identifiable'
+        - $ref: "#/components/schemas/Identifiable"
         - type: object
           properties:
             parent:
               anyOf:
                 - type: "null"
-                - $ref: '#/components/schemas/Identifiable'
+                - $ref: "#/components/schemas/Identifiable"
             children:
               type: array
               items:
-                $ref: '#/components/schemas/HierarchicalData'
+                $ref: "#/components/schemas/HierarchicalData"
 
     # Multiple discriminators
     ContentBlock:
       oneOf:
-        - $ref: '#/components/schemas/TextBlock'
-        - $ref: '#/components/schemas/ImageBlock'
-        - $ref: '#/components/schemas/CodeBlock'
+        - $ref: "#/components/schemas/TextBlock"
+        - $ref: "#/components/schemas/ImageBlock"
+        - $ref: "#/components/schemas/CodeBlock"
       discriminator:
         propertyName: blockType
 
@@ -357,8 +357,8 @@ components:
               type: string
             formatting:
               anyOf:
-                - $ref: '#/components/schemas/PlainFormat'
-                - $ref: '#/components/schemas/RichFormat'
+                - $ref: "#/components/schemas/PlainFormat"
+                - $ref: "#/components/schemas/RichFormat"
 
     ImageBlock:
       type: object

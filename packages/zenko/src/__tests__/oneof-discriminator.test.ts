@@ -1,15 +1,14 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
-describe.skip("oneOf with Discriminator", () => {
+describe("oneOf with Discriminator", () => {
   test("generates complete TypeScript output", () => {
     const specContent = fs.readFileSync(
       "src/resources/oneof-discriminator.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("oneof-discriminator-complete-output")
@@ -20,7 +19,7 @@ describe.skip("oneOf with Discriminator", () => {
       "src/resources/oneof-discriminator.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Should generate a discriminated union using Zod's discriminatedUnion
@@ -36,7 +35,7 @@ describe.skip("oneOf with Discriminator", () => {
       "src/resources/oneof-discriminator.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // All payment types should be generated
@@ -57,7 +56,7 @@ describe.skip("oneOf with Discriminator", () => {
       "src/resources/oneof-discriminator.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Should use z.literal() or z.enum() for discriminator values
@@ -76,7 +75,7 @@ describe.skip("oneOf with Discriminator", () => {
       "src/resources/oneof-discriminator.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Should generate all vehicle types
@@ -94,7 +93,7 @@ describe.skip("oneOf with Discriminator", () => {
       "src/resources/oneof-discriminator.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Operations should use the discriminated union types
@@ -105,20 +104,124 @@ describe.skip("oneOf with Discriminator", () => {
   })
 
   test("handles discriminator mapping correctly", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/oneof-discriminator.yaml",
-      "utf8"
-    )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = {
+      openapi: "3.0.0",
+      info: {
+        title: "Discriminator Mapping Test",
+        version: "1.0.0",
+      },
+      paths: {},
+      components: {
+        schemas: {
+          Payment: {
+            oneOf: [
+              { $ref: "#/components/schemas/Foo" },
+              { $ref: "#/components/schemas/Bar" },
+            ],
+            discriminator: {
+              propertyName: "paymentType",
+              mapping: {
+                foo_kind: "#/components/schemas/Foo",
+                foo_alias: "#/components/schemas/Foo",
+                bar_kind: "#/components/schemas/Bar",
+                extra_kind: "#/components/schemas/Extra",
+              },
+            },
+          },
+          Foo: {
+            type: "object",
+            properties: {
+              paymentType: {
+                type: "string",
+                enum: ["foo"],
+              },
+              fooValue: {
+                type: "string",
+              },
+            },
+            required: ["paymentType", "fooValue"],
+          },
+          Bar: {
+            type: "object",
+            properties: {
+              paymentType: {
+                type: "string",
+                enum: ["bar"],
+              },
+              barValue: {
+                type: "string",
+              },
+            },
+            required: ["paymentType", "barValue"],
+          },
+          Extra: {
+            type: "object",
+            properties: {
+              paymentType: {
+                type: "string",
+                enum: ["extra"],
+              },
+              extraValue: {
+                type: "string",
+              },
+            },
+            required: ["paymentType", "extraValue"],
+          },
+        },
+      },
+    } as OpenAPISpec
     const result = generate(specYaml)
 
-    // The discriminator mapping should map string values to schemas
-    // For example: credit_card -> CreditCardPayment
-    // This is critical for proper type narrowing in TypeScript
+    expect(result).toContain('z.literal("foo_kind")')
+    expect(result).toContain('z.literal("foo_alias")')
+    expect(result).toContain('z.literal("extra_kind")')
+    expect(result.match(/Foo\.merge/g)?.length).toBe(3)
+    expect(result).toContain("Extra.merge")
+  })
 
-    // Payment union should properly reference all variants
-    const paymentIndex = result.indexOf("export const Payment =")
-    expect(paymentIndex).toBeGreaterThan(-1)
+  test("falls back to union when discriminator values are missing", () => {
+    const specYaml = {
+      openapi: "3.0.0",
+      info: {
+        title: "Discriminator Fallback Test",
+        version: "1.0.0",
+      },
+      paths: {},
+      components: {
+        schemas: {
+          Payment: {
+            oneOf: [
+              { $ref: "#/components/schemas/Known" },
+              { $ref: "#/components/schemas/Unknown" },
+            ],
+            discriminator: {
+              propertyName: "paymentType",
+            },
+          },
+          Known: {
+            type: "object",
+            properties: {
+              paymentType: {
+                type: "string",
+                enum: ["known"],
+              },
+            },
+          },
+          Unknown: {
+            type: "object",
+            properties: {
+              amount: {
+                type: "number",
+              },
+            },
+          },
+        },
+      },
+    } as OpenAPISpec
+    const result = generate(specYaml)
+
+    expect(result).toContain("z.union([")
+    expect(result).not.toContain("z.discriminatedUnion(")
   })
 
   test("maintains schema dependency order with oneOf", () => {
@@ -126,12 +229,14 @@ describe.skip("oneOf with Discriminator", () => {
       "src/resources/oneof-discriminator.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = Bun.YAML.parse(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Variant schemas should come before the union schema
     const creditCardIndex = result.indexOf("export const CreditCardPayment =")
-    const bankTransferIndex = result.indexOf("export const BankTransferPayment =")
+    const bankTransferIndex = result.indexOf(
+      "export const BankTransferPayment ="
+    )
     const cryptoIndex = result.indexOf("export const CryptoPayment =")
     const paymentIndex = result.indexOf("export const Payment =")
 

@@ -14,20 +14,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Payment'
+              $ref: "#/components/schemas/Payment"
       responses:
-        '201':
+        "201":
           description: Payment created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Payment'
-        '400':
+                $ref: "#/components/schemas/Payment"
+        "400":
           description: Invalid payment data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /vehicles/{vehicleId}:
     get:
@@ -40,33 +40,33 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Vehicle details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Vehicle'
-        '404':
+                $ref: "#/components/schemas/Vehicle"
+        "404":
           description: Vehicle not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
 components:
   schemas:
     # Polymorphic Payment with discriminator
     Payment:
       oneOf:
-        - $ref: '#/components/schemas/CreditCardPayment'
-        - $ref: '#/components/schemas/BankTransferPayment'
-        - $ref: '#/components/schemas/CryptoPayment'
+        - $ref: "#/components/schemas/CreditCardPayment"
+        - $ref: "#/components/schemas/BankTransferPayment"
+        - $ref: "#/components/schemas/CryptoPayment"
       discriminator:
         propertyName: paymentType
         mapping:
-          credit_card: '#/components/schemas/CreditCardPayment'
-          bank_transfer: '#/components/schemas/BankTransferPayment'
-          crypto: '#/components/schemas/CryptoPayment'
+          credit_card: "#/components/schemas/CreditCardPayment"
+          bank_transfer: "#/components/schemas/BankTransferPayment"
+          crypto: "#/components/schemas/CryptoPayment"
 
     CreditCardPayment:
       type: object
@@ -120,7 +120,7 @@ components:
           enum: [crypto]
         walletAddress:
           type: string
-          pattern: '^0x[a-fA-F0-9]{40}$'
+          pattern: "^0x[a-fA-F0-9]{40}$"
         cryptocurrency:
           type: string
           enum: [BTC, ETH, USDT, SOL]
@@ -130,9 +130,9 @@ components:
     # Polymorphic Vehicle without explicit discriminator mapping
     Vehicle:
       oneOf:
-        - $ref: '#/components/schemas/Car'
-        - $ref: '#/components/schemas/Motorcycle'
-        - $ref: '#/components/schemas/Truck'
+        - $ref: "#/components/schemas/Car"
+        - $ref: "#/components/schemas/Motorcycle"
+        - $ref: "#/components/schemas/Truck"
       discriminator:
         propertyName: vehicleType
 

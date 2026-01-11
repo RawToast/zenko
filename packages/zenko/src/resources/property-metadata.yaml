@@ -14,14 +14,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserInput'
+              $ref: "#/components/schemas/UserInput"
       responses:
-        '201':
+        "201":
           description: User created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
 
   /users/{userId}:
     get:
@@ -34,12 +34,12 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: User details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
 
     put:
       operationId: updateUser
@@ -55,25 +55,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserUpdate'
+              $ref: "#/components/schemas/UserUpdate"
       responses:
-        '200':
+        "200":
           description: User updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: "#/components/schemas/User"
 
   /settings:
     get:
       operationId: getSettings
       responses:
-        '200':
+        "200":
           description: Application settings
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Settings'
+                $ref: "#/components/schemas/Settings"
 
     put:
       operationId: updateSettings
@@ -82,14 +82,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SettingsUpdate'
+              $ref: "#/components/schemas/SettingsUpdate"
       responses:
-        '200':
+        "200":
           description: Settings updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Settings'
+                $ref: "#/components/schemas/Settings"
 
 components:
   schemas:

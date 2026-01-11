@@ -1,0 +1,279 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Complex Composition generates complete TypeScript output: complex-composition-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const Timestamped = z.object({
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export type Timestamped = z.infer<typeof Timestamped>;
+
+export const Identifiable = z.object({
+  id: z.string().uuid(),
+});
+
+export type Identifiable = z.infer<typeof Identifiable>;
+
+export const Versioned = z.object({
+  version: z.number().int(),
+});
+
+export type Versioned = z.infer<typeof Versioned>;
+
+export const BaseEntity = Identifiable.merge(Timestamped).merge(Versioned).merge(z.object({
+  type: z.string(),
+  status: z.enum(["active", "inactive", "archived"]).optional(),
+}));
+
+export type BaseEntity = z.infer<typeof BaseEntity>;
+
+export const UserEntity = BaseEntity.merge(z.object({
+  type: z.literal("user"),
+  username: z.string(),
+  email: z.string().email(),
+  role: z.enum(["admin", "user", "guest"]).optional(),
+}));
+
+export type UserEntity = z.infer<typeof UserEntity>;
+
+export const OrganizationEntity = BaseEntity.merge(z.object({
+  type: z.literal("organization"),
+  name: z.string(),
+  domain: z.string(),
+  memberCount: z.number().int().optional(),
+}));
+
+export type OrganizationEntity = z.infer<typeof OrganizationEntity>;
+
+export const ProjectEntity = BaseEntity.merge(z.object({
+  type: z.literal("project"),
+  name: z.string(),
+  owner: z.string().uuid(),
+  visibility: z.enum(["public", "private", "internal"]).optional(),
+}));
+
+export type ProjectEntity = z.infer<typeof ProjectEntity>;
+
+export const Entity = z.discriminatedUnion("type", [UserEntity.merge(z.object({
+  type: z.literal("user"),
+})), OrganizationEntity.merge(z.object({
+  type: z.literal("organization"),
+})), ProjectEntity.merge(z.object({
+  type: z.literal("project"),
+}))]);
+
+export type Entity = z.infer<typeof Entity>;
+
+export const SimpleMetadata = z.object({
+  tags: z.array(z.string()).optional(),
+  category: z.string().optional(),
+});
+
+export type SimpleMetadata = z.infer<typeof SimpleMetadata>;
+
+export const ExtendedMetadata = SimpleMetadata.merge(z.object({
+  customFields: z.object({}).catchall(z.string()).optional(),
+  priority: z.number().int().optional(),
+}));
+
+export type ExtendedMetadata = z.infer<typeof ExtendedMetadata>;
+
+export const Resource = Identifiable.merge(z.object({
+  name: z.string().optional(),
+  metadata: z.union([SimpleMetadata, ExtendedMetadata]).optional(),
+}));
+
+export type Resource = z.infer<typeof Resource>;
+
+export const ComplexValidation = z.object({
+  data: z.union([Identifiable.merge(z.object({
+  dataType: z.literal("structured").optional(),
+  fields: z.object({}).optional(),
+})), z.object({
+  dataType: z.literal("unstructured").optional(),
+  content: z.string().optional(),
+})]).optional(),
+});
+
+export type ComplexValidation = z.infer<typeof ComplexValidation>;
+
+export const BasicConfig = z.object({
+  configType: z.literal("basic"),
+  value: z.string().optional(),
+});
+
+export type BasicConfig = z.infer<typeof BasicConfig>;
+
+export const AdvancedConfig = z.object({
+  configType: z.literal("advanced"),
+  settings: z.object({
+  timeout: z.number().int().optional(),
+  retries: z.number().int().optional(),
+  options: z.array(z.string()).optional(),
+}).optional(),
+});
+
+export type AdvancedConfig = z.infer<typeof AdvancedConfig>;
+
+export const ConfigurableItem = z.object({
+  name: z.string(),
+  enabled: z.boolean().optional(),
+}).merge(z.object({
+  config: z.union([BasicConfig, AdvancedConfig]).optional(),
+}));
+
+export type ConfigurableItem = z.infer<typeof ConfigurableItem>;
+
+export const NotEmptyString = z.string().and(z.any().refine((value) => typeof value !== "string" || value.length > 0, { message: "Value must not be empty" }));
+
+export type NotEmptyString = z.infer<typeof NotEmptyString>;
+
+export const FlexibleValue = z.union([z.string(), z.number(), z.object({
+  key: z.string(),
+  value: z.string(),
+})]);
+
+export type FlexibleValue = z.infer<typeof FlexibleValue>;
+
+export const HierarchicalData = Identifiable.merge(z.object({
+  parent: z.union([z.null(), Identifiable]).optional(),
+  children: z.array(z.lazy(() => HierarchicalData)).optional(),
+}));
+
+export type HierarchicalData = z.infer<typeof HierarchicalData>;
+
+export const PlainFormat = z.object({
+  formatType: z.literal("plain").optional(),
+});
+
+export type PlainFormat = z.infer<typeof PlainFormat>;
+
+export const RichFormat = z.object({
+  formatType: z.literal("rich").optional(),
+  bold: z.boolean().optional(),
+  italic: z.boolean().optional(),
+  underline: z.boolean().optional(),
+});
+
+export type RichFormat = z.infer<typeof RichFormat>;
+
+export const TextBlock = z.object({
+  blockType: z.literal("text"),
+  content: z.string(),
+  formatting: z.union([PlainFormat, RichFormat]).optional(),
+});
+
+export type TextBlock = z.infer<typeof TextBlock>;
+
+export const ImageBlock = z.object({
+  blockType: z.literal("image"),
+  url: z.string().url(),
+  alt: z.string().optional(),
+  caption: z.string().optional(),
+});
+
+export type ImageBlock = z.infer<typeof ImageBlock>;
+
+export const CodeBlock = z.object({
+  blockType: z.literal("code"),
+  code: z.string(),
+  language: z.string(),
+  lineNumbers: z.boolean().optional().default(true),
+});
+
+export type CodeBlock = z.infer<typeof CodeBlock>;
+
+export const ContentBlock = z.discriminatedUnion("blockType", [TextBlock.merge(z.object({
+  blockType: z.literal("text"),
+})), ImageBlock.merge(z.object({
+  blockType: z.literal("image"),
+})), CodeBlock.merge(z.object({
+  blockType: z.literal("code"),
+}))]);
+
+export type ContentBlock = z.infer<typeof ContentBlock>;
+
+// Path Functions
+export const paths = {
+  createEntity: () => "/entities",
+  getResource: ({ resourceId }: { resourceId: string }) => \`/resources/\${resourceId}\`,
+  validateData: () => "/validate",
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  createEntity: z.object({}),
+  getResource: z.object({}),
+  validateData: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  createEntity: () => headerSchemas.createEntity.parse({}),
+  getResource: () => headerSchemas.getResource.parse({}),
+  validateData: () => headerSchemas.validateData.parse({}),
+} as const;
+
+// Generated Response Types
+
+export const ValidateDataResponse = z.object({
+  valid: z.boolean().optional(),
+});
+
+export type ValidateDataResponse = z.infer<typeof ValidateDataResponse>;
+
+// Operation Types
+export type CreateEntityOperation = OperationDefinition<
+  "post",
+  typeof paths.createEntity,
+  typeof Entity,
+  typeof Entity,
+  undefined,
+  OperationErrors
+>;
+
+export type GetResourceOperation = OperationDefinition<
+  "get",
+  typeof paths.getResource,
+  undefined,
+  typeof Resource,
+  undefined,
+  OperationErrors
+>;
+
+export type ValidateDataOperation = OperationDefinition<
+  "post",
+  typeof paths.validateData,
+  typeof ComplexValidation,
+  typeof ValidateDataResponse,
+  undefined,
+  OperationErrors
+>;
+
+// Operation Objects
+export const createEntity: CreateEntityOperation = {
+  method: "post",
+  path: paths.createEntity,
+  request: Entity,
+  response: Entity,
+} as const;
+
+export const getResource: GetResourceOperation = {
+  method: "get",
+  path: paths.getResource,
+  response: Resource,
+} as const;
+
+export const validateData: ValidateDataOperation = {
+  method: "post",
+  path: paths.validateData,
+  request: ComplexValidation,
+  response: ValidateDataResponse,
+} as const;
+"
+`;

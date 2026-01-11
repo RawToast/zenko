@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
-import jsYaml from "js-yaml"
+import { parseYaml } from "../utils/yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
 describe.skip("Non-JSON Responses", () => {
@@ -9,7 +9,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("non-json-responses-complete-output")
@@ -20,7 +20,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // exportUsersCsv returns text/csv
@@ -35,7 +35,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // exportDataXml returns application/xml
@@ -50,7 +50,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // downloadFile returns application/octet-stream
@@ -65,7 +65,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // getDocumentPdf returns application/pdf
@@ -79,7 +79,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // getImage can return image/png, image/jpeg, or image/webp
@@ -94,7 +94,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // getLogs and getHealthText return text/plain
@@ -109,7 +109,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // streamEvents returns text/event-stream
@@ -123,7 +123,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // getReport can return JSON, XML, CSV, or HTML
@@ -139,7 +139,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // downloadArchive returns application/zip
@@ -153,7 +153,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // getMarkdownDoc returns text/markdown
@@ -167,7 +167,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // getRssFeed can return RSS or Atom XML
@@ -181,7 +181,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // downloadFile has Content-Disposition and Content-Length headers
@@ -195,7 +195,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // getHealthText returns enum [OK, DEGRADED]
@@ -209,8 +209,8 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
-    const result = generate(specYaml)
+    const specYaml = parseYaml(specContent) as OpenAPISpec
+    generate(specYaml)
 
     // Several endpoints use format: binary
     // Should properly handle binary format in schemas
@@ -221,8 +221,8 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
-    const result = generate(specYaml)
+    const specYaml = parseYaml(specContent) as OpenAPISpec
+    generate(specYaml)
 
     // exportDataXml schema has xml metadata (name, wrapped)
     // These could be used to generate XML-specific types or ignored
@@ -233,7 +233,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     const operations = [
@@ -261,7 +261,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // Report schema should be generated
@@ -274,7 +274,7 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
+    const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
     // exportUsersCsv has format query param
@@ -291,8 +291,8 @@ describe.skip("Non-JSON Responses", () => {
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = jsYaml.load(specContent) as OpenAPISpec
-    const result = generate(specYaml)
+    const specYaml = parseYaml(specContent) as OpenAPISpec
+    generate(specYaml)
 
     // For content types that can't be properly typed in Zod
     // Should fall back to z.string() or z.unknown()

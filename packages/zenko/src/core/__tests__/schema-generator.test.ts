@@ -375,11 +375,44 @@ describe("getZodTypeFromSchema", () => {
     )
   })
 
+  test("should use z.lazy for mutual recursion", () => {
+    const schemaRegistry = {
+      A: {
+        type: "object",
+        properties: { b: { $ref: "#/components/schemas/B" } },
+      },
+      B: {
+        type: "object",
+        properties: { a: { $ref: "#/components/schemas/A" } },
+      },
+    }
+    const schema = { $ref: "#/components/schemas/B" }
+    const result = getZodTypeFromSchema(
+      schema,
+      defaultOptions,
+      undefined,
+      schemaRegistry,
+      "A"
+    )
+    expect(result).toBe("z.lazy(() => B)")
+  })
+
   test("should handle enum", () => {
     const schema = { enum: ["red", "green", "blue"] }
     expect(getZodTypeFromSchema(schema, defaultOptions)).toBe(
       'z.enum(["red", "green", "blue"])'
     )
+  })
+
+  test("should preserve base constraints with not", () => {
+    const schema = {
+      type: "string",
+      format: "email",
+      not: { type: "string", maxLength: 0 },
+    }
+    const result = getZodTypeFromSchema(schema, defaultOptions)
+    expect(result).toContain(".email()")
+    expect(result).toContain(".refine(")
   })
 
   test("should handle allOf with single schema", () => {
@@ -395,7 +428,20 @@ describe("getZodTypeFromSchema", () => {
       ],
     }
     const result = getZodTypeFromSchema(schema, defaultOptions)
-    expect(result).toContain(".and(")
+    expect(result).toContain(".merge(")
+  })
+
+  test("should include sibling properties with allOf", () => {
+    const schema = {
+      allOf: [{ type: "object", properties: { a: { type: "string" } } }],
+      type: "object",
+      properties: { b: { type: "number" } },
+      required: ["b"],
+    }
+    const result = getZodTypeFromSchema(schema, defaultOptions)
+    expect(result).toContain("a")
+    expect(result).toContain("b")
+    expect(result).toContain(".merge(")
   })
 
   test("should handle empty allOf", () => {
@@ -552,7 +598,7 @@ describe("generateZodSchema", () => {
       defaultOptions
     )
     expect(result).toContain("export const Combined =")
-    expect(result).toContain(".and(")
+    expect(result).toContain(".merge(")
   })
 
   test("should generate empty allOf", () => {

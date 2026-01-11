@@ -14,15 +14,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Contact'
+              $ref: "#/components/schemas/Contact"
       responses:
-        '201':
+        "201":
           description: Contact created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Contact'
-        '400':
+                $ref: "#/components/schemas/Contact"
+        "400":
           description: Invalid contact data
 
   /search:
@@ -38,16 +38,16 @@ paths:
         - name: filter
           in: query
           schema:
-            $ref: '#/components/schemas/SearchFilter'
+            $ref: "#/components/schemas/SearchFilter"
       responses:
-        '200':
+        "200":
           description: Search results
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SearchResult'
+                  $ref: "#/components/schemas/SearchResult"
 
 components:
   schemas:
@@ -74,9 +74,9 @@ components:
     # SearchFilter accepts different filter types
     SearchFilter:
       anyOf:
-        - $ref: '#/components/schemas/TextFilter'
-        - $ref: '#/components/schemas/DateRangeFilter'
-        - $ref: '#/components/schemas/NumericRangeFilter'
+        - $ref: "#/components/schemas/TextFilter"
+        - $ref: "#/components/schemas/DateRangeFilter"
+        - $ref: "#/components/schemas/NumericRangeFilter"
       description: Flexible search filter that can be text, date range, or numeric range
 
     TextFilter:
@@ -127,9 +127,9 @@ components:
     # SearchResult can be various types of items
     SearchResult:
       anyOf:
-        - $ref: '#/components/schemas/DocumentResult'
-        - $ref: '#/components/schemas/UserResult'
-        - $ref: '#/components/schemas/ProductResult'
+        - $ref: "#/components/schemas/DocumentResult"
+        - $ref: "#/components/schemas/UserResult"
+        - $ref: "#/components/schemas/ProductResult"
 
     DocumentResult:
       type: object
