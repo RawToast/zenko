@@ -1,0 +1,331 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Non-JSON Responses generates complete TypeScript output: non-json-responses-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const Report = z.object({
+  id: z.string(),
+  title: z.string(),
+  generatedAt: z.string().optional(),
+  data: z.array(z.object({
+  metric: z.string().optional(),
+  value: z.number().optional(),
+})),
+});
+
+export type Report = z.infer<typeof Report>;
+
+// Path Functions
+export const paths = {
+  exportUsersCsv: ({ format }: { format?: string } = {}) => {
+    const params = new URLSearchParams()
+    if (format !== undefined) {
+      params.set("format", String(format))
+    }
+    const _searchParams = params.toString()
+    return \`/export/users\${_searchParams ? \`?\${_searchParams}\` : ""}\`
+  },
+  exportDataXml: () => "/export/data",
+  downloadFile: ({ fileId }: { fileId: string }) => \`/download/\${fileId}\`,
+  getDocumentPdf: ({ documentId }: { documentId: string }) => \`/documents/\${documentId}/pdf\`,
+  getImage: ({ imageId, size }: { imageId: string, size?: string }) => {
+    const params = new URLSearchParams()
+    if (size !== undefined) {
+      params.set("size", String(size))
+    }
+    const _searchParams = params.toString()
+    return \`/images/\${imageId}\${_searchParams ? \`?\${_searchParams}\` : ""}\`
+  },
+  getLogs: ({ lines, level }: { lines?: number, level?: string } = {}) => {
+    const params = new URLSearchParams()
+    if (lines !== undefined) {
+      params.set("lines", String(lines))
+    }
+    if (level !== undefined) {
+      params.set("level", String(level))
+    }
+    const _searchParams = params.toString()
+    return \`/logs\${_searchParams ? \`?\${_searchParams}\` : ""}\`
+  },
+  streamEvents: () => "/stream/events",
+  getReport: ({ reportId, format }: { reportId: string, format?: string }) => {
+    const params = new URLSearchParams()
+    if (format !== undefined) {
+      params.set("format", String(format))
+    }
+    const _searchParams = params.toString()
+    return \`/reports/\${reportId}\${_searchParams ? \`?\${_searchParams}\` : ""}\`
+  },
+  getHealthText: () => "/api/health",
+  downloadArchive: ({ archiveId }: { archiveId: string }) => \`/download/zip/\${archiveId}\`,
+  getMarkdownDoc: ({ docId }: { docId: string }) => \`/markdown/\${docId}\`,
+  getRssFeed: () => "/feed",
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  exportUsersCsv: z.object({}),
+  exportDataXml: z.object({}),
+  downloadFile: z.object({}),
+  getDocumentPdf: z.object({}),
+  getImage: z.object({}),
+  getLogs: z.object({}),
+  streamEvents: z.object({}),
+  getReport: z.object({}),
+  getHealthText: z.object({}),
+  downloadArchive: z.object({}),
+  getMarkdownDoc: z.object({}),
+  getRssFeed: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  exportUsersCsv: () => headerSchemas.exportUsersCsv.parse({}),
+  exportDataXml: () => headerSchemas.exportDataXml.parse({}),
+  downloadFile: () => headerSchemas.downloadFile.parse({}),
+  getDocumentPdf: () => headerSchemas.getDocumentPdf.parse({}),
+  getImage: () => headerSchemas.getImage.parse({}),
+  getLogs: () => headerSchemas.getLogs.parse({}),
+  streamEvents: () => headerSchemas.streamEvents.parse({}),
+  getReport: () => headerSchemas.getReport.parse({}),
+  getHealthText: () => headerSchemas.getHealthText.parse({}),
+  downloadArchive: () => headerSchemas.downloadArchive.parse({}),
+  getMarkdownDoc: () => headerSchemas.getMarkdownDoc.parse({}),
+  getRssFeed: () => headerSchemas.getRssFeed.parse({}),
+} as const;
+
+// Generated Response Types
+
+export const ExportUsersCsvResponse = z.string();
+
+export type ExportUsersCsvResponse = z.infer<typeof ExportUsersCsvResponse>;
+
+export const ExportDataXmlResponse = z.string();
+
+export type ExportDataXmlResponse = z.infer<typeof ExportDataXmlResponse>;
+
+export const DownloadFileResponse = (typeof Blob === "undefined" ? z.unknown() : z.instanceof(Blob));
+
+export type DownloadFileResponse = z.infer<typeof DownloadFileResponse>;
+
+export const GetDocumentPdfResponse = (typeof Blob === "undefined" ? z.unknown() : z.instanceof(Blob));
+
+export type GetDocumentPdfResponse = z.infer<typeof GetDocumentPdfResponse>;
+
+export const GetImageResponse = (typeof Blob === "undefined" ? z.unknown() : z.instanceof(Blob));
+
+export type GetImageResponse = z.infer<typeof GetImageResponse>;
+
+export const GetLogsResponse = z.string();
+
+export type GetLogsResponse = z.infer<typeof GetLogsResponse>;
+
+export const StreamEventsResponse = z.string();
+
+export type StreamEventsResponse = z.infer<typeof StreamEventsResponse>;
+
+export const GetHealthTextResponse = z.enum(["OK", "DEGRADED"]);
+
+export type GetHealthTextResponse = z.infer<typeof GetHealthTextResponse>;
+
+export const DownloadArchiveResponse = (typeof Blob === "undefined" ? z.unknown() : z.instanceof(Blob));
+
+export type DownloadArchiveResponse = z.infer<typeof DownloadArchiveResponse>;
+
+export const GetMarkdownDocResponse = z.string();
+
+export type GetMarkdownDocResponse = z.infer<typeof GetMarkdownDocResponse>;
+
+export const GetRssFeedResponse = z.string();
+
+export type GetRssFeedResponse = z.infer<typeof GetRssFeedResponse>;
+
+// Operation Types
+export type ExportUsersCsvOperation = OperationDefinition<
+  "get",
+  typeof paths.exportUsersCsv,
+  undefined,
+  typeof ExportUsersCsvResponse,
+  undefined,
+  OperationErrors
+>;
+
+export type ExportDataXmlOperation = OperationDefinition<
+  "get",
+  typeof paths.exportDataXml,
+  undefined,
+  typeof ExportDataXmlResponse,
+  undefined,
+  OperationErrors
+>;
+
+export type DownloadFileOperation = OperationDefinition<
+  "get",
+  typeof paths.downloadFile,
+  undefined,
+  typeof DownloadFileResponse,
+  undefined,
+  OperationErrors<{ notFound: undefined }>
+>;
+
+export type GetDocumentPdfOperation = OperationDefinition<
+  "get",
+  typeof paths.getDocumentPdf,
+  undefined,
+  typeof GetDocumentPdfResponse,
+  undefined,
+  OperationErrors
+>;
+
+export type GetImageOperation = OperationDefinition<
+  "get",
+  typeof paths.getImage,
+  undefined,
+  typeof GetImageResponse,
+  undefined,
+  OperationErrors
+>;
+
+export type GetLogsOperation = OperationDefinition<
+  "get",
+  typeof paths.getLogs,
+  undefined,
+  typeof GetLogsResponse,
+  undefined,
+  OperationErrors
+>;
+
+export type StreamEventsOperation = OperationDefinition<
+  "get",
+  typeof paths.streamEvents,
+  undefined,
+  typeof StreamEventsResponse,
+  undefined,
+  OperationErrors
+>;
+
+export type GetReportOperation = OperationDefinition<
+  "get",
+  typeof paths.getReport,
+  undefined,
+  typeof Report,
+  undefined,
+  OperationErrors
+>;
+
+export type GetHealthTextOperation = OperationDefinition<
+  "get",
+  typeof paths.getHealthText,
+  undefined,
+  typeof GetHealthTextResponse,
+  undefined,
+  OperationErrors
+>;
+
+export type DownloadArchiveOperation = OperationDefinition<
+  "get",
+  typeof paths.downloadArchive,
+  undefined,
+  typeof DownloadArchiveResponse,
+  undefined,
+  OperationErrors
+>;
+
+export type GetMarkdownDocOperation = OperationDefinition<
+  "get",
+  typeof paths.getMarkdownDoc,
+  undefined,
+  typeof GetMarkdownDocResponse,
+  undefined,
+  OperationErrors
+>;
+
+export type GetRssFeedOperation = OperationDefinition<
+  "get",
+  typeof paths.getRssFeed,
+  undefined,
+  typeof GetRssFeedResponse,
+  undefined,
+  OperationErrors
+>;
+
+// Operation Objects
+export const exportUsersCsv: ExportUsersCsvOperation = {
+  method: "get",
+  path: paths.exportUsersCsv,
+  response: ExportUsersCsvResponse,
+} as const;
+
+export const exportDataXml: ExportDataXmlOperation = {
+  method: "get",
+  path: paths.exportDataXml,
+  response: ExportDataXmlResponse,
+} as const;
+
+export const downloadFile: DownloadFileOperation = {
+  method: "get",
+  path: paths.downloadFile,
+  response: DownloadFileResponse,
+    errors: {
+      notFound: undefined,
+    },
+} as const;
+
+export const getDocumentPdf: GetDocumentPdfOperation = {
+  method: "get",
+  path: paths.getDocumentPdf,
+  response: GetDocumentPdfResponse,
+} as const;
+
+export const getImage: GetImageOperation = {
+  method: "get",
+  path: paths.getImage,
+  response: GetImageResponse,
+} as const;
+
+export const getLogs: GetLogsOperation = {
+  method: "get",
+  path: paths.getLogs,
+  response: GetLogsResponse,
+} as const;
+
+export const streamEvents: StreamEventsOperation = {
+  method: "get",
+  path: paths.streamEvents,
+  response: StreamEventsResponse,
+} as const;
+
+export const getReport: GetReportOperation = {
+  method: "get",
+  path: paths.getReport,
+  response: Report,
+} as const;
+
+export const getHealthText: GetHealthTextOperation = {
+  method: "get",
+  path: paths.getHealthText,
+  response: GetHealthTextResponse,
+} as const;
+
+export const downloadArchive: DownloadArchiveOperation = {
+  method: "get",
+  path: paths.downloadArchive,
+  response: DownloadArchiveResponse,
+} as const;
+
+export const getMarkdownDoc: GetMarkdownDocOperation = {
+  method: "get",
+  path: paths.getMarkdownDoc,
+  response: GetMarkdownDocResponse,
+} as const;
+
+export const getRssFeed: GetRssFeedOperation = {
+  method: "get",
+  path: paths.getRssFeed,
+  response: GetRssFeedResponse,
+} as const;
+"
+`;

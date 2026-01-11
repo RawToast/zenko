@@ -3,6 +3,7 @@ import { toCamelCase, capitalize } from "../utils/string-utils"
 import { isErrorStatus, mapStatusToIdentifier } from "../utils/http-status"
 import {
   findContentType,
+  normalizeResponseSchema,
   resolveParameter,
   CONTENT_TYPE_MAP,
 } from "../utils/schema-utils"
@@ -233,7 +234,8 @@ function getResponseTypes(
     }
 
     const contentType = findContentType(content)
-    const resolvedSchema = content[contentType]?.schema
+    const rawSchema = content[contentType]?.schema
+    const resolvedSchema = normalizeResponseSchema(contentType, rawSchema)
 
     if (!resolvedSchema) {
       const inferredType = inferResponseType(contentType, statusCode)

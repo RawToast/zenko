@@ -1,4 +1,5 @@
 import { toCamelCase, capitalize } from "./string-utils"
+import { findContentType, normalizeResponseSchema } from "./schema-utils"
 import type { Operation } from "../types/operation"
 import type { OpenAPISpec as FullOpenAPISpec } from "../zenko"
 /**
@@ -154,17 +155,17 @@ export function collectInlineResponseTypes(
     for (const [statusCode, response] of Object.entries(responses)) {
       if (/^2\d\d$/.test(statusCode) && (response as any).content) {
         const content = (response as any).content
-        const jsonContent = content["application/json"]
+        const contentType = findContentType(content)
+        const rawSchema = content[contentType]?.schema
+        const schema = normalizeResponseSchema(contentType, rawSchema)
+        if (!schema) continue
 
-        if (jsonContent && jsonContent.schema) {
-          const schema = jsonContent.schema
-          const typeName = `${capitalize(toCamelCase(op.operationId))}Response`
+        const typeName = `${capitalize(toCamelCase(op.operationId))}Response`
 
-          // Generate if it's not a simple $ref (those are already handled)
-          // This includes allOf, oneOf, anyOf, and complex inline schemas
-          if (!schema.$ref || schema.allOf || schema.oneOf || schema.anyOf) {
-            responseTypesToGenerate.set(typeName, schema)
-          }
+        // Generate if it's not a simple $ref (those are already handled)
+        // This includes allOf, oneOf, anyOf, and complex inline schemas
+        if (!schema.$ref || schema.allOf || schema.oneOf || schema.anyOf) {
+          responseTypesToGenerate.set(typeName, schema)
         }
       }
     }

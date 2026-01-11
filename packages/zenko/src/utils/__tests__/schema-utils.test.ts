@@ -2,6 +2,7 @@ import { describe, test, expect } from "bun:test"
 import {
   CONTENT_TYPE_MAP,
   findContentType,
+  normalizeResponseSchema,
   resolveParameter,
 } from "../schema-utils"
 import type { OpenAPISpec } from "../../zenko"
@@ -74,6 +75,88 @@ describe("findContentType", () => {
       "application/pdf": { schema: {} },
     }
     expect(findContentType(content)).toBe("application/pdf")
+  })
+})
+
+describe("normalizeResponseSchema", () => {
+  test("should map text responses to string and keep enums", () => {
+    const enumSchema = {
+      type: "string",
+      enum: ["OK", "DEGRADED"],
+    }
+    expect(normalizeResponseSchema("text/plain", enumSchema)).toEqual({
+      type: "string",
+      enum: ["OK", "DEGRADED"],
+    })
+  })
+
+  test("should preserve nullable and enum for text responses", () => {
+    const nullableEnumSchema = {
+      type: "string",
+      enum: ["OK", "DEGRADED"],
+      nullable: true,
+    }
+    expect(normalizeResponseSchema("text/plain", nullableEnumSchema)).toEqual({
+      type: "string",
+      enum: ["OK", "DEGRADED"],
+      nullable: true,
+    })
+  })
+
+  test("should preserve nullable for text responses", () => {
+    const nullableSchema = { type: "string", nullable: true }
+    expect(normalizeResponseSchema("text/plain", nullableSchema)).toEqual({
+      type: "string",
+      nullable: true,
+    })
+  })
+
+  test("should normalize text responses to string", () => {
+    const textSchema = {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+      },
+    }
+    expect(normalizeResponseSchema("text/plain", textSchema)).toEqual({
+      type: "string",
+    })
+  })
+
+  test("should keep $ref schemas for text responses", () => {
+    const refSchema = { $ref: "#/components/schemas/errorMessage" }
+    expect(normalizeResponseSchema("text/html", refSchema)).toEqual(refSchema)
+  })
+
+  test("should return json schema for json responses", () => {
+    const jsonSchema = {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+      },
+    }
+    expect(normalizeResponseSchema("application/json", jsonSchema)).toEqual(
+      jsonSchema
+    )
+  })
+
+  test("should map xml responses to string", () => {
+    const xmlSchema = {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+      },
+    }
+    expect(normalizeResponseSchema("application/xml", xmlSchema)).toEqual({
+      type: "string",
+    })
+  })
+
+  test("should no-op for binary content types", () => {
+    const binarySchema = { type: "string", format: "binary" }
+    expect(normalizeResponseSchema("application/pdf", binarySchema)).toEqual(
+      binarySchema
+    )
   })
 })
 

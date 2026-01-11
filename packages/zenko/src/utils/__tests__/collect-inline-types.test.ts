@@ -563,7 +563,7 @@ describe("collectInlineTypes", () => {
       })
     })
 
-    test("should not collect response schemas without application/json content", () => {
+    test("should collect response schemas without application/json content", () => {
       const operations = [mockOperation]
       const spec = {
         paths: {
@@ -588,7 +588,8 @@ describe("collectInlineTypes", () => {
 
       const result = collectInlineResponseTypes(operations, spec)
 
-      expect(result.size).toBe(0)
+      expect(result.size).toBe(1)
+      expect(result.get("TestOperationResponse")).toEqual({ type: "string" })
     })
 
     test("should not collect response schemas without content", () => {
