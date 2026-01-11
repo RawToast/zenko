@@ -39,6 +39,28 @@ export function findContentType(content: Record<string, any>): string {
   return contentTypes[0] || ""
 }
 
+function isTextContentType(contentType: string): boolean {
+  const normalized = contentType.toLowerCase().split(";")[0]?.trim()
+  if (!normalized) return false
+  if (normalized.startsWith("text/")) return true
+  if (normalized === "application/xml") return true
+  if (normalized.startsWith("application/") && normalized.endsWith("+xml")) {
+    return true
+  }
+  return false
+}
+
+export function normalizeResponseSchema(contentType: string, schema?: any) {
+  if (!schema) return schema
+  if (!isTextContentType(contentType)) return schema
+  if (schema.$ref) return schema
+  const nullable = schema.nullable === true ? { nullable: true } : {}
+  if (schema.enum) {
+    return { type: "string", enum: schema.enum, ...nullable }
+  }
+  return { type: "string", ...nullable }
+}
+
 /**
  * Resolves a parameter reference to its actual definition.
  * If the parameter has a $ref, looks it up in components.parameters and merges any overrides.

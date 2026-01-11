@@ -1,5 +1,9 @@
 import { extractRefName, extractDependencies } from "./topological-sort"
-import { findContentType, resolveParameter } from "./schema-utils"
+import {
+  findContentType,
+  normalizeResponseSchema,
+  resolveParameter,
+} from "./schema-utils"
 import type { Operation } from "../types/operation"
 import type { OpenAPISpec } from "../zenko"
 
@@ -64,7 +68,8 @@ export function collectReferencedSchemas(
       if (!content) continue
 
       const contentType = findContentType(content)
-      const responseSchema = content[contentType]?.schema
+      const rawSchema = content[contentType]?.schema
+      const responseSchema = normalizeResponseSchema(contentType, rawSchema)
       if (responseSchema?.$ref) {
         const refName = extractRefName(responseSchema.$ref)
         referenced.add(refName)
