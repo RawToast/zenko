@@ -1,12 +1,11 @@
 coverage:
-    status:
-      project:
-        default:
-          target: 80%
-          threshold: 1%
-          paths:
-            - "packages/zenko/src"
-      patch:
-        default:
-          informational: true
-  
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 1%
+        paths:
+          - "packages/zenko/src"
+    patch:
+      default:
+        target: 80%
