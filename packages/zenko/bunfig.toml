@@ -2,4 +2,4 @@
 exact = true
 
 [test]
-coverageReporter  = ["text", "lcov"]
+coverageReporter = ["text", "lcov"]

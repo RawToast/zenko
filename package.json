@@ -1,19 +1,15 @@
 {
-  "private": true,
   "name": "@zenko/root",
-  "packageManager": "bun@1.3.0",
+  "private": true,
   "description": "Generate TypeScript types and path functions from OpenAPI specs",
+  "license": "MIT",
   "workspaces": [
     "packages/*"
   ],
   "type": "module",
-  "license": "MIT",
-  "engines": {
-    "bun": ">=1.2.22"
-  },
   "scripts": {
-    "format": "prettier --write '**/*'{js,ts,tsx,json,yaml} --experimental-cli",
-    "format:check": "prettier --check '**/*'{js,ts,tsx,json,yaml} --experimental-cli",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "lint": "oxlint packages/*/src --fix --max-warnings=0",
     "lint:check": "oxlint packages/*/src --max-warnings=0",
     "check": "turbo lint format check-types",
@@ -22,11 +18,14 @@
     "nuke": "rimraf --glob '**/node_modules' --glob '**/dist' --glob '**/coverage' --glob 'packages/examples/**/*.gen.ts'"
   },
   "devDependencies": {
-    "@prettier/plugin-oxc": "0.1.3",
     "@socketsecurity/bun-security-scanner": "1.1.2",
-    "oxlint": "1.32.0",
-    "prettier": "3.7.4",
+    "oxfmt": "0.23.0",
+    "oxlint": "1.38.0",
     "rimraf": "6.1.2",
     "turbo": "2.6.3"
-  }
+  },
+  "engines": {
+    "bun": ">=1.2.22"
+  },
+  "packageManager": "bun@1.3.0"
 }
