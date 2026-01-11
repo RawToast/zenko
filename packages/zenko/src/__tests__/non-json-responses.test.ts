@@ -1,28 +1,26 @@
-import { describe, test, expect } from "bun:test"
+import { beforeAll, describe, expect, test } from "bun:test"
 import * as fs from "fs"
 import { parseYaml } from "../utils/yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
 describe.skip("Non-JSON Responses", () => {
-  test("generates complete TypeScript output", () => {
+  let specYaml: OpenAPISpec
+  let result: string
+
+  beforeAll(() => {
     const specContent = fs.readFileSync(
       "src/resources/non-json-responses.yaml",
       "utf8"
     )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
+    specYaml = parseYaml(specContent) as OpenAPISpec
+    result = generate(specYaml)
+  })
 
+  test("generates complete TypeScript output", () => {
     expect(result).toMatchSnapshot("non-json-responses-complete-output")
   })
 
   test("handles text/csv content type", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // exportUsersCsv returns text/csv
     expect(result).toContain("export const exportUsersCsv:")
 
@@ -31,13 +29,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles application/xml content type", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // exportDataXml returns application/xml
     expect(result).toContain("export const exportDataXml:")
 
@@ -46,13 +37,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles application/octet-stream (binary)", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // downloadFile returns application/octet-stream
     expect(result).toContain("export const downloadFile:")
 
@@ -61,13 +45,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles application/pdf content type", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // getDocumentPdf returns application/pdf
     expect(result).toContain("export const getDocumentPdf:")
 
@@ -75,13 +52,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles multiple image content types", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // getImage can return image/png, image/jpeg, or image/webp
     expect(result).toContain("export const getImage:")
 
@@ -90,13 +60,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles text/plain content type", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // getLogs and getHealthText return text/plain
     expect(result).toContain("export const getLogs:")
     expect(result).toContain("export const getHealthText:")
@@ -105,13 +68,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles text/event-stream for SSE", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // streamEvents returns text/event-stream
     expect(result).toContain("export const streamEvents:")
 
@@ -119,13 +75,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles multiple response content types for same endpoint", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // getReport can return JSON, XML, CSV, or HTML
     expect(result).toContain("export const getReport:")
     expect(result).toContain("export const Report =")
@@ -135,13 +84,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles application/zip content type", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // downloadArchive returns application/zip
     expect(result).toContain("export const downloadArchive:")
 
@@ -149,13 +91,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles text/markdown content type", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // getMarkdownDoc returns text/markdown
     expect(result).toContain("export const getMarkdownDoc:")
 
@@ -163,13 +98,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles RSS/Atom feed content types", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // getRssFeed can return RSS or Atom XML
     expect(result).toContain("export const getRssFeed:")
 
@@ -177,13 +105,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles response headers for binary downloads", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // downloadFile has Content-Disposition and Content-Length headers
     expect(result).toContain("export const downloadFile:")
 
@@ -191,13 +112,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles enum values for text responses", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // getHealthText returns enum [OK, DEGRADED]
     expect(result).toContain("export const getHealthText:")
 
@@ -205,13 +119,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles binary format specification", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // Several endpoints use format: binary
     expect(result).toContain("export const DownloadFileResponse =")
     expect(result).toContain('typeof Blob === "undefined"')
@@ -219,13 +126,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("handles xml metadata in schemas", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // exportDataXml schema has xml metadata (name, wrapped)
     expect(result).toContain("export const ExportDataXmlResponse = z.object({")
     expect(result).toContain("records: z.array(")
@@ -234,13 +134,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("generates all expected operation objects", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     const operations = [
       "exportUsersCsv",
       "exportDataXml",
@@ -262,26 +155,12 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("generates Report schema", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // Report schema should be generated
     expect(result).toContain("export const Report =")
     expect(result).toContain("export type Report =")
   })
 
   test("handles query parameters with non-JSON responses", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // exportUsersCsv has format query param
     // getLogs has lines and level query params
     // getReport has format query param
@@ -292,13 +171,6 @@ describe.skip("Non-JSON Responses", () => {
   })
 
   test("fallback to string or unknown for unsupported content types", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent) as OpenAPISpec
-    const result = generate(specYaml)
-
     // For content types that can't be properly typed in Zod
     expect(result).toContain("export const GetRssFeedResponse = z.string();")
     expect(result).toContain(

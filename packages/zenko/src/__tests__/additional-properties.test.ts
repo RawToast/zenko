@@ -1,26 +1,26 @@
-import { describe, test, expect } from "bun:test"
+import { beforeAll, describe, expect, test } from "bun:test"
 import * as fs from "fs"
 import { parseYaml } from "../utils/yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
 describe("Additional Properties", () => {
-  test("generates complete TypeScript output", () => {
+  let specYaml: OpenAPISpec
+
+  beforeAll(() => {
     const specContent = fs.readFileSync(
       "src/resources/additional-properties.yaml",
       "utf8"
     )
-    const specYaml = parseYaml(specContent)
+    specYaml = parseYaml(specContent) as OpenAPISpec
+  })
+
+  test("generates complete TypeScript output", () => {
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("additional-properties-complete-output")
   })
 
   test("handles additionalProperties: true", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml)
 
     // Metadata has additionalProperties: true
@@ -33,11 +33,6 @@ describe("Additional Properties", () => {
   })
 
   test("handles additionalProperties with string type", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml)
 
     // MetadataInput and Labels have additionalProperties: string
@@ -49,11 +44,6 @@ describe("Additional Properties", () => {
   })
 
   test("handles additionalProperties: false", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml)
 
     // StrictObject and NoAdditionalProps have additionalProperties: false
@@ -65,11 +55,6 @@ describe("Additional Properties", () => {
   })
 
   test("handles additionalProperties with object schema", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml)
 
     // Config has additionalProperties with object schema
@@ -80,11 +65,6 @@ describe("Additional Properties", () => {
   })
 
   test("handles additionalProperties with number type", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml)
 
     // NumericDictionary has additionalProperties: number with constraints
@@ -95,11 +75,6 @@ describe("Additional Properties", () => {
   })
 
   test("handles additionalProperties with boolean type", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml)
 
     // BooleanFlags has additionalProperties: boolean
@@ -110,11 +85,6 @@ describe("Additional Properties", () => {
   })
 
   test("handles additionalProperties with array type", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml)
 
     // ArrayDictionary has additionalProperties: array
@@ -152,11 +122,6 @@ describe("Additional Properties", () => {
   })
 
   test("handles additionalProperties with oneOf", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml)
 
     // TypedDictionary has additionalProperties with oneOf
@@ -168,11 +133,6 @@ describe("Additional Properties", () => {
   })
 
   test("handles mixed required properties and additionalProperties", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml)
 
     // MixedConstraints has required fields and additionalProperties
@@ -184,11 +144,6 @@ describe("Additional Properties", () => {
   })
 
   test("handles nested additionalProperties", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml)
 
     // ComplexAdditionalProps has nested additionalProperties
@@ -213,11 +168,6 @@ describe("Additional Properties", () => {
   })
 
   test("generates all expected schemas", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml)
 
     // All schemas should be generated
@@ -236,11 +186,6 @@ describe("Additional Properties", () => {
   })
 
   test("generates operation objects", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml)
 
     expect(result).toContain("export const createMetadata:")

@@ -32,7 +32,7 @@
     },
     "packages/zenko": {
       "name": "zenko",
-      "version": "0.1.14",
+      "version": "0.1.15",
       "bin": {
         "zenko": "dist/cli.cjs",
       },

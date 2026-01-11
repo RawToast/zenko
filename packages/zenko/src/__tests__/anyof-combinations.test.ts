@@ -134,7 +134,10 @@ describe("anyOf Combinations", () => {
 
     // searchItems operation has a filter parameter with anyOf schema
     // Should properly type the query parameter
-    expect(result).toContain("searchItems")
+    expect(result).toContain(
+      "searchItems: ({ query, filter }: { query: string, filter?: string }) => {"
+    )
+    expect(result).toContain('params.set("filter", String(filter))')
   })
 
   test("generates type discriminators for anyOf variants when present", () => {

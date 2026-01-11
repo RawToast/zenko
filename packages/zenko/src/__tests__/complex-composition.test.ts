@@ -87,7 +87,9 @@ describe("Complex Composition", () => {
     expect(result).toContain("export const ExtendedMetadata =")
 
     // metadata should be a union of SimpleMetadata | ExtendedMetadata
-    // z.union([SimpleMetadata, ExtendedMetadata])
+    expect(result).toContain(
+      "metadata: z.union([SimpleMetadata, ExtendedMetadata]).optional()"
+    )
   })
 
   test("handles nested oneOf inside allOf", () => {
@@ -104,6 +106,9 @@ describe("Complex Composition", () => {
     expect(result).toContain("export const AdvancedConfig =")
 
     // Should combine base properties with config union
+    expect(result).toContain(
+      "config: z.union([BasicConfig, AdvancedConfig]).optional()"
+    )
   })
 
   test("handles complex nested composition in ComplexValidation", () => {
@@ -118,6 +123,9 @@ describe("Complex Composition", () => {
     expect(result).toContain("export const ComplexValidation =")
 
     // data property should be a union of two types
+    expect(result).toContain("data: z.union([Identifiable.merge")
+    expect(result).toContain('dataType: z.literal("structured")')
+    expect(result).toContain('dataType: z.literal("unstructured")')
   })
 
   test("handles not keyword", () => {
@@ -148,6 +156,10 @@ describe("Complex Composition", () => {
     expect(result).toContain("export const FlexibleValue =")
 
     // Should generate union: z.union([z.string().min(1), z.number().min(0), z.object(...)])
+    expect(result).toContain(
+      "export const FlexibleValue = z.union([z.string(), z.number(), z.object({"
+    )
+    expect(result).toContain("key: z.string()")
   })
 
   test("handles recursive schemas", () => {
@@ -177,7 +189,9 @@ describe("Complex Composition", () => {
     expect(result).toContain("export const HierarchicalData =")
 
     // Should generate nullable or union with null
-    // z.union([z.null(), Identifiable])
+    expect(result).toContain(
+      "parent: z.union([z.null(), Identifiable]).optional()"
+    )
   })
 
   test("handles multiple discriminators in nested structures", () => {
@@ -211,6 +225,10 @@ describe("Complex Composition", () => {
     expect(result).toContain("export const SimpleMetadata =")
 
     // Should properly combine both schemas
+    expect(result).toContain("ExtendedMetadata = SimpleMetadata.merge")
+    expect(result).toContain(
+      "customFields: z.object({}).catchall(z.string()).optional()"
+    )
   })
 
   test("does not emit z.literal for non-primitive const", () => {

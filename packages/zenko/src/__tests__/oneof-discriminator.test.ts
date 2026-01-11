@@ -175,7 +175,7 @@ describe("oneOf with Discriminator", () => {
     expect(result).toContain('z.literal("foo_kind")')
     expect(result).toContain('z.literal("foo_alias")')
     expect(result).toContain('z.literal("extra_kind")')
-    expect(result.match(/Foo\.merge/g)?.length).toBe(3)
+    expect((result.match(/Foo\.merge/g) ?? []).length).toBe(3)
     expect(result).toContain("Extra.merge")
   })
 
