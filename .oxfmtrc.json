@@ -1,6 +1,5 @@
 {
-  "$schema": "http://json.schemastore.org/prettierrc.json",
-  "plugins": ["@prettier/plugin-oxc"],
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "arrowParens": "always",
   "bracketSpacing": true,
   "endOfLine": "lf",
@@ -20,6 +19,5 @@
   "singleQuote": false,
   "tabWidth": 2,
   "trailingComma": "es5",
-  "tailwindAttributes": ["className", "innerClassName"],
-  "tailwindFunctions": ["cn"]
+  "ignorePatterns": [".agent/"]
 }
