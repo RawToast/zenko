@@ -18,7 +18,7 @@ export const mark = z.enum([".", "X", "O"]);
 
 export type mark = z.infer<typeof mark>;
 
-export const board = z.array(z.array(mark));
+export const board = z.array(z.array(mark).min(3).max(3)).min(3).max(3);
 
 export type board = z.infer<typeof board>;
 
@@ -128,7 +128,7 @@ export const mark = z.enum([".", "X", "O"]);
 
 export type mark = z.infer<typeof mark>;
 
-export const board = z.array(z.array(mark)).min(3).max(3);
+export const board = z.array(z.array(mark).min(3).max(3)).min(3).max(3);
 
 export type board = z.infer<typeof board>;
 
