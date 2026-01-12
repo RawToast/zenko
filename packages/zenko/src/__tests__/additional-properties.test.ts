@@ -151,8 +151,6 @@ describe("Additional Properties", () => {
   })
 
   test("applies constraints to additionalProperties values", () => {
-    const specContent = fs.readFileSync(additionalPropertiesYamlPath, "utf8")
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml, { strictNumeric: true })
 
     // MixedConstraints has string additionalProperties with minLength/maxLength
