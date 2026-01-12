@@ -17,7 +17,6 @@
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "editor.codeActionsOnSave": {
-    "source.organizeImports.prettier": "explicit",
     "source.fixAll.oxc": "explicit"
   },
   "explorer.fileNesting.enabled": true,
