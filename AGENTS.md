@@ -177,12 +177,6 @@ Usage notes:
 <location>project</location>
 </skill>
 
-<skill>
-<name>writing-skills</name>
-<description>Use when creating new skills, editing existing skills, or verifying skills work before deployment - applies TDD to process documentation by testing with subagents before writing, iterating until bulletproof against rationalization</description>
-<location>project</location>
-</skill>
-
 </available_skills>
 
 <!-- SKILLS_TABLE_END -->

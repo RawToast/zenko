@@ -22,10 +22,10 @@
     "oxfmt": "0.23.0",
     "oxlint": "1.38.0",
     "rimraf": "6.1.2",
-    "turbo": "2.6.3"
+    "turbo": "2.7.3"
   },
   "engines": {
     "bun": ">=1.2.22"
   },
-  "packageManager": "bun@1.3.0"
+  "packageManager": "bun@1.3.5"
 }
