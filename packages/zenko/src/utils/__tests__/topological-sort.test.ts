@@ -5,6 +5,7 @@ import {
   extractRefName,
 } from "../topological-sort"
 import * as fs from "fs"
+import { petstoreYamlPath } from "@zenko/specs"
 
 describe("topologicalSort", () => {
   test("should handle simple dependency chain", () => {
@@ -71,10 +72,7 @@ describe("topologicalSort", () => {
   })
 
   test("should work with petstore schema", () => {
-    const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
-      "utf8"
-    )
+    const petstoreContent = fs.readFileSync(petstoreYamlPath, "utf8")
     const petstore = Bun.YAML.parse(petstoreContent) as any
     const schemas = petstore.components.schemas
 

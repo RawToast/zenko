@@ -1,5 +1,6 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import * as fs from "fs"
+import { trainTravelYamlPath } from "@zenko/specs"
 import { parseYaml } from "../utils/yaml"
 import * as path from "path"
 import { generate } from "../zenko"
@@ -20,10 +21,7 @@ describe("Train Travel", () => {
   })
 
   test("generates complete TypeScript output", () => {
-    const trainTravelContent = fs.readFileSync(
-      "src/resources/train-travel.yaml",
-      "utf8"
-    )
+    const trainTravelContent = fs.readFileSync(trainTravelYamlPath, "utf8")
     const specYaml = parseYaml(trainTravelContent)
     const result = generate(specYaml)
 
@@ -31,10 +29,7 @@ describe("Train Travel", () => {
   })
 
   test("handles operation IDs with hyphens correctly", () => {
-    const trainTravelContent = fs.readFileSync(
-      "src/resources/train-travel.yaml",
-      "utf8"
-    )
+    const trainTravelContent = fs.readFileSync(trainTravelYamlPath, "utf8")
     const specYaml = parseYaml(trainTravelContent)
     const result = generate(specYaml)
 
@@ -59,10 +54,7 @@ describe("Train Travel", () => {
   })
 
   test("generates proper response types for operations", () => {
-    const trainTravelContent = fs.readFileSync(
-      "src/resources/train-travel.yaml",
-      "utf8"
-    )
+    const trainTravelContent = fs.readFileSync(trainTravelYamlPath, "utf8")
     const specYaml = parseYaml(trainTravelContent)
     const result = generate(specYaml)
 
@@ -72,10 +64,7 @@ describe("Train Travel", () => {
   })
 
   test("generates all expected schemas", () => {
-    const trainTravelContent = fs.readFileSync(
-      "src/resources/train-travel.yaml",
-      "utf8"
-    )
+    const trainTravelContent = fs.readFileSync(trainTravelYamlPath, "utf8")
     const specYaml = parseYaml(trainTravelContent)
     const result = generate(specYaml)
 
@@ -90,10 +79,7 @@ describe("Train Travel", () => {
   })
 
   test("generates valid TypeScript identifiers for schemas with hyphens", () => {
-    const trainTravelContent = fs.readFileSync(
-      "src/resources/train-travel.yaml",
-      "utf8"
-    )
+    const trainTravelContent = fs.readFileSync(trainTravelYamlPath, "utf8")
     const specYaml = parseYaml(trainTravelContent)
     const result = generate(specYaml)
 

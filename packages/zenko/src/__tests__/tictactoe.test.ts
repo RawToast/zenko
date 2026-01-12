@@ -1,5 +1,6 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import * as fs from "fs"
+import { optionalHeadersYamlPath, tictactoeYamlPath } from "@zenko/specs"
 import { parseYaml } from "../utils/yaml"
 import * as path from "path"
 import { generate } from "../zenko"
@@ -22,10 +23,7 @@ describe("TicTacToe", () => {
   })
 
   test("generates complete TypeScript output", () => {
-    const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
-      "utf8"
-    )
+    const tictactoeContent = fs.readFileSync(tictactoeYamlPath, "utf8")
     const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml)
 
@@ -33,10 +31,7 @@ describe("TicTacToe", () => {
   })
 
   test("generates complete TypeScript output with strict options", () => {
-    const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
-      "utf8"
-    )
+    const tictactoeContent = fs.readFileSync(tictactoeYamlPath, "utf8")
     const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml, {
       strictDates: true,
@@ -47,10 +42,7 @@ describe("TicTacToe", () => {
   })
 
   test("generates header functions for security schemes", () => {
-    const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
-      "utf8"
-    )
+    const tictactoeContent = fs.readFileSync(tictactoeYamlPath, "utf8")
     const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml)
 
@@ -71,7 +63,7 @@ describe("TicTacToe", () => {
 
   test("includes headers in operation objects when request headers exist", () => {
     const optionalHeaderContent = fs.readFileSync(
-      "src/resources/optional-headers.yaml",
+      optionalHeadersYamlPath,
       "utf8"
     )
     const specYaml = parseYaml(optionalHeaderContent)
@@ -88,10 +80,7 @@ describe("TicTacToe", () => {
   })
 
   test("generates all expected schemas with proper types", () => {
-    const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
-      "utf8"
-    )
+    const tictactoeContent = fs.readFileSync(tictactoeYamlPath, "utf8")
     const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml)
 
@@ -113,10 +102,7 @@ describe("TicTacToe", () => {
   })
 
   test("generates path functions with parameters", () => {
-    const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
-      "utf8"
-    )
+    const tictactoeContent = fs.readFileSync(tictactoeYamlPath, "utf8")
     const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml)
 
@@ -132,10 +118,7 @@ describe("TicTacToe", () => {
   })
 
   test("generates operation objects with correct properties", () => {
-    const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
-      "utf8"
-    )
+    const tictactoeContent = fs.readFileSync(tictactoeYamlPath, "utf8")
     const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml)
 
@@ -158,10 +141,7 @@ describe("TicTacToe", () => {
   })
 
   test("generates operation objects without type annotations when types disabled", () => {
-    const tictactoeContent = fs.readFileSync(
-      "src/resources/tictactoe.yaml",
-      "utf8"
-    )
+    const tictactoeContent = fs.readFileSync(tictactoeYamlPath, "utf8")
     const specYaml = parseYaml(tictactoeContent)
     const result = generate(specYaml, { types: { emit: false } })
 

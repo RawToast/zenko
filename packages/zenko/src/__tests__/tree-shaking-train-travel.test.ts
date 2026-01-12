@@ -1,11 +1,12 @@
 import { describe, test, expect } from "bun:test"
 import fs from "fs"
+import { trainTravelYamlPath } from "@zenko/specs"
 import { parseYaml } from "../utils/yaml"
 import { generate } from "../zenko"
 
 describe("tree-shaking with train-travel spec", () => {
   test("correctly tree-shakes imports for complex spec", () => {
-    const content = fs.readFileSync("src/resources/train-travel.yaml", "utf8")
+    const content = fs.readFileSync(trainTravelYamlPath, "utf8")
     const specYaml = parseYaml(content)
 
     // Without tree-shaking

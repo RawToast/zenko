@@ -1,5 +1,6 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
+import { webhookExampleYamlPath } from "@zenko/specs"
 import { parseYaml } from "../utils/yaml"
 import { generate } from "../zenko"
 
@@ -58,10 +59,7 @@ describe("Webhook Example", () => {
   })
 
   test("should generate complete TypeScript output for webhook-only spec", () => {
-    const webhookContent = fs.readFileSync(
-      "src/resources/webhook-example.yaml",
-      "utf8"
-    )
+    const webhookContent = fs.readFileSync(webhookExampleYamlPath, "utf8")
     const specYaml = parseYaml(webhookContent) as any
     const result = generate(specYaml)
 

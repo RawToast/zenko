@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, test } from "bun:test"
 import * as fs from "fs"
+import { additionalPropertiesYamlPath } from "@zenko/specs"
 import { parseYaml } from "../utils/yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
@@ -7,10 +8,7 @@ describe("Additional Properties", () => {
   let specYaml: OpenAPISpec
 
   beforeAll(() => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(additionalPropertiesYamlPath, "utf8")
     specYaml = parseYaml(specContent) as OpenAPISpec
   })
 
@@ -153,11 +151,6 @@ describe("Additional Properties", () => {
   })
 
   test("applies constraints to additionalProperties values", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/additional-properties.yaml",
-      "utf8"
-    )
-    const specYaml = parseYaml(specContent)
     const result = generate(specYaml, { strictNumeric: true })
 
     // MixedConstraints has string additionalProperties with minLength/maxLength

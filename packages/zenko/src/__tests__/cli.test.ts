@@ -2,6 +2,7 @@ import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import { execSync } from "child_process"
 import * as fs from "fs"
 import * as path from "path"
+import { dateEnumYamlPath, petstoreYamlPath } from "@zenko/specs"
 
 describe("CLI", () => {
   const tempDir = path.join(process.cwd(), "temp-test")
@@ -22,7 +23,7 @@ describe("CLI", () => {
   })
 
   test("generates TypeScript from petstore.yaml", () => {
-    const petstorePath = path.join(process.cwd(), "src/resources/petstore.yaml")
+    const petstorePath = petstoreYamlPath
 
     // Run the CLI
     const cliPath = path.join(process.cwd(), "src/cli.ts")
@@ -124,7 +125,7 @@ describe("CLI", () => {
 
   test("supports config file generation", () => {
     const cliPath = path.join(process.cwd(), "src/cli.ts")
-    const petstorePath = path.join(process.cwd(), "src/resources/petstore.yaml")
+    const petstorePath = petstoreYamlPath
 
     const configDir = path.join(tempDir, "config")
     const configOutput = path.join(configDir, "config-output.ts")
@@ -189,7 +190,7 @@ describe("CLI", () => {
 
   test("supports operationIds in config file", () => {
     const cliPath = path.join(process.cwd(), "src/cli.ts")
-    const petstorePath = path.join(process.cwd(), "src/resources/petstore.yaml")
+    const petstorePath = petstoreYamlPath
 
     const configDir = path.join(tempDir, "selective-config")
     const configOutput = path.join(configDir, "selective-output.ts")
@@ -224,10 +225,7 @@ describe("CLI", () => {
 
   test("supports openEnums in config file", () => {
     const cliPath = path.join(process.cwd(), "src/cli.ts")
-    const dateEnumPath = path.join(
-      process.cwd(),
-      "src/resources/date-enum.yaml"
-    )
+    const dateEnumPath = dateEnumYamlPath
 
     const configDir = path.join(tempDir, "open-enums-config")
     const configOutput = path.join(configDir, "open-enums-output.ts")
@@ -261,10 +259,7 @@ describe("CLI", () => {
 
   test("supports openEnums: true in config file", () => {
     const cliPath = path.join(process.cwd(), "src/cli.ts")
-    const dateEnumPath = path.join(
-      process.cwd(),
-      "src/resources/date-enum.yaml"
-    )
+    const dateEnumPath = dateEnumYamlPath
 
     const configDir = path.join(tempDir, "open-enums-all-config")
     const configOutput = path.join(configDir, "open-enums-all-output.ts")
@@ -297,10 +292,7 @@ describe("CLI", () => {
 
   test("supports openEnums object config form with custom prefix", () => {
     const cliPath = path.join(process.cwd(), "src/cli.ts")
-    const dateEnumPath = path.join(
-      process.cwd(),
-      "src/resources/date-enum.yaml"
-    )
+    const dateEnumPath = dateEnumYamlPath
 
     const configDir = path.join(tempDir, "open-enums-object-config")
     const configOutput = path.join(configDir, "open-enums-object-output.ts")
@@ -335,10 +327,7 @@ describe("CLI", () => {
 
   test("supports openEnums object config form with selective enums", () => {
     const cliPath = path.join(process.cwd(), "src/cli.ts")
-    const dateEnumPath = path.join(
-      process.cwd(),
-      "src/resources/date-enum.yaml"
-    )
+    const dateEnumPath = dateEnumYamlPath
 
     const configDir = path.join(tempDir, "open-enums-selective-config")
     const configOutput = path.join(configDir, "open-enums-selective-output.ts")
