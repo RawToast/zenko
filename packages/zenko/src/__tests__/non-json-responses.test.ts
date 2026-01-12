@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, test } from "bun:test"
 import * as fs from "fs"
+import { nonJsonResponsesYamlPath } from "@zenko/specs"
 import { parseYaml } from "../utils/yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
@@ -8,10 +9,7 @@ describe("Non-JSON Responses", () => {
   let result: string
 
   beforeAll(() => {
-    const specContent = fs.readFileSync(
-      "src/resources/non-json-responses.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(nonJsonResponsesYamlPath, "utf8")
     specYaml = parseYaml(specContent) as OpenAPISpec
     result = generate(specYaml)
   })

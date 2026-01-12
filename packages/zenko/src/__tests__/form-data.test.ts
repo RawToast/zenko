@@ -1,10 +1,10 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
-import * as path from "path"
+import { formDataYamlPath } from "@zenko/specs"
 import { generate, type OpenAPISpec } from "../zenko"
 
 describe("Form Data", () => {
-  const specPath = path.join(import.meta.dir, "../resources/form-data.yaml")
+  const specPath = formDataYamlPath
 
   test("generates complete TypeScript output", () => {
     const specContent = fs.readFileSync(specPath, "utf8")

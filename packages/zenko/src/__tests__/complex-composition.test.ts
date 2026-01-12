@@ -1,14 +1,12 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
+import { complexCompositionYamlPath } from "@zenko/specs"
 import { parseYaml } from "../utils/yaml"
 import { generate, type OpenAPISpec } from "../zenko"
 
 describe("Complex Composition", () => {
   test("generates complete TypeScript output", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -16,10 +14,7 @@ describe("Complex Composition", () => {
   })
 
   test("handles allOf with multiple schema references", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -34,10 +29,7 @@ describe("Complex Composition", () => {
   })
 
   test("handles oneOf with allOf variants", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -52,10 +44,7 @@ describe("Complex Composition", () => {
   })
 
   test("handles discriminated unions with const discriminators", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -74,10 +63,7 @@ describe("Complex Composition", () => {
   })
 
   test("handles anyOf inside allOf", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -93,10 +79,7 @@ describe("Complex Composition", () => {
   })
 
   test("handles nested oneOf inside allOf", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -112,10 +95,7 @@ describe("Complex Composition", () => {
   })
 
   test("handles complex nested composition in ComplexValidation", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -129,10 +109,7 @@ describe("Complex Composition", () => {
   })
 
   test("handles not keyword", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -145,10 +122,7 @@ describe("Complex Composition", () => {
   })
 
   test("handles anyOf with mixed types", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -163,10 +137,7 @@ describe("Complex Composition", () => {
   })
 
   test("handles recursive schemas", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -178,10 +149,7 @@ describe("Complex Composition", () => {
   })
 
   test("handles null in anyOf", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -195,10 +163,7 @@ describe("Complex Composition", () => {
   })
 
   test("handles multiple discriminators in nested structures", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -213,10 +178,7 @@ describe("Complex Composition", () => {
   })
 
   test("handles ExtendedMetadata which uses allOf to extend SimpleMetadata", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -276,10 +238,7 @@ components:
   })
 
   test("maintains correct schema dependency order", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -299,10 +258,7 @@ components:
   })
 
   test("generates all expected schemas", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -341,10 +297,7 @@ components:
   })
 
   test("generates operation objects", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 
@@ -354,10 +307,7 @@ components:
   })
 
   test("handles default values in nested compositions", () => {
-    const specContent = fs.readFileSync(
-      "src/resources/complex-composition.yaml",
-      "utf8"
-    )
+    const specContent = fs.readFileSync(complexCompositionYamlPath, "utf8")
     const specYaml = parseYaml(specContent) as OpenAPISpec
     const result = generate(specYaml)
 

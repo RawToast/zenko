@@ -1,11 +1,25 @@
 import { readFileSync, writeFileSync, mkdirSync } from "fs"
 import { dirname, resolve } from "path"
+import {
+  authApiYamlPath,
+  enumDemoYamlPath,
+  petstoreYamlPath,
+  trainTravelYamlPath,
+} from "@zenko/specs"
 import { generate } from "zenko"
+
+const specInputPaths = {
+  "auth-api.yaml": authApiYamlPath,
+  "enum-demo.yaml": enumDemoYamlPath,
+  "petstore.yaml": petstoreYamlPath,
+  "train-travel.yaml": trainTravelYamlPath,
+}
 
 function generateSchema(inputFile, outputFile, options) {
   try {
     // Resolve input and output paths
-    const inputPath = resolve(`./resources/${inputFile}`)
+    const inputPath =
+      specInputPaths[inputFile] ?? resolve(`./resources/${inputFile}`)
     const outputPath = resolve(`./src/schema/${outputFile}`)
     const outputDir = dirname(outputPath)
 

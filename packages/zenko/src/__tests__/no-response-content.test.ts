@@ -1,14 +1,12 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
+import { noResponseContentYamlPath } from "@zenko/specs"
 import { parseYaml } from "../utils/yaml"
 import { generate } from "../zenko"
 
 describe("No Response Content", () => {
   test("generates complete TypeScript output", () => {
-    const content = fs.readFileSync(
-      "src/resources/no-response-content.yaml",
-      "utf8"
-    )
+    const content = fs.readFileSync(noResponseContentYamlPath, "utf8")
     const specYaml = parseYaml(content)
     const result = generate(specYaml)
 

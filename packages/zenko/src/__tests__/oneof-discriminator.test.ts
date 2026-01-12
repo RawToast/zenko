@@ -1,21 +1,13 @@
 import * as fs from "fs"
-import * as path from "path"
 import { beforeAll, describe, expect, test } from "bun:test"
+import { oneOfDiscriminatorYamlPath } from "@zenko/specs"
 import { generate, type OpenAPISpec } from "../zenko"
-
-/**
- * Resolves fixture path relative to this test file, independent of CWD.
- */
-function resolveFixture(filename: string): string {
-  const testDir = path.dirname(new URL(import.meta.url).pathname)
-  return path.join(testDir, "..", "resources", filename)
-}
 
 /**
  * Loads and parses a YAML fixture file.
  */
-function loadSpec(filename: string): OpenAPISpec {
-  const content = fs.readFileSync(resolveFixture(filename), "utf8")
+function loadSpec(specPath: string): OpenAPISpec {
+  const content = fs.readFileSync(specPath, "utf8")
   return Bun.YAML.parse(content) as OpenAPISpec
 }
 
@@ -24,7 +16,7 @@ describe("oneOf with Discriminator", () => {
   let result: string
 
   beforeAll(() => {
-    specYaml = loadSpec("oneof-discriminator.yaml")
+    specYaml = loadSpec(oneOfDiscriminatorYamlPath)
     result = generate(specYaml)
   })
 

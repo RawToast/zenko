@@ -1,4 +1,5 @@
 import { describe, test, expect } from "bun:test"
+import { petstoreYamlPath } from "@zenko/specs"
 import { generate, generateWithMetadata, type OpenAPISpec } from "../zenko"
 import { loadOpenAPISpec } from "../utils/yaml"
 
@@ -225,7 +226,7 @@ describe("generate", () => {
   })
 
   describe("Type helpers", () => {
-    const petstoreSpec = loadOpenAPISpec("src/resources/petstore.yaml")
+    const petstoreSpec = loadOpenAPISpec(petstoreYamlPath)
 
     test("disables type emission", () => {
       const result = generate(petstoreSpec, {
@@ -298,7 +299,7 @@ describe("generate", () => {
   })
 
   describe("Helper file generation", () => {
-    const petstoreSpec = loadOpenAPISpec("src/resources/petstore.yaml")
+    const petstoreSpec = loadOpenAPISpec(petstoreYamlPath)
 
     test("generateWithMetadata returns helper file info when using file mode", () => {
       const result = generateWithMetadata(petstoreSpec, {

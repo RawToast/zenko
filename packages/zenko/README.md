@@ -400,7 +400,7 @@ bun test
 bun run build
 
 # Test with example spec
-zenko src/resources/petstore.yaml output.ts
+zenko node_modules/@zenko/specs/resources/petstore.yaml output.ts
 
 # Format code
 bun run format

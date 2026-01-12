@@ -1,14 +1,12 @@
 import { describe, test, expect } from "bun:test"
 import * as fs from "fs"
+import { petstoreYamlPath } from "@zenko/specs"
 import { parseYaml } from "../utils/yaml"
 import { generate } from "../zenko"
 
 describe("Selective Operations", () => {
   test("generates only selected operations and their referenced schemas", () => {
-    const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
-      "utf8"
-    )
+    const petstoreContent = fs.readFileSync(petstoreYamlPath, "utf8")
     const specYaml = parseYaml(petstoreContent)
     const result = generate(specYaml, {
       operationIds: ["listPets", "showPetById"],
@@ -37,10 +35,7 @@ describe("Selective Operations", () => {
   })
 
   test("generates only single operation when one operationId provided", () => {
-    const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
-      "utf8"
-    )
+    const petstoreContent = fs.readFileSync(petstoreYamlPath, "utf8")
     const specYaml = parseYaml(petstoreContent)
     const result = generate(specYaml, {
       operationIds: ["listPets"],
@@ -64,10 +59,7 @@ describe("Selective Operations", () => {
   })
 
   test("generates all operations when operationIds is empty", () => {
-    const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
-      "utf8"
-    )
+    const petstoreContent = fs.readFileSync(petstoreYamlPath, "utf8")
     const specYaml = parseYaml(petstoreContent)
     const result = generate(specYaml, {
       operationIds: [],
@@ -85,10 +77,7 @@ describe("Selective Operations", () => {
   })
 
   test("generates all operations when operationIds is undefined", () => {
-    const petstoreContent = fs.readFileSync(
-      "src/resources/petstore.yaml",
-      "utf8"
-    )
+    const petstoreContent = fs.readFileSync(petstoreYamlPath, "utf8")
     const specYaml = parseYaml(petstoreContent)
     const result = generate(specYaml)
 

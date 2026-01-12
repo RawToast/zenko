@@ -2,6 +2,7 @@ import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import { execSync } from "child_process"
 import * as fs from "fs"
 import * as path from "path"
+import { petstoreYamlPath } from "@zenko/specs"
 import { generate, type OpenAPISpec } from "../zenko"
 import { loadOpenAPISpec } from "../utils/yaml"
 
@@ -24,28 +25,28 @@ describe("Petstore", () => {
   })
 
   test("generates complete TypeScript output", () => {
-    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
+    const specYaml = loadOpenAPISpec(petstoreYamlPath)
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("petstore-complete-output")
   })
 
   test("generates complete TypeScript output", () => {
-    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
+    const specYaml = loadOpenAPISpec(petstoreYamlPath)
     const result = generate(specYaml)
 
     expect(result).toMatchSnapshot("petstore-complete-output")
   })
 
   test("includes Zod import", () => {
-    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
+    const specYaml = loadOpenAPISpec(petstoreYamlPath)
     const result = generate(specYaml)
 
     expect(result).toContain('import { z } from "zod"')
   })
 
   test("generates schemas in correct dependency order", () => {
-    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
+    const specYaml = loadOpenAPISpec(petstoreYamlPath)
     const result = generate(specYaml)
 
     // Pet should come before Pets since Pets references Pet
@@ -57,7 +58,7 @@ describe("Petstore", () => {
   })
 
   test("generates all expected schemas", () => {
-    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
+    const specYaml = loadOpenAPISpec(petstoreYamlPath)
     const result = generate(specYaml)
 
     expect(result).toContain("export const Pet =")
@@ -69,7 +70,7 @@ describe("Petstore", () => {
   })
 
   test("generates path functions", () => {
-    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
+    const specYaml = loadOpenAPISpec(petstoreYamlPath)
     const result = generate(specYaml)
 
     expect(result).toContain("export const paths = {")
@@ -79,7 +80,7 @@ describe("Petstore", () => {
   })
 
   test("generates operation objects", () => {
-    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
+    const specYaml = loadOpenAPISpec(petstoreYamlPath)
     const result = generate(specYaml)
 
     expect(result).toContain("export const listPets: ListPetsOperation =")
@@ -119,7 +120,7 @@ describe("Petstore", () => {
   })
 
   test("generates expected TypeScript from petstore.yaml", () => {
-    const petstorePath = path.join(process.cwd(), "src/resources/petstore.yaml")
+    const petstorePath = petstoreYamlPath
 
     // Run the CLI
     const cliPath = path.join(process.cwd(), "src/cli.ts")

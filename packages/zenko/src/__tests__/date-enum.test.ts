@@ -1,5 +1,6 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import * as fs from "fs"
+import { dateEnumYamlPath } from "@zenko/specs"
 import { parseYaml } from "../utils/yaml"
 import * as path from "path"
 import { generate } from "../zenko"
@@ -22,10 +23,7 @@ describe("DateEnum", () => {
   })
 
   test("generates complete TypeScript output", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml)
 
@@ -33,10 +31,7 @@ describe("DateEnum", () => {
   })
 
   test("generates complete TypeScript output with strict options", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml, {
       strictDates: true,
@@ -47,10 +42,7 @@ describe("DateEnum", () => {
   })
 
   test("generates all expected schemas with proper types", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml)
 
@@ -70,10 +62,7 @@ describe("DateEnum", () => {
   })
 
   test("generates enum schemas with proper values", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml)
 
@@ -97,10 +86,7 @@ describe("DateEnum", () => {
   })
 
   test("generates date-time format schemas", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml)
 
@@ -110,10 +96,7 @@ describe("DateEnum", () => {
   })
 
   test("generates path functions with parameters", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml)
 
@@ -126,10 +109,7 @@ describe("DateEnum", () => {
   })
 
   test("generates operation objects with correct properties", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml)
 
@@ -149,10 +129,7 @@ describe("DateEnum", () => {
   })
 
   test("generates header functions for operations", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml)
 
@@ -162,10 +139,7 @@ describe("DateEnum", () => {
   })
 
   test("generates operation objects without type annotations when types disabled", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml, { types: { emit: false } })
 
@@ -177,10 +151,7 @@ describe("DateEnum", () => {
   })
 
   test("handles error response schemas correctly", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml)
 
@@ -192,10 +163,7 @@ describe("DateEnum", () => {
   })
 
   test("generates open enums with openEnums: true", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml, { openEnums: true })
 
@@ -214,10 +182,7 @@ describe("DateEnum", () => {
   })
 
   test("generates open enums only for specified enum names", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml, { openEnums: ["Status"] })
 
@@ -233,10 +198,7 @@ describe("DateEnum", () => {
   })
 
   test("generates complete output with open enums", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml, { openEnums: true })
 
@@ -244,10 +206,7 @@ describe("DateEnum", () => {
   })
 
   test("generates open enums with object config form and custom prefix", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml, {
       openEnums: { open: true, unknownPrefix: "unrecognized_" },
@@ -271,10 +230,7 @@ describe("DateEnum", () => {
   })
 
   test("generates open enums with object config form and selective enums", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml, {
       openEnums: { open: ["Status"], unknownPrefix: "x-" },
@@ -295,10 +251,7 @@ describe("DateEnum", () => {
   })
 
   test("generates open enums with object config form and default prefix", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml, {
       openEnums: { open: true },
@@ -311,10 +264,7 @@ describe("DateEnum", () => {
   })
 
   test("backwards compatibility: openEnums: true still works", () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml, { openEnums: true })
 
@@ -325,10 +275,7 @@ describe("DateEnum", () => {
   })
 
   test('backwards compatibility: openEnums: ["Status"] still works', () => {
-    const dateEnumContent = fs.readFileSync(
-      "src/resources/date-enum.yaml",
-      "utf8"
-    )
+    const dateEnumContent = fs.readFileSync(dateEnumYamlPath, "utf8")
     const specYaml = parseYaml(dateEnumContent)
     const result = generate(specYaml, { openEnums: ["Status"] })
 
