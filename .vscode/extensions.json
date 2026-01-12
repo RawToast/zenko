@@ -1,7 +1,4 @@
 {
-  "recommendations": [
-    "TypeScriptTeam.native-preview",
-    "oxc.oxc-vscode"
-  ],
+  "recommendations": ["TypeScriptTeam.native-preview", "oxc.oxc-vscode"],
   "unwantedRecommendations": ["biomejs.biome", "esbenp.prettier-vscode"]
 }
