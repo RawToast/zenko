@@ -30,13 +30,6 @@ describe("Petstore", () => {
     expect(result).toMatchSnapshot("petstore-complete-output")
   })
 
-  test("generates complete TypeScript output", () => {
-    const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
-    const result = generate(specYaml)
-
-    expect(result).toMatchSnapshot("petstore-complete-output")
-  })
-
   test("includes Zod import", () => {
     const specYaml = loadOpenAPISpec("src/resources/petstore.yaml")
     const result = generate(specYaml)
