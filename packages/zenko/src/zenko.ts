@@ -142,19 +142,14 @@ export function generateWithMetadata(
     output.push("")
 
     // Determine which schemas to generate
-    let schemasToGenerate: string[]
-    if (operationIds && operationIds.length > 0) {
-      // Only generate schemas referenced by selected operations
-      const referencedSchemas = collectReferencedSchemas(operations, spec)
-      schemasToGenerate = Array.from(referencedSchemas)
-    } else {
-      // Generate all schemas
-      schemasToGenerate = Object.keys(spec.components.schemas)
-    }
+    const schemasToGenerate =
+      operationIds && operationIds.length > 0
+        ? new Set(collectReferencedSchemas(operations, spec))
+        : new Set(Object.keys(spec.components.schemas))
 
     // Sort schemas by dependencies (topological sort)
     const sortedSchemas = topologicalSort(spec.components.schemas).filter(
-      (name) => schemasToGenerate.includes(name)
+      (name) => schemasToGenerate.has(name)
     )
 
     for (const name of sortedSchemas) {
