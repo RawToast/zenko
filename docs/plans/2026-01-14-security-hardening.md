@@ -4,7 +4,7 @@
 
 **Goal:** Make unsafe config execution and path traversal explicit opt-ins and add a YAML spec size guard.
 
-**Architecture:** Extend CLI flags to gate JS config loading and unsafe output paths, validate resolved paths against the config directory by default, and add a configurable max spec size check before YAML parsing. Tests should use YAML inputs only (JSON support is not part of this plan).
+**Architecture:** Extend CLI flags to gate JS config loading and unsafe paths, validate both input and output paths against a base directory by default (config runs: directory containing the config file; positional runs: current working directory), and add a configurable max spec size check before YAML parsing. Tests should use YAML inputs only (JSON support is not part of this plan).
 
 **Tech Stack:** TypeScript, Bun tests, CLI execution via `execSync`.
 
@@ -35,9 +35,12 @@ execSync(`bun run ${cliPath} --config ${jsConfigPath} --allow-js-config`, {
 })
 ```
 
-**Step 2: Write failing tests for unsafe output paths**
+**Step 2: Write failing tests for unsafe paths (config + positional)**
 
 ```ts
+// Add at file top: import * as os from "os"
+
+// Config-based output escape (baseDir = config directory)
 const escapeConfigPath = path.join(tempDir, "escape.config.yaml")
 const escapeOutput = "../escaped.ts"
 const escapeConfig = {
@@ -51,6 +54,35 @@ expect(() => {
 
 execSync(
   `bun run ${cliPath} --config ${escapeConfigPath} --allow-unsafe-paths`,
+  { encoding: "utf8" }
+)
+
+// Positional output escape (baseDir = process.cwd())
+expect(() => {
+  execSync(`bun run ${cliPath} ${petstoreYamlPath} ../escaped.ts`, {
+    encoding: "utf8",
+  })
+}).toThrow()
+
+// Positional input escape (baseDir = process.cwd())
+const externalSpecPath = path.join(os.tmpdir(), "zenko-external.yaml")
+fs.writeFileSync(
+  externalSpecPath,
+  Bun.YAML.stringify({
+    openapi: "3.1.0",
+    info: { title: "External", version: "1.0.0" },
+    paths: {},
+  })
+)
+
+expect(() => {
+  execSync(`bun run ${cliPath} ${externalSpecPath} ${outputFile}`, {
+    encoding: "utf8",
+  })
+}).toThrow()
+
+execSync(
+  `bun run ${cliPath} ${externalSpecPath} ${outputFile} --allow-unsafe-paths`,
   { encoding: "utf8" }
 )
 ```
@@ -158,7 +190,7 @@ git commit -m "feat: add js config opt-in flag"
 
 ---
 
-### Task 4: Enforce safe output paths by default
+### Task 4: Enforce safe input/output paths by default
 
 **Files:**
 
@@ -176,7 +208,7 @@ function resolveSafePath(filePath: string, baseDir: string, allowUnsafe: boolean
   if (!allowUnsafe) {
     const relative = path.relative(baseDir, resolved)
     if (relative.startsWith("..") || path.isAbsolute(relative)) {
-      throw new Error(`Output path must stay within ${baseDir}`)
+      throw new Error(`Path must stay within ${baseDir}`)
     }
   }
 
@@ -184,7 +216,12 @@ function resolveSafePath(filePath: string, baseDir: string, allowUnsafe: boolean
 }
 ```
 
-Use `resolveSafePath` for `entry.input`, `entry.output`, and `helpersOutput` (relative to the output directory), while leaving single-run positional inputs unchanged.
+Use `resolveSafePath` for both config and positional runs:
+
+- Config runs (`--config`): validate `entry.input`, `entry.output`, and `helpersOutput` relative to the config file directory.
+- Positional runs (`zenko <input> <output>`): validate both the input spec path and output path relative to `process.cwd()`.
+
+Any path that escapes the base directory (e.g. `..` or an absolute path outside the base) should require `--allow-unsafe-paths`.
 
 **Step 2: Run tests to verify they pass**
 
@@ -195,7 +232,7 @@ Expected: FAIL until size guard is added.
 
 ```bash
 git add packages/zenko/src/cli.ts
-git commit -m "feat: guard config output paths"
+git commit -m "feat: guard cli input/output paths"
 ```
 
 ---
