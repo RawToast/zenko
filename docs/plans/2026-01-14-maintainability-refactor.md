@@ -69,12 +69,29 @@ git commit -m "test: snapshot schema generator output"
 **Step 1: Move primitive helpers into a new module**
 
 ```ts
-export function buildString(schema: any, options: SchemaOptions): string { /* existing body */ }
-export function buildNumber(schema: any, options: SchemaOptions): string { /* existing body */ }
-export function buildInteger(schema: any, options: SchemaOptions): string { /* existing body */ }
-export function applyStrictArrayBounds(schema: any, builder: string, itemSchema: any, enforceBounds: boolean): string { /* existing body */ }
-export function isPrimitiveLike(schema: any): boolean { /* existing body */ }
-export function applyNumericBounds(schema: any, builder: string): string { /* existing body */ }
+export function buildString(schema: any, options: SchemaOptions): string {
+  /* existing body */
+}
+export function buildNumber(schema: any, options: SchemaOptions): string {
+  /* existing body */
+}
+export function buildInteger(schema: any, options: SchemaOptions): string {
+  /* existing body */
+}
+export function applyStrictArrayBounds(
+  schema: any,
+  builder: string,
+  itemSchema: any,
+  enforceBounds: boolean
+): string {
+  /* existing body */
+}
+export function isPrimitiveLike(schema: any): boolean {
+  /* existing body */
+}
+export function applyNumericBounds(schema: any, builder: string): string {
+  /* existing body */
+}
 ```
 
 **Step 2: Update imports in `schema-generator.ts`**
@@ -221,7 +238,10 @@ git commit -m "refactor: tidy schema generator exports"
 **Step 1: Add a shared helper for parameter locations**
 
 ```ts
-function collectParamsByLocation(parameters: any[], location: "header" | "query") {
+function collectParamsByLocation(
+  parameters: any[],
+  location: "header" | "query"
+) {
   return parameters
     .filter((param) => param.in === location)
     .map((param) => ({

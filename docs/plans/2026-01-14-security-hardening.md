@@ -49,7 +49,9 @@ const escapeConfig = {
 fs.writeFileSync(escapeConfigPath, Bun.YAML.stringify(escapeConfig))
 
 expect(() => {
-  execSync(`bun run ${cliPath} --config ${escapeConfigPath}`, { encoding: "utf8" })
+  execSync(`bun run ${cliPath} --config ${escapeConfigPath}`, {
+    encoding: "utf8",
+  })
 }).toThrow()
 
 execSync(
@@ -163,8 +165,12 @@ Add `--allow-js-config` and `--allow-unsafe-paths` to `parseArgs` and `printHelp
 async function loadConfig(filePath: string, allowJsConfig: boolean) {
   const extension = path.extname(filePath).toLowerCase()
 
-  if (extension === ".json") { /* unchanged */ }
-  if (extension === ".yaml" || extension === ".yml") { /* unchanged */ }
+  if (extension === ".json") {
+    /* unchanged */
+  }
+  if (extension === ".yaml" || extension === ".yml") {
+    /* unchanged */
+  }
 
   if (!allowJsConfig) {
     throw new Error("JS config files require --allow-js-config")
@@ -200,7 +206,11 @@ git commit -m "feat: add js config opt-in flag"
 **Step 1: Add a base-dir enforcement helper**
 
 ```ts
-function resolveSafePath(filePath: string, baseDir: string, allowUnsafe: boolean) {
+function resolveSafePath(
+  filePath: string,
+  baseDir: string,
+  allowUnsafe: boolean
+) {
   const resolved = path.isAbsolute(filePath)
     ? path.resolve(filePath)
     : path.resolve(baseDir, filePath)
