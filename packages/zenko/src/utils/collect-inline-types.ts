@@ -1,8 +1,10 @@
 import { toCamelCase, capitalize } from "./string-utils"
 import { findContentType, normalizeResponseSchema } from "./schema-utils"
-import { buildOperationLookup } from "./operation-lookup"
+import {
+  buildOperationLookup,
+  type OperationLookupSpec,
+} from "./operation-lookup"
 import type { Operation } from "../types/operation"
-import type { OpenAPISpec } from "../zenko"
 /**
  * Minimal OpenAPI types for the properties we access
  */
@@ -34,7 +36,7 @@ type OpenAPISchema = {
  */
 export function collectInlineRequestTypes(
   operations: Operation[],
-  spec: OpenAPISpec
+  spec: OperationLookupSpec
 ): Map<string, any> {
   const requestTypesToGenerate = new Map<string, any>()
 
@@ -98,7 +100,7 @@ function findRequestBodySchema(
  */
 export function collectInlineResponseTypes(
   operations: Operation[],
-  spec: OpenAPISpec
+  spec: OperationLookupSpec
 ): Map<string, any> {
   const responseTypesToGenerate = new Map<string, any>()
 

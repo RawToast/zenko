@@ -1,10 +1,22 @@
 import type { OpenAPISpec } from "../zenko"
 
-type OpenAPIOperation = { operationId?: string }
+type OpenAPIOperation = {
+  operationId?: string
+  requestBody?: { content?: Record<string, { schema?: any }> }
+  responses?: Record<string, { content?: Record<string, { schema?: any }> }>
+  parameters?: any[]
+}
+
+export type OperationLookupSpec = {
+  paths?: OpenAPISpec["paths"]
+  webhooks?: OpenAPISpec["webhooks"]
+}
 
 type OperationLookup = Map<string, OpenAPIOperation>
 
-export function buildOperationLookup(spec: OpenAPISpec): OperationLookup {
+export function buildOperationLookup(
+  spec: OperationLookupSpec
+): OperationLookup {
   const lookup = new Map<string, OpenAPIOperation>()
 
   for (const [, pathItem] of Object.entries(spec.paths || {})) {
