@@ -742,12 +742,13 @@ export function buildZodObject(
     schemaRegistry,
     currentSchemaName
   )
+  const requiredProps = new Set(schema.required ?? [])
 
   for (const [propName, propSchema] of Object.entries(
     schema.properties || {}
   )) {
     const isRequired =
-      (schema.required?.includes(propName) ?? false) ||
+      requiredProps.has(propName) ||
       discriminatorRequiredProperties.has(propName)
     const baseType = getZodTypeFromSchema(
       propSchema as any,

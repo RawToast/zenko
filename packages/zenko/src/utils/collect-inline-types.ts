@@ -1,7 +1,8 @@
 import { toCamelCase, capitalize } from "./string-utils"
 import { findContentType, normalizeResponseSchema } from "./schema-utils"
+import { buildOperationLookup } from "./operation-lookup"
 import type { Operation } from "../types/operation"
-import type { OpenAPISpec as FullOpenAPISpec } from "../zenko"
+import type { OpenAPISpec } from "../zenko"
 /**
  * Minimal OpenAPI types for the properties we access
  */
@@ -24,11 +25,6 @@ type OpenAPISchema = {
   [key: string]: any // Allow arbitrary properties
 }
 
-type OpenAPISpec = {
-  paths?: FullOpenAPISpec["paths"]
-  webhooks?: FullOpenAPISpec["webhooks"]
-}
-
 /**
  * Collects all inline request types that need to be generated.
  *
@@ -42,28 +38,10 @@ export function collectInlineRequestTypes(
 ): Map<string, any> {
   const requestTypesToGenerate = new Map<string, any>()
 
-  // Build a lookup map of operationId -> operation for O(1) access
-  const operationLookup = new Map<string, OpenAPIOperation>()
-
-  // Process paths
-  for (const [, pathItem] of Object.entries(spec.paths || {})) {
-    for (const [, operation] of Object.entries(pathItem)) {
-      const op = operation as OpenAPIOperation
-      if (op.operationId) {
-        operationLookup.set(op.operationId, op)
-      }
-    }
-  }
-
-  // Process webhooks
-  for (const [, pathItem] of Object.entries(spec.webhooks || {})) {
-    for (const [, operation] of Object.entries(pathItem)) {
-      const op = operation as OpenAPIOperation
-      if (op.operationId) {
-        operationLookup.set(op.operationId, op)
-      }
-    }
-  }
+  const operationLookup = buildOperationLookup(spec) as Map<
+    string,
+    OpenAPIOperation
+  >
 
   for (const op of operations) {
     const operation = operationLookup.get(op.operationId)
@@ -124,28 +102,10 @@ export function collectInlineResponseTypes(
 ): Map<string, any> {
   const responseTypesToGenerate = new Map<string, any>()
 
-  // Build a lookup map of operationId -> operation for O(1) access
-  const operationLookup = new Map<string, OpenAPIOperation>()
-
-  // Process paths
-  for (const [, pathItem] of Object.entries(spec.paths || {})) {
-    for (const [, operation] of Object.entries(pathItem)) {
-      const op = operation as OpenAPIOperation
-      if (op.operationId) {
-        operationLookup.set(op.operationId, op)
-      }
-    }
-  }
-
-  // Process webhooks
-  for (const [, pathItem] of Object.entries(spec.webhooks || {})) {
-    for (const [, operation] of Object.entries(pathItem)) {
-      const op = operation as OpenAPIOperation
-      if (op.operationId) {
-        operationLookup.set(op.operationId, op)
-      }
-    }
-  }
+  const operationLookup = buildOperationLookup(spec) as Map<
+    string,
+    OpenAPIOperation
+  >
 
   for (const op of operations) {
     const operation = operationLookup.get(op.operationId)

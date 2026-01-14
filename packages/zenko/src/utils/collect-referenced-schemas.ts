@@ -4,6 +4,7 @@ import {
   normalizeResponseSchema,
   resolveParameter,
 } from "./schema-utils"
+import { buildOperationLookup } from "./operation-lookup"
 import type { Operation } from "../types/operation"
 import type { OpenAPISpec } from "../zenko"
 
@@ -20,25 +21,16 @@ export function collectReferencedSchemas(
   spec: OpenAPISpec
 ): Set<string> {
   const referenced = new Set<string>()
+  const dependencyCache = new Map<any, string[]>()
+  const getDependencies = (schema: any) => {
+    if (!schema) return []
+    if (dependencyCache.has(schema)) return dependencyCache.get(schema) ?? []
+    const deps = extractDependencies(schema)
+    dependencyCache.set(schema, deps)
+    return deps
+  }
 
-  // Build operation lookup from raw spec
-  const operationLookup = new Map<string, any>()
-  for (const [, pathItem] of Object.entries(spec.paths || {})) {
-    for (const [, operation] of Object.entries(pathItem)) {
-      const op = operation as any
-      if (op.operationId) {
-        operationLookup.set(op.operationId, op)
-      }
-    }
-  }
-  for (const [, pathItem] of Object.entries(spec.webhooks || {})) {
-    for (const [, operation] of Object.entries(pathItem)) {
-      const op = operation as any
-      if (op.operationId) {
-        operationLookup.set(op.operationId, op)
-      }
-    }
-  }
+  const operationLookup = buildOperationLookup(spec)
 
   // Collect from operations and raw spec
   for (const op of operations) {
@@ -53,7 +45,7 @@ export function collectReferencedSchemas(
       referenced.add(refName)
     } else if (requestBody) {
       // Inline schema - extract dependencies
-      const deps = extractDependencies(requestBody)
+      const deps = getDependencies(requestBody)
       for (const dep of deps) {
         if (spec.components?.schemas?.[dep]) {
           referenced.add(dep)
@@ -75,7 +67,7 @@ export function collectReferencedSchemas(
         referenced.add(refName)
       } else if (responseSchema) {
         // Inline schema - extract dependencies
-        const deps = extractDependencies(responseSchema)
+        const deps = getDependencies(responseSchema)
         for (const dep of deps) {
           if (spec.components?.schemas?.[dep]) {
             referenced.add(dep)
@@ -137,7 +129,7 @@ export function collectReferencedSchemas(
     if (!schema) continue
 
     // Extract dependencies from this schema
-    const dependencies = extractDependencies(schema)
+    const dependencies = getDependencies(schema)
     for (const dep of dependencies) {
       if (spec.components?.schemas?.[dep] && !visited.has(dep)) {
         referenced.add(dep)
