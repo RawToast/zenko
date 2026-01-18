@@ -2,9 +2,10 @@
 exact = true
 linker = "isolated"
 minimumReleaseAge = 259200 # 3 days
+minimumReleaseAgeExcludes = ["bun-scan"]
 
 [install.security]
-provider = "@socketsecurity/bun-security-scanner"
+scanner = "bun-scan"
 
 [test]
 preload = ["./.test-guard.ts"]

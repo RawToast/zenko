@@ -1,0 +1,4 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rawtoast/bun-scan/v1.1.0/schema/bun-scan.schema.json",
+  "source": "npm"
+}
