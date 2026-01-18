@@ -18,7 +18,6 @@
     "nuke": "rimraf --glob '**/node_modules' --glob '**/dist' --glob '**/coverage' --glob 'packages/examples/**/*.gen.ts'"
   },
   "devDependencies": {
-    "@socketsecurity/bun-security-scanner": "1.1.2",
     "bun-scan": "1.1.0",
     "oxfmt": "0.24.0",
     "oxlint": "1.39.0",
