@@ -19,10 +19,10 @@
   },
   "devDependencies": {
     "bun-scan": "1.1.0",
-    "oxfmt": "0.24.0",
-    "oxlint": "1.39.0",
+    "oxfmt": "0.26.0",
+    "oxlint": "1.41.0",
     "rimraf": "6.1.2",
-    "turbo": "2.7.4"
+    "turbo": "2.7.5"
   },
   "engines": {
     "bun": ">=1.2.22"
