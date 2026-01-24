@@ -24,12 +24,13 @@ export class EnumDemoClientFetch {
     }
   ): Promise<T> {
     const url = `${this.baseUrl}${path}`
+    const { headers: optHeaders, ...restOptions } = options || {}
     const response = await fetch(url, {
+      ...restOptions,
       headers: {
         "Content-Type": "application/json",
-        ...options?.headers,
+        ...optHeaders,
       },
-      ...options,
     })
 
     if (!response.ok) {
