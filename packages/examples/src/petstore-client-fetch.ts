@@ -24,7 +24,7 @@ export class PetstoreClientFetch {
   private async request<T>(
     path: string,
     responseSchema: ZodSchema<T> | undefined,
-    options?: RequestInit
+    options?: Omit<RequestInit, "headers"> & { headers: Record<string, string> }
   ): Promise<T | undefined> {
     const url = `${this.baseUrl}${path}`
     const response = await fetch(url, {

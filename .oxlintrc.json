@@ -74,6 +74,7 @@
     "typescript/no-this-alias": "warn",
     "typescript/no-unnecessary-parameter-property-assignment": "warn",
     "typescript/no-unsafe-declaration-merging": "warn",
+    "typescript/no-redundant-type-constituents": "off",
     "typescript/no-useless-empty-export": "warn",
     "typescript/no-wrapper-object-types": "warn",
     "typescript/prefer-as-const": "warn",

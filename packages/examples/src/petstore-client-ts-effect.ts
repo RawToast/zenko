@@ -8,7 +8,7 @@ import { paths, Pet, Pets, Error as ErrorSchema } from "./schema/petstore.gen"
 type ZodSchema<T = any> = { parse: (json: unknown) => T }
 
 type EffectRequestOptions = {
-  method?: HttpMethod | string
+  method?: HttpMethod
   headers?: Record<string, string>
   body?: unknown
 }

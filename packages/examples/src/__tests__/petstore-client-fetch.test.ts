@@ -58,7 +58,7 @@ describe("PetstoreClientFetch", () => {
       expect(result).toEqual(mockPets)
     })
 
-    it("should handle API errors", async () => {
+    it("should handle API errors", () => {
       const fetchMock = setupFetchMock()
       const client = new PetstoreClientFetch("https://api.test.com")
 
@@ -68,9 +68,7 @@ describe("PetstoreClientFetch", () => {
         })
       )
 
-      await expect(client.listPets()).rejects.toThrow(
-        "API Error: Bad Request (400)"
-      )
+      expect(client.listPets()).rejects.toThrow("API Error: Bad Request (400)")
 
       expect(fetchMock).toHaveBeenCalledTimes(1)
       expect(fetchMock).toHaveBeenCalledWith(
@@ -83,7 +81,7 @@ describe("PetstoreClientFetch", () => {
       )
     })
 
-    it("should handle HTTP errors without proper error format", async () => {
+    it("should handle HTTP errors without proper error format", () => {
       const fetchMock = setupFetchMock()
       const client = new PetstoreClientFetch("https://api.test.com")
 
@@ -94,7 +92,7 @@ describe("PetstoreClientFetch", () => {
         })
       )
 
-      await expect(client.listPets()).rejects.toThrow(
+      expect(client.listPets()).rejects.toThrow(
         "HTTP Error: 500 Internal Server Error"
       )
 
@@ -135,7 +133,7 @@ describe("PetstoreClientFetch", () => {
       )
     })
 
-    it("should handle creation errors", async () => {
+    it("should handle creation errors", () => {
       const fetchMock = setupFetchMock()
       const client = new PetstoreClientFetch("https://api.test.com")
 
@@ -150,7 +148,7 @@ describe("PetstoreClientFetch", () => {
         )
       )
 
-      await expect(client.createPets(newPet)).rejects.toThrow(
+      expect(client.createPets(newPet)).rejects.toThrow(
         "API Error: Unprocessable Entity (422)"
       )
 
@@ -192,7 +190,7 @@ describe("PetstoreClientFetch", () => {
       expect(result).toEqual(mockPet)
     })
 
-    it("should handle not found errors", async () => {
+    it("should handle not found errors", () => {
       const fetchMock = setupFetchMock()
       const client = new PetstoreClientFetch("https://api.test.com")
 
@@ -202,7 +200,7 @@ describe("PetstoreClientFetch", () => {
         })
       )
 
-      await expect(client.showPetById("999")).rejects.toThrow(
+      expect(client.showPetById("999")).rejects.toThrow(
         "API Error: Not Found (404)"
       )
 

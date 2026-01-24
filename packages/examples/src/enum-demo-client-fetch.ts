@@ -19,13 +19,13 @@ export class EnumDemoClientFetch {
   private async request<T>(
     path: string,
     responseSchema: ZodSchema<T>,
-    options?: RequestInit
+    options?: RequestInit & { headers?: Record<string, string> }
   ): Promise<T> {
     const url = `${this.baseUrl}${path}`
     const response = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
-        ...options?.headers,
+        ...(options?.headers as Record<string, string>),
       },
       ...options,
     })

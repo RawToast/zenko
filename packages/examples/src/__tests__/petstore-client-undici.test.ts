@@ -41,19 +41,17 @@ describe("PetstoreClientUndici", () => {
     expect(tracker.calls[0]?.url).toBe(`${origin}/pets?limit=10`)
   })
 
-  it("handles API errors with structured payload", async () => {
+  it("handles API errors with structured payload", () => {
     const tracker = createRequestTracker(() => ({
       statusCode: 400,
       body: { code: 400, message: "Bad Request" },
     }))
     const client = new PetstoreClientUndici(origin, undefined, tracker.stub)
 
-    await expect(client.listPets()).rejects.toThrow(
-      "API Error: Bad Request (400)"
-    )
+    expect(client.listPets()).rejects.toThrow("API Error: Bad Request (400)")
   })
 
-  it("handles HTTP errors without JSON payload", async () => {
+  it("handles HTTP errors without JSON payload", () => {
     const tracker = createRequestTracker(() => ({
       statusCode: 500,
       statusMessage: "Internal Server Error",
@@ -61,7 +59,7 @@ describe("PetstoreClientUndici", () => {
     }))
     const client = new PetstoreClientUndici(origin, undefined, tracker.stub)
 
-    await expect(client.listPets()).rejects.toThrow("HTTP Error: 500")
+    expect(client.listPets()).rejects.toThrow("HTTP Error: 500")
   })
 
   it("createPets posts JSON payload", async () => {
@@ -77,16 +75,16 @@ describe("PetstoreClientUndici", () => {
     expect(tracker.calls[0]?.options.body).toBe(JSON.stringify(newPet))
   })
 
-  it("createPets surfaces API errors", async () => {
+  it("createPets surfaces API errors", () => {
     const tracker = createRequestTracker(() => ({
       statusCode: 422,
       body: { code: 422, message: "Unprocessable Entity" },
     }))
     const client = new PetstoreClientUndici(origin, undefined, tracker.stub)
 
-    await expect(
-      client.createPets({ name: "Buddy", tag: "dog" })
-    ).rejects.toThrow("API Error: Unprocessable Entity (422)")
+    expect(client.createPets({ name: "Buddy", tag: "dog" })).rejects.toThrow(
+      "API Error: Unprocessable Entity (422)"
+    )
   })
 
   it("showPetById returns the expected pet", async () => {
@@ -103,14 +101,14 @@ describe("PetstoreClientUndici", () => {
     expect(tracker.calls[0]?.url).toBe(`${origin}/pets/1`)
   })
 
-  it("showPetById surfaces not found errors", async () => {
+  it("showPetById surfaces not found errors", () => {
     const tracker = createRequestTracker(() => ({
       statusCode: 404,
       body: { code: 404, message: "Not Found" },
     }))
     const client = new PetstoreClientUndici(origin, undefined, tracker.stub)
 
-    await expect(client.showPetById("999")).rejects.toThrow(
+    expect(client.showPetById("999")).rejects.toThrow(
       "API Error: Not Found (404)"
     )
   })

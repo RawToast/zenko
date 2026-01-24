@@ -30,7 +30,7 @@ jobs:
           bun install -g turbo
 
       - name: Check formatting
-        run: turbo run format:check lint:check check-types
+        run: bun run check:ci
 
       - name: Type check and build
         run: turbo run build
