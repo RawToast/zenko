@@ -25,7 +25,7 @@ export class EnumDemoClientFetch {
     const response = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
-        ...(options?.headers as Record<string, string>),
+        ...options?.headers,
       },
       ...options,
     })
