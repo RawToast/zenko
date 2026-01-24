@@ -43,7 +43,7 @@ describe("PetstoreClientTsEffect", () => {
     expect(request?.url).toBe(`${origin}/pets?limit=10`)
   })
 
-  it("handles API errors", async () => {
+  it("handles API errors", () => {
     const tracker = createHttpClientTracker(
       () =>
         new Response(JSON.stringify({ code: 400, message: "Bad Request" }), {
@@ -52,12 +52,12 @@ describe("PetstoreClientTsEffect", () => {
     )
     const client = new PetstoreClientTsEffect(origin)
 
-    await expect(tracker.run(client.listPets())).rejects.toThrow(
+    expect(tracker.run(client.listPets())).rejects.toThrow(
       "API Error: Bad Request (400)"
     )
   })
 
-  it("handles HTTP errors without JSON body", async () => {
+  it("handles HTTP errors without JSON body", () => {
     const tracker = createHttpClientTracker(
       () =>
         new Response("Internal Server Error", {
@@ -67,9 +67,7 @@ describe("PetstoreClientTsEffect", () => {
     )
     const client = new PetstoreClientTsEffect(origin)
 
-    await expect(tracker.run(client.listPets())).rejects.toThrow(
-      "HTTP Error: 500"
-    )
+    expect(tracker.run(client.listPets())).rejects.toThrow("HTTP Error: 500")
   })
 
   it("createPets sends JSON payload", async () => {
@@ -91,7 +89,7 @@ describe("PetstoreClientTsEffect", () => {
     expect(readBody(request?.body)).toBe(JSON.stringify(newPet))
   })
 
-  it("createPets surfaces API errors", async () => {
+  it("createPets surfaces API errors", () => {
     const tracker = createHttpClientTracker(
       () =>
         new Response(
@@ -101,7 +99,7 @@ describe("PetstoreClientTsEffect", () => {
     )
     const client = new PetstoreClientTsEffect(origin)
 
-    await expect(
+    expect(
       tracker.run(client.createPets({ name: "Buddy", tag: "dog" }))
     ).rejects.toThrow("API Error: Unprocessable Entity (422)")
   })
@@ -120,7 +118,7 @@ describe("PetstoreClientTsEffect", () => {
     expect(request?.url).toBe(`${origin}/pets/1`)
   })
 
-  it("showPetById surfaces errors", async () => {
+  it("showPetById surfaces errors", () => {
     const tracker = createHttpClientTracker(
       () =>
         new Response(JSON.stringify({ code: 404, message: "Not Found" }), {
@@ -129,7 +127,7 @@ describe("PetstoreClientTsEffect", () => {
     )
     const client = new PetstoreClientTsEffect(origin)
 
-    await expect(tracker.run(client.showPetById("999"))).rejects.toThrow(
+    expect(tracker.run(client.showPetById("999"))).rejects.toThrow(
       "API Error: Not Found (404)"
     )
   })

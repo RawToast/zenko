@@ -72,7 +72,7 @@ describe("AuthClientFetch", () => {
       )
     })
 
-    it("should handle authentication errors", async () => {
+    it("should handle authentication errors", () => {
       const fetchMock = setupFetchMock()
       const client = new AuthClientFetch("https://api.test.com")
 
@@ -83,7 +83,7 @@ describe("AuthClientFetch", () => {
         )
       )
 
-      await expect(
+      expect(
         client.loginUser({
           email: "user@example.com",
           password: "wrong",
@@ -134,7 +134,7 @@ describe("AuthClientFetch", () => {
       expect(result).toEqual(mockUser)
     })
 
-    it("should handle validation errors", async () => {
+    it("should handle validation errors", () => {
       const fetchMock = setupFetchMock()
       const client = new AuthClientFetch("https://api.test.com")
 
@@ -145,7 +145,7 @@ describe("AuthClientFetch", () => {
         )
       )
 
-      await expect(
+      expect(
         client.registerUser({
           email: "existing@example.com",
           password: "pass123",
@@ -401,7 +401,7 @@ describe("AuthClientFetch", () => {
       expect(formData.get("priority")).toBe("medium")
     })
 
-    it("should handle HTTP errors", async () => {
+    it("should handle HTTP errors", () => {
       const fetchMock = setupFetchMock()
       const client = new AuthClientFetch("https://api.test.com")
 
@@ -412,7 +412,7 @@ describe("AuthClientFetch", () => {
         })
       )
 
-      await expect(
+      expect(
         client.submitFeedback({
           category: "other",
           message: "Test message for error handling",
@@ -422,10 +422,10 @@ describe("AuthClientFetch", () => {
   })
 
   describe("schema validation", () => {
-    it("should validate email format on login", async () => {
+    it("should validate email format on login", () => {
       const client = new AuthClientFetch("https://api.test.com")
 
-      await expect(
+      expect(
         client.loginUser({
           email: "invalid-email",
           password: "pass",
@@ -433,10 +433,10 @@ describe("AuthClientFetch", () => {
       ).rejects.toThrow()
     })
 
-    it("should validate email format on registration", async () => {
+    it("should validate email format on registration", () => {
       const client = new AuthClientFetch("https://api.test.com")
 
-      await expect(
+      expect(
         client.registerUser({
           email: "not-an-email",
           password: "pass123",
@@ -445,10 +445,10 @@ describe("AuthClientFetch", () => {
       ).rejects.toThrow()
     })
 
-    it("should validate category enum on feedback", async () => {
+    it("should validate category enum on feedback", () => {
       const client = new AuthClientFetch("https://api.test.com")
 
-      await expect(
+      expect(
         client.submitFeedback({
           category: "invalid" as "bug",
           message: "Test message",
@@ -456,10 +456,10 @@ describe("AuthClientFetch", () => {
       ).rejects.toThrow()
     })
 
-    it("should validate website URL format on profile update", async () => {
+    it("should validate website URL format on profile update", () => {
       const client = new AuthClientFetch("https://api.test.com")
 
-      await expect(
+      expect(
         client.updateProfile({
           website: "not-a-valid-url",
         })

@@ -41,7 +41,7 @@ describe("PetstoreClientAxios", () => {
     expect(tracker.calls[0]?.config.url).toBe(`${origin}/pets?limit=10`)
   })
 
-  it("handles API errors with structured payload", async () => {
+  it("handles API errors with structured payload", () => {
     const tracker = createAxiosTracker(() => ({
       status: 400,
       statusText: "Bad Request",
@@ -49,12 +49,10 @@ describe("PetstoreClientAxios", () => {
     }))
     const client = new PetstoreClientAxios(origin, tracker.stub)
 
-    await expect(client.listPets()).rejects.toThrow(
-      "API Error: Bad Request (400)"
-    )
+    expect(client.listPets()).rejects.toThrow("API Error: Bad Request (400)")
   })
 
-  it("handles HTTP errors without proper error format", async () => {
+  it("handles HTTP errors without proper error format", () => {
     const tracker = createAxiosTracker(() => ({
       status: 500,
       statusText: "Internal Server Error",
@@ -62,7 +60,7 @@ describe("PetstoreClientAxios", () => {
     }))
     const client = new PetstoreClientAxios(origin, tracker.stub)
 
-    await expect(client.listPets()).rejects.toThrow(
+    expect(client.listPets()).rejects.toThrow(
       "HTTP Error: 500 Internal Server Error"
     )
   })
@@ -83,7 +81,7 @@ describe("PetstoreClientAxios", () => {
     expect(tracker.calls[0]?.config.data).toEqual(newPet)
   })
 
-  it("createPets surfaces API errors", async () => {
+  it("createPets surfaces API errors", () => {
     const tracker = createAxiosTracker(() => ({
       status: 422,
       statusText: "Unprocessable Entity",
@@ -91,9 +89,9 @@ describe("PetstoreClientAxios", () => {
     }))
     const client = new PetstoreClientAxios(origin, tracker.stub)
 
-    await expect(
-      client.createPets({ name: "Buddy", tag: "dog" })
-    ).rejects.toThrow("API Error: Unprocessable Entity (422)")
+    expect(client.createPets({ name: "Buddy", tag: "dog" })).rejects.toThrow(
+      "API Error: Unprocessable Entity (422)"
+    )
   })
 
   it("showPetById returns the expected pet", async () => {
@@ -111,7 +109,7 @@ describe("PetstoreClientAxios", () => {
     expect(tracker.calls[0]?.config.url).toBe(`${origin}/pets/1`)
   })
 
-  it("showPetById surfaces not found errors", async () => {
+  it("showPetById surfaces not found errors", () => {
     const tracker = createAxiosTracker(() => ({
       status: 404,
       statusText: "Not Found",
@@ -119,7 +117,7 @@ describe("PetstoreClientAxios", () => {
     }))
     const client = new PetstoreClientAxios(origin, tracker.stub)
 
-    await expect(client.showPetById("999")).rejects.toThrow(
+    expect(client.showPetById("999")).rejects.toThrow(
       "API Error: Not Found (404)"
     )
   })

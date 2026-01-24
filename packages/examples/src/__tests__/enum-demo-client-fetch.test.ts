@@ -73,7 +73,7 @@ describe("EnumDemoClientFetch", () => {
       expect(result[0].category).toBe("electronics")
     })
 
-    it("should reject unknown Category values (closed enum)", async () => {
+    it("should reject unknown Category values (closed enum)", () => {
       const fetchMock = setupFetchMock()
       const client = new EnumDemoClientFetch("https://api.test.com")
 
@@ -90,7 +90,7 @@ describe("EnumDemoClientFetch", () => {
       fetchMock.mockResolvedValue(new Response(JSON.stringify(mockProducts)))
 
       // Should throw because Category is a closed enum
-      await expect(client.listProducts()).rejects.toThrow()
+      expect(client.listProducts()).rejects.toThrow()
 
       expect(fetchMock).toHaveBeenCalledTimes(1)
     })
@@ -224,7 +224,7 @@ describe("EnumDemoClientFetch", () => {
       expect(result.category).toBe("electronics")
     })
 
-    it("should handle API errors", async () => {
+    it("should handle API errors", () => {
       const fetchMock = setupFetchMock()
       const client = new EnumDemoClientFetch("https://api.test.com")
 
@@ -243,7 +243,7 @@ describe("EnumDemoClientFetch", () => {
         )
       )
 
-      await expect(client.createProduct(newProduct)).rejects.toThrow(
+      expect(client.createProduct(newProduct)).rejects.toThrow(
         "API Error: Invalid product data (400)"
       )
 
