@@ -19,7 +19,9 @@ export class EnumDemoClientFetch {
   private async request<T>(
     path: string,
     responseSchema: ZodSchema<T>,
-    options?: RequestInit & { headers?: Record<string, string> }
+    options?: Omit<RequestInit, "headers"> & {
+      headers?: Record<string, string>
+    }
   ): Promise<T> {
     const url = `${this.baseUrl}${path}`
     const response = await fetch(url, {

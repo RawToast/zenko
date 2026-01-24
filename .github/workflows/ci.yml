@@ -29,7 +29,7 @@ jobs:
           bun install --frozen-lockfile
           bun install -g turbo
 
-      - name: Check formatting
+      - name: Compile, format, and lint
         run: bun run check:ci
 
       - name: Type check and build
