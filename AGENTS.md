@@ -17,7 +17,7 @@ Zenko is a TypeScript library for generating type-safe API clients from OpenAPI 
 
 ## Commands
 
-Run all commands from the **workspace root** (`/Users/jim/Github/zenko`).
+Run all commands from the **workspace root**
 
 ### Essential Commands
 
