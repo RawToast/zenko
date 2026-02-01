@@ -1,0 +1,103 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish to npm (set true to actually publish)"
+        required: true
+        default: "false"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+
+    # Never publish from forks.
+    if: github.repository == 'RawToast/zenko'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Verify release tag matches package.json version
+        if: github.event_name == 'release'
+        run: |
+          set -euo pipefail
+
+          TAG_NAME='${{ github.event.release.tag_name }}'
+          if [[ ! "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+            echo "Release tag must look like vX.Y.Z, got: $TAG_NAME"
+            exit 1
+          fi
+
+          TAG_VERSION="${TAG_NAME#v}"
+          PKG_VERSION="$(node -p "require('./packages/zenko/package.json').version")"
+
+          echo "Release tag version: $TAG_VERSION"
+          echo "package.json version: $PKG_VERSION"
+
+          if [[ "$TAG_VERSION" != "$PKG_VERSION" ]]; then
+            echo "Version mismatch: tag is $TAG_VERSION but package.json is $PKG_VERSION"
+            echo "Fix by bumping package.json version, then create a matching GitHub Release tag."
+            exit 1
+          fi
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: |
+          bun install --frozen-lockfile
+          bun install -g turbo
+
+      - name: Format check
+        run: bun check:ci
+
+      - name: Build
+        run: turbo run build
+
+      - name: Package verification
+        working-directory: packages/zenko
+        run: bun pm pack --dry-run
+
+      - name: Determine npm tag
+        id: npm-tag
+        run: |
+          VERSION="$(node -p "require('./packages/zenko/package.json').version")"
+          if [[ "$VERSION" == *"-alpha"* ]]; then
+            echo "tag=alpha" >> "$GITHUB_OUTPUT"
+          elif [[ "$VERSION" == *"-beta"* ]]; then
+            echo "tag=beta" >> "$GITHUB_OUTPUT"
+          elif [[ "$VERSION" == *"-rc"* ]]; then
+            echo "tag=rc" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Publishing $VERSION with tag: $(grep tag= "$GITHUB_OUTPUT" | cut -d= -f2)"
+
+      - name: Publish (dry-run)
+        if: github.event_name == 'workflow_dispatch' && inputs.publish != 'true'
+        working-directory: packages/zenko
+        run: npm publish --access public --tag ${{ steps.npm-tag.outputs.tag }} --dry-run
+
+      - name: Publish
+        if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.publish == 'true')
+        working-directory: packages/zenko
+        run: npm publish --access public --tag ${{ steps.npm-tag.outputs.tag }}
