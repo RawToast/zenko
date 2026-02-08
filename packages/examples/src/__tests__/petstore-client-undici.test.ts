@@ -131,7 +131,10 @@ type MockResponse = {
 
 function createRequestTracker(responder: (call: RequestCall) => MockResponse) {
   const calls: RequestCall[] = []
-  const stub = (async (url, options) => {
+  const stub: UndiciRequest = async <TOpaque = null>(
+    url: RequestCall["url"],
+    options = {} as NonNullable<Parameters<UndiciRequest>[1]>
+  ) => {
     const normalizedOptions = {
       ...options,
     } as RequestCall["options"]
@@ -140,6 +143,7 @@ function createRequestTracker(responder: (call: RequestCall) => MockResponse) {
 
     return {
       statusCode: response.statusCode,
+      statusText: response.statusMessage ?? "",
       statusMessage: response.statusMessage,
       headers: response.headers ?? {},
       body: createBody(
@@ -148,10 +152,10 @@ function createRequestTracker(responder: (call: RequestCall) => MockResponse) {
         response.statusMessage
       ),
       trailers: {},
-      opaque: null,
+      opaque: null as TOpaque,
       context: {},
     }
-  }) as UndiciRequest
+  }
 
   return { calls, stub }
 }
