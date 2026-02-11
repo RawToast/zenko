@@ -140,7 +140,7 @@ function createRequestTracker(responder: (call: RequestCall) => MockResponse) {
 
     return {
       statusCode: response.statusCode,
-      statusMessage: response.statusMessage,
+      statusText: response.statusMessage ?? "",
       headers: response.headers ?? {},
       body: createBody(
         response.body,
