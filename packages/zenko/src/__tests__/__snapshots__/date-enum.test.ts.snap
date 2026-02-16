@@ -99,7 +99,7 @@ export const CreateSomethingRequest = z.object({
 
 export type CreateSomethingRequest = z.infer<typeof CreateSomethingRequest>;
 
-export const DateTime = z.string().datetime();
+export const DateTime = z.string().datetime({ offset: true });
 
 export type DateTime = z.infer<typeof DateTime>;
 

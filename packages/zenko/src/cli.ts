@@ -15,6 +15,7 @@ type CliConfigEntry = {
   output: string
   strictDates?: boolean
   strictNumeric?: boolean
+  dateTimeOffset?: boolean | string[]
   types?: TypesConfig
   operationIds?: string[]
   openEnums?: boolean | string[] | EnumConfig
@@ -158,6 +159,7 @@ async function runFromConfig(parsed: ParsedArgs) {
       outputFile,
       strictDates: entry.strictDates ?? parsed.strictDates,
       strictNumeric: entry.strictNumeric ?? parsed.strictNumeric,
+      dateTimeOffset: entry.dateTimeOffset,
       typesConfig,
       operationIds: entry.operationIds,
       openEnums: entry.openEnums,
@@ -222,6 +224,7 @@ async function generateSingle(options: {
   outputFile: string
   strictDates: boolean
   strictNumeric: boolean
+  dateTimeOffset?: boolean | string[]
   typesConfig?: TypesConfig
   operationIds?: string[]
   openEnums?: boolean | string[] | EnumConfig
@@ -231,6 +234,7 @@ async function generateSingle(options: {
     outputFile,
     strictDates,
     strictNumeric,
+    dateTimeOffset,
     typesConfig,
     operationIds,
     openEnums,
@@ -242,6 +246,7 @@ async function generateSingle(options: {
   const result = generateWithMetadata(spec, {
     strictDates,
     strictNumeric,
+    dateTimeOffset,
     types: typesConfig,
     operationIds,
     openEnums,

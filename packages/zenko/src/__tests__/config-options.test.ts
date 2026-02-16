@@ -1,5 +1,9 @@
 import { describe, test, expect } from "bun:test"
-import { mixedHeadersYamlPath, stringFormatsYamlPath } from "@zenko/specs"
+import {
+  dateTimeOffsetYamlPath,
+  mixedHeadersYamlPath,
+  stringFormatsYamlPath,
+} from "@zenko/specs"
 import { generate, type OpenAPISpec } from "../zenko"
 import { loadOpenAPISpec } from "../utils/yaml"
 
@@ -34,10 +38,16 @@ describe("Configuration Options", () => {
     test("strictDates: true - date formats use strict validators", () => {
       const result = generate(stringFormatsSpec, { strictDates: true })
 
-      // Date-time formats should use strict validators
-      expect(result).toContain("createdAt: z.string().datetime()")
-      expect(result).toContain("updatedAt: z.string().datetime()")
-      expect(result).toContain("timestamp: z.string().datetime()")
+      // Date-time formats should use strict validators (with offset: true by default)
+      expect(result).toContain(
+        "createdAt: z.string().datetime({ offset: true })"
+      )
+      expect(result).toContain(
+        "updatedAt: z.string().datetime({ offset: true })"
+      )
+      expect(result).toContain(
+        "timestamp: z.string().datetime({ offset: true })"
+      )
 
       // Date format should use strict validator
       expect(result).toContain("birthDate: z.string().date()")
@@ -100,7 +110,9 @@ describe("Configuration Options", () => {
       const result = generate(stringFormatsSpec, { strictDates: true })
 
       // Should contain both strict date validators AND strict non-date validators
-      expect(result).toContain("createdAt: z.string().datetime()") // date format
+      expect(result).toContain(
+        "createdAt: z.string().datetime({ offset: true })"
+      ) // date format
       expect(result).toContain("id: z.string().uuid()") // non-date format
       expect(result).toContain("email: z.string().email()") // non-date format
       expect(result).toContain("website: z.string().url()") // non-date format
@@ -336,8 +348,10 @@ describe("Configuration Options", () => {
         },
       })
 
-      // Should have strict date validation
-      expect(result).toContain("createdAt: z.string().datetime()")
+      // Should have strict date validation (with offset: true by default)
+      expect(result).toContain(
+        "createdAt: z.string().datetime({ offset: true })"
+      )
       expect(result).toContain("birthDate: z.string().date()")
 
       // Should have strict numeric validation
@@ -561,6 +575,112 @@ describe("Configuration Options", () => {
       expect(result1).not.toContain("website: z.string().url().nullable()")
       expect(result2).not.toContain("website: z.string().url().optional()")
       expect(result3).not.toContain("website: z.string().url().optional()")
+    })
+  })
+
+  describe("dateTimeOffset option", () => {
+    test("default behavior (dateTimeOffset defaults to true) - datetime uses offset", () => {
+      const result = generate(stringFormatsSpec, { strictDates: true })
+
+      // Default dateTimeOffset is true, so datetime should have offset
+      expect(result).toContain(
+        "createdAt: z.string().datetime({ offset: true })"
+      )
+      expect(result).toContain(
+        "updatedAt: z.string().datetime({ offset: true })"
+      )
+      expect(result).toContain(
+        "timestamp: z.string().datetime({ offset: true })"
+      )
+
+      // Other date formats should NOT be affected
+      expect(result).toContain("birthDate: z.string().date()")
+      expect(result).toContain("lastLoginTime: z.string().time()")
+      expect(result).toContain("sessionDuration: z.string().duration()")
+    })
+
+    test("dateTimeOffset: false - datetime without offset", () => {
+      const result = generate(stringFormatsSpec, {
+        strictDates: true,
+        dateTimeOffset: false,
+      })
+
+      // Should use plain datetime() without offset
+      expect(result).toContain("createdAt: z.string().datetime()")
+      expect(result).toContain("updatedAt: z.string().datetime()")
+      expect(result).toContain("timestamp: z.string().datetime()")
+
+      // Should NOT contain offset variant
+      expect(result).not.toContain("datetime({ offset: true })")
+    })
+
+    test("dateTimeOffset: true - datetime with offset", () => {
+      const result = generate(stringFormatsSpec, {
+        strictDates: true,
+        dateTimeOffset: true,
+      })
+
+      expect(result).toContain(
+        "createdAt: z.string().datetime({ offset: true })"
+      )
+      expect(result).toContain(
+        "updatedAt: z.string().datetime({ offset: true })"
+      )
+    })
+
+    test("dateTimeOffset has no effect without strictDates", () => {
+      const result = generate(stringFormatsSpec, {
+        strictDates: false,
+        dateTimeOffset: true,
+      })
+
+      // Without strictDates, all date-time fields should just be z.string()
+      expect(result).toContain("createdAt: z.string()")
+      expect(result).not.toContain("z.string().datetime()")
+      expect(result).not.toContain("datetime({ offset: true })")
+    })
+  })
+
+  describe("dateTimeOffset with realistic spec", () => {
+    const dateTimeOffsetSpec = loadOpenAPISpec(dateTimeOffsetYamlPath)
+
+    test("default (dateTimeOffset: true) - DateTime schema uses offset", () => {
+      const result = generate(dateTimeOffsetSpec, {
+        strictDates: true,
+      })
+
+      // The DateTime schema (type: string, format: date-time) should have offset
+      expect(result).toContain(
+        "export const DateTime = z.string().datetime({ offset: true })"
+      )
+    })
+
+    test("dateTimeOffset: false - DateTime schema without offset", () => {
+      const result = generate(dateTimeOffsetSpec, {
+        strictDates: true,
+        dateTimeOffset: false,
+      })
+
+      expect(result).toContain("export const DateTime = z.string().datetime()")
+      expect(result).not.toContain("datetime({ offset: true })")
+    })
+
+    test("dateTimeOffset as array - only named schemas get offset", () => {
+      const result = generate(dateTimeOffsetSpec, {
+        strictDates: true,
+        dateTimeOffset: ["DateTime"],
+      })
+
+      // DateTime schema should have offset (it's in the array)
+      expect(result).toContain(
+        "export const DateTime = z.string().datetime({ offset: true })"
+      )
+
+      // Inline date-time fields (like issuedAt in ApiKey) should NOT have offset
+      expect(result).toContain("issuedAt: z.string().datetime()")
+      expect(result).not.toContain(
+        "issuedAt: z.string().datetime({ offset: true })"
+      )
     })
   })
 })

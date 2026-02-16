@@ -80,6 +80,17 @@
           "type": "boolean",
           "description": "Enable numeric constraint validation (min/max, string length, patterns). Overrides global setting."
         },
+        "dateTimeOffset": {
+          "oneOf": [
+            { "type": "boolean" },
+            {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          ],
+          "default": true,
+          "description": "Control timezone offset support in datetime validation. When true (default), generates z.string().datetime({ offset: true }) which accepts both 'Z' and '+HH:MM' offset formats. When false, generates z.string().datetime() which only accepts 'Z' format. When array of type names, only those named schema types get offset support. Only applies when strictDates is enabled."
+        },
         "types": {
           "$ref": "#/definitions/TypesConfig",
           "description": "Per-schema type generation configuration. Overrides global types config."
