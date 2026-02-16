@@ -1,0 +1,179 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Configuration Options dateTimeOffset with realistic spec snapshot: full output with offset enabled: datetime-offset-default 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const DateTime = z.string().datetime({ offset: true });
+
+export type DateTime = z.infer<typeof DateTime>;
+
+export const Account = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  registeredAt: DateTime,
+  lastActiveAt: DateTime,
+  verifiedAt: DateTime.optional(),
+  suspendedAt: DateTime.optional(),
+});
+
+export type Account = z.infer<typeof Account>;
+
+export const ApiKey = z.object({
+  apiKeyId: z.string(),
+  apiKeyValue: z.string(),
+  issuedAt: z.string().datetime({ offset: true }),
+});
+
+export type ApiKey = z.infer<typeof ApiKey>;
+
+// Path Functions
+export const paths = {
+  getAccount: ({ accountId }: { accountId: string }) => \`/accounts/\${accountId}\`,
+  listApiKeys: ({ accountId }: { accountId: string }) => \`/accounts/\${accountId}/api-keys\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  getAccount: z.object({}),
+  listApiKeys: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  getAccount: () => headerSchemas.getAccount.parse({}),
+  listApiKeys: () => headerSchemas.listApiKeys.parse({}),
+} as const;
+
+// Generated Response Types
+
+export const ListApiKeysResponse = z.object({
+  livePublic: z.array(ApiKey).optional(),
+});
+
+export type ListApiKeysResponse = z.infer<typeof ListApiKeysResponse>;
+
+// Operation Types
+export type GetAccountOperation = OperationDefinition<
+  "get",
+  typeof paths.getAccount,
+  undefined,
+  typeof Account,
+  undefined,
+  OperationErrors
+>;
+
+export type ListApiKeysOperation = OperationDefinition<
+  "get",
+  typeof paths.listApiKeys,
+  undefined,
+  typeof ListApiKeysResponse,
+  undefined,
+  OperationErrors
+>;
+
+// Operation Objects
+export const getAccount: GetAccountOperation = {
+  method: "get",
+  path: paths.getAccount,
+  response: Account,
+} as const;
+
+export const listApiKeys: ListApiKeysOperation = {
+  method: "get",
+  path: paths.listApiKeys,
+  response: ListApiKeysResponse,
+} as const;
+"
+`;
+
+exports[`Configuration Options dateTimeOffset with realistic spec snapshot: full output with offset disabled: datetime-offset-disabled 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const DateTime = z.string().datetime();
+
+export type DateTime = z.infer<typeof DateTime>;
+
+export const Account = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  registeredAt: DateTime,
+  lastActiveAt: DateTime,
+  verifiedAt: DateTime.optional(),
+  suspendedAt: DateTime.optional(),
+});
+
+export type Account = z.infer<typeof Account>;
+
+export const ApiKey = z.object({
+  apiKeyId: z.string(),
+  apiKeyValue: z.string(),
+  issuedAt: z.string().datetime(),
+});
+
+export type ApiKey = z.infer<typeof ApiKey>;
+
+// Path Functions
+export const paths = {
+  getAccount: ({ accountId }: { accountId: string }) => \`/accounts/\${accountId}\`,
+  listApiKeys: ({ accountId }: { accountId: string }) => \`/accounts/\${accountId}/api-keys\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  getAccount: z.object({}),
+  listApiKeys: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  getAccount: () => headerSchemas.getAccount.parse({}),
+  listApiKeys: () => headerSchemas.listApiKeys.parse({}),
+} as const;
+
+// Generated Response Types
+
+export const ListApiKeysResponse = z.object({
+  livePublic: z.array(ApiKey).optional(),
+});
+
+export type ListApiKeysResponse = z.infer<typeof ListApiKeysResponse>;
+
+// Operation Types
+export type GetAccountOperation = OperationDefinition<
+  "get",
+  typeof paths.getAccount,
+  undefined,
+  typeof Account,
+  undefined,
+  OperationErrors
+>;
+
+export type ListApiKeysOperation = OperationDefinition<
+  "get",
+  typeof paths.listApiKeys,
+  undefined,
+  typeof ListApiKeysResponse,
+  undefined,
+  OperationErrors
+>;
+
+// Operation Objects
+export const getAccount: GetAccountOperation = {
+  method: "get",
+  path: paths.getAccount,
+  response: Account,
+} as const;
+
+export const listApiKeys: ListApiKeysOperation = {
+  method: "get",
+  path: paths.listApiKeys,
+  response: ListApiKeysResponse,
+} as const;
+"
+`;

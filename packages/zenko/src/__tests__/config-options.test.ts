@@ -435,6 +435,61 @@ describe("Configuration Options", () => {
     })
   })
 
+  describe("dateTimeOffset with realistic spec", () => {
+    const offsetSpec = loadOpenAPISpec("src/resources/datetime-offset.yaml")
+
+    test("default: all datetime fields accept offsets", () => {
+      const result = generate(offsetSpec, { strictDates: true })
+
+      // Top-level DateTime type should have offset
+      expect(result).toContain(
+        "DateTime = z.string().datetime({ offset: true })"
+      )
+      // Inline datetime field should also have offset
+      expect(result).toContain(
+        "issuedAt: z.string().datetime({ offset: true })"
+      )
+    })
+
+    test("dateTimeOffset: false disables offset globally", () => {
+      const result = generate(offsetSpec, {
+        strictDates: true,
+        dateTimeOffset: false,
+      })
+
+      expect(result).toContain("DateTime = z.string().datetime()")
+      expect(result).toContain("issuedAt: z.string().datetime()")
+      expect(result).not.toContain("offset")
+    })
+
+    test("dateTimeOffset array: only named types get offset", () => {
+      const result = generate(offsetSpec, {
+        strictDates: true,
+        dateTimeOffset: ["DateTime"],
+      })
+
+      // Named type should get offset
+      expect(result).toContain(
+        "DateTime = z.string().datetime({ offset: true })"
+      )
+      // Inline field should NOT get offset (not in the array)
+      expect(result).toContain("issuedAt: z.string().datetime()")
+    })
+
+    test("snapshot: full output with offset enabled", () => {
+      const result = generate(offsetSpec, { strictDates: true })
+      expect(result).toMatchSnapshot("datetime-offset-default")
+    })
+
+    test("snapshot: full output with offset disabled", () => {
+      const result = generate(offsetSpec, {
+        strictDates: true,
+        dateTimeOffset: false,
+      })
+      expect(result).toMatchSnapshot("datetime-offset-disabled")
+    })
+  })
+
   describe("edge cases and validation", () => {
     test("empty spec with configuration options", () => {
       const emptySpec: OpenAPISpec = {
