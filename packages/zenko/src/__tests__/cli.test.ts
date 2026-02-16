@@ -181,7 +181,7 @@ describe("CLI", () => {
     )
 
     const output = fs.readFileSync(outputFile, "utf8")
-    expect(output).toContain("z.string().datetime()")
+    expect(output).toContain("z.string().datetime({ offset: true })")
     expect(output).toContain(".min(0)")
     expect(output).toContain(".max(5)")
     expect(output).toContain("export const paths =")

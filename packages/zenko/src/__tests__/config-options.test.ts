@@ -33,10 +33,16 @@ describe("Configuration Options", () => {
     test("strictDates: true - date formats use strict validators", () => {
       const result = generate(stringFormatsSpec, { strictDates: true })
 
-      // Date-time formats should use strict validators
-      expect(result).toContain("createdAt: z.string().datetime()")
-      expect(result).toContain("updatedAt: z.string().datetime()")
-      expect(result).toContain("timestamp: z.string().datetime()")
+      // Date-time formats should use strict validators (with offset by default)
+      expect(result).toContain(
+        "createdAt: z.string().datetime({ offset: true })"
+      )
+      expect(result).toContain(
+        "updatedAt: z.string().datetime({ offset: true })"
+      )
+      expect(result).toContain(
+        "timestamp: z.string().datetime({ offset: true })"
+      )
 
       // Date format should use strict validator
       expect(result).toContain("birthDate: z.string().date()")
@@ -99,10 +105,55 @@ describe("Configuration Options", () => {
       const result = generate(stringFormatsSpec, { strictDates: true })
 
       // Should contain both strict date validators AND strict non-date validators
-      expect(result).toContain("createdAt: z.string().datetime()") // date format
+      expect(result).toContain(
+        "createdAt: z.string().datetime({ offset: true })"
+      ) // date format
       expect(result).toContain("id: z.string().uuid()") // non-date format
       expect(result).toContain("email: z.string().email()") // non-date format
       expect(result).toContain("website: z.string().url()") // non-date format
+    })
+  })
+
+  describe("dateTimeOffset option", () => {
+    test("default behavior - datetime gets offset when strictDates enabled", () => {
+      const result = generate(stringFormatsSpec, { strictDates: true })
+
+      expect(result).toContain(
+        "createdAt: z.string().datetime({ offset: true })"
+      )
+      expect(result).toContain(
+        "updatedAt: z.string().datetime({ offset: true })"
+      )
+      expect(result).toContain(
+        "timestamp: z.string().datetime({ offset: true })"
+      )
+
+      // Non-datetime formats NOT affected
+      expect(result).toContain("birthDate: z.string().date()")
+      expect(result).toContain("lastLoginTime: z.string().time()")
+      expect(result).toContain("sessionDuration: z.string().duration()")
+    })
+
+    test("dateTimeOffset: false disables offset", () => {
+      const result = generate(stringFormatsSpec, {
+        strictDates: true,
+        dateTimeOffset: false,
+      })
+
+      expect(result).toContain("createdAt: z.string().datetime()")
+      expect(result).toContain("updatedAt: z.string().datetime()")
+      expect(result).toContain("timestamp: z.string().datetime()")
+      expect(result).not.toContain("offset")
+    })
+
+    test("dateTimeOffset has no effect when strictDates is false", () => {
+      const result = generate(stringFormatsSpec, {
+        strictDates: false,
+        dateTimeOffset: true,
+      })
+
+      expect(result).toContain("createdAt: z.string()")
+      expect(result).not.toContain("datetime")
     })
   })
 
@@ -337,8 +388,10 @@ describe("Configuration Options", () => {
         },
       })
 
-      // Should have strict date validation
-      expect(result).toContain("createdAt: z.string().datetime()")
+      // Should have strict date validation (with offset by default)
+      expect(result).toContain(
+        "createdAt: z.string().datetime({ offset: true })"
+      )
       expect(result).toContain("birthDate: z.string().date()")
 
       // Should have strict numeric validation

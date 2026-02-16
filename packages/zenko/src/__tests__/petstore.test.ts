@@ -113,7 +113,7 @@ describe("Petstore", () => {
       strictNumeric: true,
     })
 
-    expect(result).toContain("z.string().datetime()")
+    expect(result).toContain("z.string().datetime({ offset: true })")
     expect(result).toContain(".min(0)")
     expect(result).toContain(".max(10)")
   })
