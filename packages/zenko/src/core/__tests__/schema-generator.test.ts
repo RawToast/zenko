@@ -20,6 +20,7 @@ const defaultOptions: SchemaOptions = {
   optionalType: "optional",
   openEnums: false,
   openEnumPrefix: "Unknown:",
+  dateTimeOffset: true,
 }
 
 describe("applyOptionalModifier", () => {
@@ -143,7 +144,7 @@ describe("buildString", () => {
   test("should apply date validators when strictDates is enabled", () => {
     const strictOptions = { ...defaultOptions, strictDates: true }
     expect(buildString({ format: "date-time" }, strictOptions)).toBe(
-      "z.string().datetime()"
+      "z.string().datetime({ offset: true })"
     )
     expect(buildString({ format: "date" }, strictOptions)).toBe(
       "z.string().date()"
@@ -160,6 +161,63 @@ describe("buildString", () => {
     expect(buildString({ format: "date-time" }, defaultOptions)).toBe(
       "z.string()"
     )
+  })
+
+  test("should apply datetime offset when dateTimeOffset is true", () => {
+    const options = {
+      ...defaultOptions,
+      strictDates: true,
+      dateTimeOffset: true,
+    }
+    expect(buildString({ format: "date-time" }, options)).toBe(
+      "z.string().datetime({ offset: true })"
+    )
+    // date, time, duration should NOT be affected
+    expect(buildString({ format: "date" }, options)).toBe("z.string().date()")
+    expect(buildString({ format: "time" }, options)).toBe("z.string().time()")
+    expect(buildString({ format: "duration" }, options)).toBe(
+      "z.string().duration()"
+    )
+  })
+
+  test("should not apply datetime offset when dateTimeOffset is false", () => {
+    const options = {
+      ...defaultOptions,
+      strictDates: true,
+      dateTimeOffset: false,
+    }
+    expect(buildString({ format: "date-time" }, options)).toBe(
+      "z.string().datetime()"
+    )
+  })
+
+  test("should apply datetime offset for specific types when dateTimeOffset is string[]", () => {
+    const options = {
+      ...defaultOptions,
+      strictDates: true,
+      dateTimeOffset: ["DateTime"] as string[] | boolean,
+    }
+    // When called with a matching schema name, should apply offset
+    expect(buildString({ format: "date-time" }, options, "DateTime")).toBe(
+      "z.string().datetime({ offset: true })"
+    )
+    // When called with a non-matching name, should NOT apply offset
+    expect(buildString({ format: "date-time" }, options, "CreatedAt")).toBe(
+      "z.string().datetime()"
+    )
+    // When called with no name, should NOT apply offset
+    expect(buildString({ format: "date-time" }, options)).toBe(
+      "z.string().datetime()"
+    )
+  })
+
+  test("dateTimeOffset has no effect when strictDates is false", () => {
+    const options = {
+      ...defaultOptions,
+      strictDates: false,
+      dateTimeOffset: true,
+    }
+    expect(buildString({ format: "date-time" }, options)).toBe("z.string()")
   })
 
   test("should apply string constraints when strictNumeric is enabled", () => {
