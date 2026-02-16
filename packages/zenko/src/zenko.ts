@@ -51,6 +51,7 @@ export type EnumConfig = {
 export type GenerateOptions = {
   strictDates?: boolean
   strictNumeric?: boolean
+  dateTimeOffset?: boolean | string[]
   types?: TypesConfig
   operationIds?: string[]
   openEnums?: boolean | string[] | EnumConfig
@@ -100,6 +101,7 @@ export function generateWithMetadata(
   const {
     strictDates = false,
     strictNumeric = false,
+    dateTimeOffset = true,
     operationIds,
     openEnums = false,
   } = options
@@ -108,6 +110,7 @@ export function generateWithMetadata(
   const schemaOptions: SchemaOptions = {
     strictDates,
     strictNumeric,
+    dateTimeOffset,
     optionalType: typesConfig.optionalType,
     openEnums: enumConfig.open,
     openEnumPrefix: enumConfig.prefix,

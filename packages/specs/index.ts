@@ -12,6 +12,7 @@ export const complexCompositionYamlPath = resourcePath(
   "complex-composition.yaml"
 )
 export const dateEnumYamlPath = resourcePath("date-enum.yaml")
+export const dateTimeOffsetYamlPath = resourcePath("datetime-offset.yaml")
 export const enumDemoYamlPath = resourcePath("enum-demo.yaml")
 export const formDataYamlPath = resourcePath("form-data.yaml")
 export const inlineResponseArrayYamlPath = resourcePath(

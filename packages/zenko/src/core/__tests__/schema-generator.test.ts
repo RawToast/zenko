@@ -17,6 +17,7 @@ import {
 const defaultOptions: SchemaOptions = {
   strictDates: false,
   strictNumeric: false,
+  dateTimeOffset: true,
   optionalType: "optional",
   openEnums: false,
   openEnumPrefix: "Unknown:",
@@ -143,7 +144,7 @@ describe("buildString", () => {
   test("should apply date validators when strictDates is enabled", () => {
     const strictOptions = { ...defaultOptions, strictDates: true }
     expect(buildString({ format: "date-time" }, strictOptions)).toBe(
-      "z.string().datetime()"
+      "z.string().datetime({ offset: true })"
     )
     expect(buildString({ format: "date" }, strictOptions)).toBe(
       "z.string().date()"
@@ -182,6 +183,73 @@ describe("buildString", () => {
         defaultOptions
       )
     ).toBe("z.string()")
+  })
+
+  test("should apply datetime offset when dateTimeOffset is true", () => {
+    const opts = {
+      ...defaultOptions,
+      strictDates: true,
+      dateTimeOffset: true,
+    }
+    expect(buildString({ format: "date-time" }, opts)).toBe(
+      "z.string().datetime({ offset: true })"
+    )
+  })
+
+  test("should not apply datetime offset when dateTimeOffset is false", () => {
+    const opts = {
+      ...defaultOptions,
+      strictDates: true,
+      dateTimeOffset: false,
+    }
+    expect(buildString({ format: "date-time" }, opts)).toBe(
+      "z.string().datetime()"
+    )
+  })
+
+  test("should apply datetime offset for named schemas in array", () => {
+    const opts = {
+      ...defaultOptions,
+      strictDates: true,
+      dateTimeOffset: ["DateTime", "Timestamp"],
+    }
+    expect(buildString({ format: "date-time" }, opts, "DateTime")).toBe(
+      "z.string().datetime({ offset: true })"
+    )
+    expect(buildString({ format: "date-time" }, opts, "Timestamp")).toBe(
+      "z.string().datetime({ offset: true })"
+    )
+  })
+
+  test("should not apply datetime offset for schemas not in array", () => {
+    const opts = {
+      ...defaultOptions,
+      strictDates: true,
+      dateTimeOffset: ["DateTime"],
+    }
+    expect(buildString({ format: "date-time" }, opts, "Other")).toBe(
+      "z.string().datetime()"
+    )
+  })
+
+  test("should not apply datetime offset with empty array", () => {
+    const opts = {
+      ...defaultOptions,
+      strictDates: true,
+      dateTimeOffset: [],
+    }
+    expect(buildString({ format: "date-time" }, opts)).toBe(
+      "z.string().datetime()"
+    )
+  })
+
+  test("should not apply datetime offset without strictDates", () => {
+    const opts = {
+      ...defaultOptions,
+      strictDates: false,
+      dateTimeOffset: true,
+    }
+    expect(buildString({ format: "date-time" }, opts)).toBe("z.string()")
   })
 })
 

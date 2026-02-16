@@ -4,6 +4,7 @@ import { formatPropertyName } from "../utils/property-name"
 export type SchemaOptions = {
   strictDates: boolean
   strictNumeric: boolean
+  dateTimeOffset: boolean | string[]
   optionalType: "optional" | "nullable" | "nullish"
   openEnums: boolean | string[]
   openEnumPrefix: string
@@ -121,6 +122,7 @@ export function generateZodSchema(
     options,
     nameMap,
     schemaRegistry,
+    name,
     name
   )};`
 }
@@ -520,7 +522,8 @@ export function getZodTypeFromSchema(
   options: SchemaOptions,
   nameMap?: Map<string, string>,
   schemaRegistry?: Record<string, unknown>,
-  currentSchemaName?: string
+  currentSchemaName?: string,
+  ownName?: string
 ): string {
   if (schema.$ref) {
     const refName = extractRefName(schema.$ref)
@@ -649,7 +652,7 @@ export function getZodTypeFromSchema(
 
   switch (schema.type) {
     case "string":
-      return buildString(schema, options)
+      return buildString(schema, options, ownName)
     case "boolean":
       return "z.boolean()"
     case "array": {
@@ -807,7 +810,11 @@ export function buildZodObject(
  * @param options - Generation options that control date-related format handling and application of length/pattern constraints
  * @returns A string containing the Zod schema expression corresponding to `schema`
  */
-export function buildString(schema: any, options: SchemaOptions): string {
+export function buildString(
+  schema: any,
+  options: SchemaOptions,
+  schemaName?: string
+): string {
   // OpenAPI binary (multipart uploads) - keep runtime-safe across Node/Bun/Browser
   if (schema.format === "binary") {
     return `(typeof Blob === "undefined" ? z.unknown() : z.instanceof(Blob))`
@@ -815,8 +822,16 @@ export function buildString(schema: any, options: SchemaOptions): string {
 
   if (options.strictDates) {
     switch (schema.format) {
-      case "date-time":
-        return "z.string().datetime()"
+      case "date-time": {
+        const useOffset =
+          options.dateTimeOffset === true ||
+          (Array.isArray(options.dateTimeOffset) &&
+            schemaName !== undefined &&
+            options.dateTimeOffset.includes(schemaName))
+        return useOffset
+          ? "z.string().datetime({ offset: true })"
+          : "z.string().datetime()"
+      }
       case "date":
         return "z.string().date()"
       case "time":

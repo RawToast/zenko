@@ -1,0 +1,92 @@
+openapi: 3.0.0
+info:
+  title: DateTime Offset Test API
+  version: 1.0.0
+  description: Test API for datetime offset handling with mixed timestamp formats
+
+paths:
+  /accounts/{accountId}:
+    get:
+      operationId: getAccount
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Account found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+
+  /accounts/{accountId}/api-keys:
+    get:
+      operationId: listApiKeys
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: API keys listed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  livePublic:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ApiKey"
+
+components:
+  schemas:
+    DateTime:
+      type: string
+      format: date-time
+      example: "2014-09-23T05:00:22.231Z"
+
+    Account:
+      type: object
+      required:
+        - id
+        - email
+        - registeredAt
+        - lastActiveAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        registeredAt:
+          $ref: "#/components/schemas/DateTime"
+        lastActiveAt:
+          $ref: "#/components/schemas/DateTime"
+        verifiedAt:
+          $ref: "#/components/schemas/DateTime"
+        suspendedAt:
+          $ref: "#/components/schemas/DateTime"
+
+    ApiKey:
+      type: object
+      required:
+        - apiKeyId
+        - apiKeyValue
+        - issuedAt
+      properties:
+        apiKeyId:
+          type: string
+        apiKeyValue:
+          type: string
+        issuedAt:
+          type: string
+          format: date-time
