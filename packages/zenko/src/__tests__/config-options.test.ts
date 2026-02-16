@@ -682,5 +682,83 @@ describe("Configuration Options", () => {
         "issuedAt: z.string().datetime({ offset: true })"
       )
     })
+
+    test("dateTimeOffset: [] - no schemas get offset", () => {
+      const result = generate(dateTimeOffsetSpec, {
+        strictDates: true,
+        dateTimeOffset: [],
+      })
+
+      // No datetime fields should have offset
+      expect(result).toContain("export const DateTime = z.string().datetime()")
+      expect(result).not.toContain("datetime({ offset: true })")
+    })
+
+    test("dateTimeOffset array does not affect inline date-time properties inside named object schemas", () => {
+      const spec = {
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
+        paths: {},
+        components: {
+          schemas: {
+            Account: {
+              type: "object",
+              properties: {
+                createdAt: { type: "string", format: "date-time" },
+              },
+            },
+            DateTime: {
+              type: "string",
+              format: "date-time",
+            },
+          },
+        },
+      }
+
+      const result = generate(spec as OpenAPISpec, {
+        strictDates: true,
+        dateTimeOffset: ["DateTime"],
+      })
+
+      // DateTime type should have offset (it's in the array and IS a date-time string)
+      expect(result).toContain(
+        "DateTime = z.string().datetime({ offset: true })"
+      )
+      // Account's inline createdAt should NOT have offset (Account is not in the array)
+      expect(result).toContain("createdAt: z.string().datetime()")
+      expect(result).not.toContain(
+        "createdAt: z.string().datetime({ offset: true })"
+      )
+    })
+
+    test("dateTimeOffset array with object schema name does not leak to inline properties", () => {
+      const spec = {
+        openapi: "3.0.0",
+        info: { title: "Test", version: "1.0.0" },
+        paths: {},
+        components: {
+          schemas: {
+            Account: {
+              type: "object",
+              properties: {
+                createdAt: { type: "string", format: "date-time" },
+              },
+            },
+          },
+        },
+      }
+
+      const result = generate(spec as OpenAPISpec, {
+        strictDates: true,
+        dateTimeOffset: ["Account"],
+      })
+
+      // Account is an object schema, not a date-time string. Putting it in the array
+      // should NOT make its inline properties get offset.
+      expect(result).toContain("createdAt: z.string().datetime()")
+      expect(result).not.toContain(
+        "createdAt: z.string().datetime({ offset: true })"
+      )
+    })
   })
 })

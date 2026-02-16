@@ -137,7 +137,7 @@ function printHelp() {
   console.log("")
   console.log("Config file format:")
   console.log(
-    '  {"types"?: { emit?, helpers?, helpersOutput?, optionalType?, treeShake? }, "schemas": [{ input, output, strictDates?, strictNumeric?, types? }] }'
+    '  {"types"?: { emit?, helpers?, helpersOutput?, optionalType?, treeShake? }, "schemas": [{ input, output, strictDates?, strictNumeric?, dateTimeOffset?, types? }] }'
   )
 }
 

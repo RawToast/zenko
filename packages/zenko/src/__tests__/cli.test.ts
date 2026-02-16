@@ -325,6 +325,63 @@ describe("CLI", () => {
     expect(output).toContain("const VersionKnown =")
   })
 
+  test("help text includes dateTimeOffset", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+    const output = execSync(`bun run ${cliPath} --help`, {
+      encoding: "utf8",
+    })
+
+    expect(output).toContain("dateTimeOffset")
+  })
+
+  test("supports dateTimeOffset: false in config file", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+
+    const configDir = path.join(tempDir, "datetime-offset-config")
+    const configOutput = path.join(configDir, "datetime-offset-output.ts")
+    fs.mkdirSync(configDir, { recursive: true })
+
+    const specPath = path.join(configDir, "spec.yaml")
+    const spec = {
+      openapi: "3.0.0",
+      info: { title: "Test", version: "1.0.0" },
+      paths: {},
+      components: {
+        schemas: {
+          Event: {
+            type: "object",
+            required: ["happenedAt"],
+            properties: {
+              happenedAt: { type: "string", format: "date-time" },
+            },
+          },
+        },
+      },
+    }
+    fs.writeFileSync(specPath, Bun.YAML.stringify(spec))
+
+    const configPath = path.join(configDir, "zenko.config.json")
+    const config = {
+      schemas: [
+        {
+          input: "spec.yaml",
+          output: "datetime-offset-output.ts",
+          strictDates: true,
+          dateTimeOffset: false,
+        },
+      ],
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+
+    execSync(`bun run ${cliPath} --config ${configPath}`, {
+      encoding: "utf8",
+    })
+
+    const output = fs.readFileSync(configOutput, "utf8")
+    expect(output).toContain("z.string().datetime()")
+    expect(output).not.toContain("datetime({ offset: true })")
+  })
+
   test("supports openEnums object config form with selective enums", () => {
     const cliPath = path.join(process.cwd(), "src/cli.ts")
     const dateEnumPath = dateEnumYamlPath

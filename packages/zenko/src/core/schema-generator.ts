@@ -122,6 +122,7 @@ export function generateZodSchema(
     options,
     nameMap,
     schemaRegistry,
+    name,
     name
   )};`
 }
@@ -521,7 +522,8 @@ export function getZodTypeFromSchema(
   options: SchemaOptions,
   nameMap?: Map<string, string>,
   schemaRegistry?: Record<string, unknown>,
-  currentSchemaName?: string
+  currentSchemaName?: string,
+  ownName?: string
 ): string {
   if (schema.$ref) {
     const refName = extractRefName(schema.$ref)
@@ -650,7 +652,7 @@ export function getZodTypeFromSchema(
 
   switch (schema.type) {
     case "string":
-      return buildString(schema, options, currentSchemaName)
+      return buildString(schema, options, ownName)
     case "boolean":
       return "z.boolean()"
     case "array": {
