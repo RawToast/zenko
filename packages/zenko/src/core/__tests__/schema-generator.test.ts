@@ -220,6 +220,17 @@ describe("buildString", () => {
     expect(buildString({ format: "date-time" }, options)).toBe("z.string()")
   })
 
+  test("should not apply datetime offset when dateTimeOffset is empty array", () => {
+    const options = {
+      ...defaultOptions,
+      strictDates: true,
+      dateTimeOffset: [] as string[],
+    }
+    expect(buildString({ format: "date-time" }, options)).toBe(
+      "z.string().datetime()"
+    )
+  })
+
   test("should apply string constraints when strictNumeric is enabled", () => {
     const strictOptions = { ...defaultOptions, strictNumeric: true }
     expect(buildString({ minLength: 1, maxLength: 10 }, strictOptions)).toBe(

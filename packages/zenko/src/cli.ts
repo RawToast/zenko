@@ -242,7 +242,6 @@ async function generateSingle(options: {
   const resolvedInput = path.resolve(inputFile)
   const resolvedOutput = path.resolve(outputFile)
 
-  console.log("Reading spec from", resolvedInput)
   const spec = readSpec(resolvedInput)
   const result = generateWithMetadata(spec, {
     strictDates,

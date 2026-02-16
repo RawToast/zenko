@@ -100,6 +100,11 @@ export function generateZodSchema(
 /**
  * Converts an OpenAPI schema to a Zod type expression.
  * Recursively handles nested schemas, references, and all OpenAPI schema types.
+ *
+ * @param schemaName - Optional name of the top-level schema being generated.
+ *                     Used for selective dateTimeOffset application when
+ *                     dateTimeOffset is an array. Only applies to named schemas,
+ *                     not nested inline properties.
  */
 export function getZodTypeFromSchema(
   schema: any,
@@ -217,6 +222,10 @@ export function buildZodObject(
  *
  * @param schema - OpenAPI schema object describing the string (may include `format`, `minLength`, `maxLength`, `pattern`, etc.)
  * @param options - Generation options that control date-related format handling and application of length/pattern constraints
+ * @param schemaName - Optional name of the top-level schema being generated.
+ *                     Used for selective dateTimeOffset application when
+ *                     dateTimeOffset is an array. Only applies to named schemas,
+ *                     not nested inline properties.
  * @returns A string containing the Zod schema expression corresponding to `schema`
  */
 export function buildString(
