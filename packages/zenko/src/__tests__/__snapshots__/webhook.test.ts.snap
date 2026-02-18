@@ -36,7 +36,8 @@ export type NewPetOperation = OperationDefinition<
   typeof Pet,
   undefined,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 // Operation Objects
@@ -93,7 +94,8 @@ export type ListPetsOperation = OperationDefinition<
   undefined,
   z.ZodArray<typeof Pet>,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type NewPetOperation = OperationDefinition<
@@ -102,7 +104,8 @@ export type NewPetOperation = OperationDefinition<
   typeof Pet,
   undefined,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 // Operation Objects

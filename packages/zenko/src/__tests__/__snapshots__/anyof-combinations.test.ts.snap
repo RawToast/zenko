@@ -125,7 +125,8 @@ export type CreateContactOperation = OperationDefinition<
   typeof Contact,
   typeof Contact,
   undefined,
-  OperationErrors<{ badRequest: undefined }>
+  OperationErrors<{ badRequest: undefined }>,
+  undefined
 >;
 
 export type SearchItemsOperation = OperationDefinition<
@@ -134,7 +135,8 @@ export type SearchItemsOperation = OperationDefinition<
   undefined,
   z.ZodArray<typeof SearchResult>,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 // Operation Objects

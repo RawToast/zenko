@@ -32,7 +32,11 @@ export function generateHelperFile(): string {
   )
   output.push("")
   output.push(
-    "export type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
+    "export type SecurityRequirement = Readonly<Record<string, readonly string[]>>"
+  )
+  output.push("")
+  output.push(
+    "export type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined, TSecurity extends readonly SecurityRequirement[] | undefined = undefined> = {"
   )
   output.push("  method: TMethod")
   output.push("  path: TPath")
@@ -40,6 +44,7 @@ export function generateHelperFile(): string {
   output.push("  response?: TResponse")
   output.push("  headers?: THeaders")
   output.push("  errors?: TErrors")
+  output.push("  security?: TSecurity")
   output.push("}")
   output.push("")
 

@@ -57,7 +57,8 @@ export type ListPetsOperation = OperationDefinition<
   undefined,
   typeof Pets,
   undefined,
-  OperationErrors<{ defaultError: typeof Error }>
+  OperationErrors<{ defaultError: typeof Error }>,
+  undefined
 >;
 
 export type ShowPetByIdOperation = OperationDefinition<
@@ -66,7 +67,8 @@ export type ShowPetByIdOperation = OperationDefinition<
   undefined,
   typeof Pet,
   undefined,
-  OperationErrors<{ defaultError: typeof Error }>
+  OperationErrors<{ defaultError: typeof Error }>,
+  undefined
 >;
 
 // Operation Objects

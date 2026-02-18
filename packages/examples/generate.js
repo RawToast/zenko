@@ -4,6 +4,7 @@ import {
   authApiYamlPath,
   enumDemoYamlPath,
   petstoreYamlPath,
+  tictactoeYamlPath,
   trainTravelYamlPath,
 } from "@zenko/specs"
 import { generate } from "zenko"
@@ -12,6 +13,7 @@ const specInputPaths = {
   "auth-api.yaml": authApiYamlPath,
   "enum-demo.yaml": enumDemoYamlPath,
   "petstore.yaml": petstoreYamlPath,
+  "tictactoe.yaml": tictactoeYamlPath,
   "train-travel.yaml": trainTravelYamlPath,
 }
 
@@ -79,6 +81,7 @@ try {
     }
   )
   const authApiSuccess = generateSchema("auth-api.yaml", "auth-api.gen.ts")
+  const tictactoeSuccess = generateSchema("tictactoe.yaml", "tictactoe.gen.ts")
   const enumDemoSuccess = generateSchema("enum-demo.yaml", "enum-demo.gen.ts", {
     openEnums: ["ProductStatus"], // Make ProductStatus open, Category remains closed
   })
@@ -87,6 +90,7 @@ try {
     !petstoreSuccess ||
     !trainTravelSuccess ||
     !authApiSuccess ||
+    !tictactoeSuccess ||
     !enumDemoSuccess
   ) {
     process.exit(1)

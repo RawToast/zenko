@@ -27,9 +27,11 @@ export type OpenAPISpec = {
   info: unknown
   paths: Record<string, Record<string, unknown>>
   webhooks?: Record<string, Record<string, unknown>>
+  security?: Record<string, string[]>[]
   components?: {
     schemas?: Record<string, unknown>
     parameters?: Record<string, unknown>
+    securitySchemes?: Record<string, unknown>
   }
 }
 
@@ -370,6 +372,46 @@ export function generateWithMetadata(
   output.push("} as const;")
   output.push("")
 
+  // Generate security schemes
+  if (
+    spec.components?.securitySchemes &&
+    Object.keys(spec.components.securitySchemes).length > 0
+  ) {
+    output.push("// Security Schemes")
+    output.push("export const securitySchemes = {")
+
+    for (const [name, scheme] of Object.entries(
+      spec.components.securitySchemes
+    )) {
+      const s = scheme as Record<string, unknown>
+      output.push(`  ${formatPropertyName(name)}: {`)
+      output.push(`    type: ${JSON.stringify(s.type)},`)
+
+      if (s.type === "http") {
+        output.push(
+          `    scheme: ${JSON.stringify(String(s.scheme).toLowerCase())},`
+        )
+        if (s.bearerFormat) {
+          output.push(`    bearerFormat: ${JSON.stringify(s.bearerFormat)},`)
+        }
+      } else if (s.type === "apiKey") {
+        output.push(`    name: ${JSON.stringify(s.name)},`)
+        output.push(`    in: ${JSON.stringify(s.in)},`)
+      } else if (s.type === "oauth2") {
+        output.push(`    flows: ${JSON.stringify(s.flows)},`)
+      } else if (s.type === "openIdConnect") {
+        output.push(
+          `    openIdConnectUrl: ${JSON.stringify(s.openIdConnectUrl)},`
+        )
+      }
+
+      output.push("  },")
+    }
+
+    output.push("} as const;")
+    output.push("")
+  }
+
   // Generate request and response types before operation types
   generateRequestTypes(output, operations, spec, nameMap, schemaOptions)
   generateResponseTypes(output, operations, spec, nameMap, schemaOptions)
@@ -393,6 +435,22 @@ export function generateWithMetadata(
 
     if (op.requestHeaders && op.requestHeaders.length > 0) {
       output.push(`  headers: headers.${camelCaseOperationId},`)
+    }
+
+    if (op.security !== undefined) {
+      if (op.security.length === 0) {
+        output.push("  security: [],")
+      } else {
+        const securityEntries = op.security.map((req) => {
+          const entries = Object.entries(req)
+            .map(([scheme, scopes]) => {
+              return `${formatPropertyName(scheme)}: ${JSON.stringify(scopes)}`
+            })
+            .join(", ")
+          return `{ ${entries} }`
+        })
+        output.push(`  security: [${securityEntries.join(", ")}],`)
+      }
     }
 
     if (op.errors && hasAnyErrors(op.errors)) {
@@ -555,7 +613,10 @@ function appendHelperTypesImport(
         "type OperationErrors<TError = unknown> = TError extends Record<string, unknown> ? TError : Record<string, TError>;"
       )
       buffer.push(
-        "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {"
+        "type SecurityRequirement = Readonly<Record<string, readonly string[]>>;"
+      )
+      buffer.push(
+        "type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined, TSecurity extends readonly SecurityRequirement[] | undefined = undefined> = {"
       )
       buffer.push("  method: TMethod")
       buffer.push("  path: TPath")
@@ -563,6 +624,7 @@ function appendHelperTypesImport(
       buffer.push("  response?: TResponse")
       buffer.push("  headers?: THeaders")
       buffer.push("  errors?: TErrors")
+      buffer.push("  security?: TSecurity")
       buffer.push("}")
       buffer.push("")
   }
@@ -599,6 +661,25 @@ function generateOperationTypes(
     const responseType = wrapTypeReference(op.responseType)
     const errorsType = buildOperationErrorsType(op.errors)
 
+    // Build security type - use inline literal to avoid self-referential typeof
+    let securityType = "undefined"
+    if (op.security !== undefined) {
+      if (op.security.length === 0) {
+        securityType = "readonly []"
+      } else {
+        const entries = op.security.map((req) => {
+          const props = Object.entries(req)
+            .map(
+              ([scheme, scopes]) =>
+                `readonly ${formatPropertyName(scheme)}: readonly ${JSON.stringify(scopes)}`
+            )
+            .join("; ")
+          return `{ ${props} }`
+        })
+        securityType = `readonly [${entries.join(", ")}]`
+      }
+    }
+
     buffer.push(
       `export type ${capitalize(camelCaseOperationId)}Operation = OperationDefinition<`
     )
@@ -609,7 +690,8 @@ function generateOperationTypes(
     buffer.push(`  ${requestType},`)
     buffer.push(`  ${responseType},`)
     buffer.push(`  ${headerType},`)
-    buffer.push(`  ${errorsType}`)
+    buffer.push(`  ${errorsType},`)
+    buffer.push(`  ${securityType}`)
     buffer.push(`>;`)
     buffer.push("")
   }

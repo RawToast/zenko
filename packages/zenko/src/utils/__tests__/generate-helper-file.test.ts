@@ -18,13 +18,16 @@ describe("generateHelperFile", () => {
 
       export type OperationErrors<TError = unknown> = TError extends Record<string, unknown> ? TError : Record<string, TError>;
 
-      export type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {
+      export type SecurityRequirement = Readonly<Record<string, readonly string[]>>
+
+      export type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined, TSecurity extends readonly SecurityRequirement[] | undefined = undefined> = {
         method: TMethod
         path: TPath
         request?: TRequest
         response?: TResponse
         headers?: THeaders
         errors?: TErrors
+        security?: TSecurity
       }
       "
     `)

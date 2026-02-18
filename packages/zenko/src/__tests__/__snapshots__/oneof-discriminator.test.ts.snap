@@ -116,7 +116,8 @@ export type CreatePaymentOperation = OperationDefinition<
   typeof Payment,
   typeof Payment,
   undefined,
-  OperationErrors<{ badRequest: typeof Error }>
+  OperationErrors<{ badRequest: typeof Error }>,
+  undefined
 >;
 
 export type GetVehicleOperation = OperationDefinition<
@@ -125,7 +126,8 @@ export type GetVehicleOperation = OperationDefinition<
   undefined,
   typeof Vehicle,
   undefined,
-  OperationErrors<{ notFound: typeof Error }>
+  OperationErrors<{ notFound: typeof Error }>,
+  undefined
 >;
 
 // Operation Objects

@@ -45,7 +45,8 @@ export type GetTestOperation = OperationDefinition<
   undefined,
   undefined,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 // Operation Objects
@@ -123,7 +124,8 @@ export type GetErrorWithoutSchemaOperation = OperationDefinition<
   undefined,
   typeof GetErrorWithoutSchemaResponse,
   undefined,
-  OperationErrors<{ internalServerError: string }>
+  OperationErrors<{ internalServerError: string }>,
+  undefined
 >;
 
 // Operation Objects
@@ -145,13 +147,15 @@ type RequestMethod = "get" | "put" | "post" | "delete" | "options" | "head" | "p
 type HeaderFn<TArgs extends unknown[] = [], TResult = Record<string, unknown> | Record<string, never>> = (...args: TArgs) => TResult;
 type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown);
 type OperationErrors<TError = unknown> = TError extends Record<string, unknown> ? TError : Record<string, TError>;
-type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined> = {
+type SecurityRequirement = Readonly<Record<string, readonly string[]>>;
+type OperationDefinition<TMethod extends RequestMethod, TPath extends (...args: any[]) => string, TRequest = undefined, TResponse = undefined, THeaders extends AnyHeaderFn | undefined = undefined, TErrors extends OperationErrors | undefined = undefined, TSecurity extends readonly SecurityRequirement[] | undefined = undefined> = {
   method: TMethod
   path: TPath
   request?: TRequest
   response?: TResponse
   headers?: THeaders
   errors?: TErrors
+  security?: TSecurity
 }
 
 
@@ -211,7 +215,8 @@ export type ListPetsOperation = OperationDefinition<
   undefined,
   typeof Pets,
   undefined,
-  OperationErrors<{ defaultError: typeof Error }>
+  OperationErrors<{ defaultError: typeof Error }>,
+  undefined
 >;
 
 export type CreatePetsOperation = OperationDefinition<
@@ -220,7 +225,8 @@ export type CreatePetsOperation = OperationDefinition<
   typeof Pet,
   undefined,
   undefined,
-  OperationErrors<{ defaultError: typeof Error }>
+  OperationErrors<{ defaultError: typeof Error }>,
+  undefined
 >;
 
 export type ShowPetByIdOperation = OperationDefinition<
@@ -229,7 +235,8 @@ export type ShowPetByIdOperation = OperationDefinition<
   undefined,
   typeof Pet,
   undefined,
-  OperationErrors<{ defaultError: typeof Error }>
+  OperationErrors<{ defaultError: typeof Error }>,
+  undefined
 >;
 
 // Operation Objects

@@ -14,6 +14,7 @@ import type {
   PathParam,
   QueryParam,
   RequestHeader,
+  SecurityRequirement,
 } from "../types/operation"
 import type { OpenAPISpec } from "../zenko"
 
@@ -47,6 +48,7 @@ export function parseOperations(
         const resolvedParameters = collectParameters(pathItem, operation, spec)
         const requestHeaders = getRequestHeaders(resolvedParameters)
         const queryParams = getQueryParams(resolvedParameters)
+        const security = getOperationSecurity(operation, spec)
 
         operations.push({
           operationId: (operation as { operationId: string }).operationId,
@@ -58,6 +60,7 @@ export function parseOperations(
           responseType: successResponse,
           requestHeaders,
           errors,
+          security,
         })
       }
     }
@@ -85,6 +88,7 @@ export function parseOperations(
         )
         const requestHeaders = getRequestHeaders(resolvedParameters)
         const queryParams = getQueryParams(resolvedParameters)
+        const security = getOperationSecurity(operation, spec)
 
         operations.push({
           operationId: (operation as { operationId: string }).operationId,
@@ -96,6 +100,7 @@ export function parseOperations(
           responseType: successResponse,
           requestHeaders,
           errors,
+          security,
         })
       }
     }
@@ -386,6 +391,26 @@ function getQueryParams(parameters: any[]): QueryParam[] {
   }
 
   return queryParams
+}
+
+function getOperationSecurity(
+  operation: unknown,
+  spec: OpenAPISpec
+): SecurityRequirement[] | undefined {
+  const opSecurity = (operation as any).security
+
+  // Explicit per-operation security (including empty array = no auth)
+  if (Array.isArray(opSecurity)) {
+    if (opSecurity.length === 0) return []
+    return opSecurity as SecurityRequirement[]
+  }
+
+  // Fall back to global security
+  if (Array.isArray(spec.security) && spec.security.length > 0) {
+    return spec.security as SecurityRequirement[]
+  }
+
+  return undefined
 }
 
 function isRequestMethod(method: string): method is RequestMethod {

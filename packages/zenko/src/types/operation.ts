@@ -19,6 +19,8 @@ export type RequestHeader = {
   required?: boolean
 }
 
+export type SecurityRequirement = Readonly<Record<string, readonly string[]>>
+
 export type OperationErrorMap = Record<string, string>
 
 export type OperationErrorGroup = OperationErrorMap
@@ -33,4 +35,5 @@ export type Operation = {
   responseType?: string
   requestHeaders?: RequestHeader[]
   errors?: OperationErrorGroup
+  security?: SecurityRequirement[]
 }

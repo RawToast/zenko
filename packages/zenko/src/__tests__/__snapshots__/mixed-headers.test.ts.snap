@@ -33,7 +33,8 @@ export type CreateMatrixOperation = OperationDefinition<
   undefined,
   undefined,
   typeof headers.createMatrix,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 // Operation Objects

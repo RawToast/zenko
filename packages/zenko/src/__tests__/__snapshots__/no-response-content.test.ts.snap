@@ -26,7 +26,8 @@ export type PutSomethingOperation = OperationDefinition<
   undefined,
   undefined,
   undefined,
-  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined; internalServerError: undefined; serviceUnavailable: undefined }>
+  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined; internalServerError: undefined; serviceUnavailable: undefined }>,
+  undefined
 >;
 
 // Operation Objects
