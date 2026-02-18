@@ -59,7 +59,8 @@ export type CreateSomethingOperation = OperationDefinition<
   typeof CreateSomethingRequest,
   undefined,
   undefined,
-  OperationErrors<{ internalServerError: typeof CreateSomethingErrorResponse }>
+  OperationErrors<{ internalServerError: typeof CreateSomethingErrorResponse }>,
+  undefined
 >;
 
 // Operation Objects
@@ -133,7 +134,8 @@ export type CreateSomethingOperation = OperationDefinition<
   typeof CreateSomethingRequest,
   undefined,
   undefined,
-  OperationErrors<{ internalServerError: typeof CreateSomethingErrorResponse }>
+  OperationErrors<{ internalServerError: typeof CreateSomethingErrorResponse }>,
+  undefined
 >;
 
 // Operation Objects
@@ -213,7 +215,8 @@ export type CreateSomethingOperation = OperationDefinition<
   typeof CreateSomethingRequest,
   undefined,
   undefined,
-  OperationErrors<{ internalServerError: typeof CreateSomethingErrorResponse }>
+  OperationErrors<{ internalServerError: typeof CreateSomethingErrorResponse }>,
+  undefined
 >;
 
 // Operation Objects

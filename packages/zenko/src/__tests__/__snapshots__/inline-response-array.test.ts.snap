@@ -42,7 +42,8 @@ export type BySourceOperation = OperationDefinition<
   undefined,
   z.ZodArray<typeof AdminLog>,
   undefined,
-  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined; internalServerError: undefined; serviceUnavailable: undefined }>
+  OperationErrors<{ badRequest: undefined; forbidden: undefined; notFound: undefined; internalServerError: undefined; serviceUnavailable: undefined }>,
+  undefined
 >;
 
 // Operation Objects

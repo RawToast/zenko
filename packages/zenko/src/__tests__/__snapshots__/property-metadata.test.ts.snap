@@ -111,7 +111,8 @@ export type CreateUserOperation = OperationDefinition<
   typeof UserInput,
   typeof User,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type GetUserOperation = OperationDefinition<
@@ -120,7 +121,8 @@ export type GetUserOperation = OperationDefinition<
   undefined,
   typeof User,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type UpdateUserOperation = OperationDefinition<
@@ -129,7 +131,8 @@ export type UpdateUserOperation = OperationDefinition<
   typeof UserUpdate,
   typeof User,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type GetSettingsOperation = OperationDefinition<
@@ -138,7 +141,8 @@ export type GetSettingsOperation = OperationDefinition<
   undefined,
   typeof Settings,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type UpdateSettingsOperation = OperationDefinition<
@@ -147,7 +151,8 @@ export type UpdateSettingsOperation = OperationDefinition<
   typeof SettingsUpdate,
   typeof Settings,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 // Operation Objects

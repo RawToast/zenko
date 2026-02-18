@@ -9,4 +9,5 @@ export {
   type HeaderFn,
   type OperationErrors,
   type OperationDefinition,
+  type SecurityRequirement,
 } from "./src/types"

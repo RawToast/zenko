@@ -156,7 +156,8 @@ export type UploadFileOperation = OperationDefinition<
   typeof FileUpload,
   typeof UploadResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type UploadMultipleFilesOperation = OperationDefinition<
@@ -165,7 +166,8 @@ export type UploadMultipleFilesOperation = OperationDefinition<
   typeof MultiFileUpload,
   typeof MultiUploadResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type CreateProfileOperation = OperationDefinition<
@@ -174,7 +176,8 @@ export type CreateProfileOperation = OperationDefinition<
   typeof ProfileForm,
   typeof Profile,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type SubmitContactFormOperation = OperationDefinition<
@@ -183,7 +186,8 @@ export type SubmitContactFormOperation = OperationDefinition<
   typeof ContactForm,
   undefined,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type LoginOperation = OperationDefinition<
@@ -192,7 +196,8 @@ export type LoginOperation = OperationDefinition<
   typeof LoginForm,
   typeof LoginResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type UploadDocumentOperation = OperationDefinition<
@@ -201,7 +206,8 @@ export type UploadDocumentOperation = OperationDefinition<
   typeof DocumentUpload,
   typeof Document,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 // Operation Objects

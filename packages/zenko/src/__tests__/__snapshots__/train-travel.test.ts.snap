@@ -202,6 +202,14 @@ export const headers = {
   newBooking: () => headerSchemas.newBooking.parse({}),
 } as const;
 
+// Security Schemes
+export const securitySchemes = {
+  OAuth2: {
+    type: "oauth2",
+    flows: {"authorizationCode":{"authorizationUrl":"https://example.com/oauth/authorize","tokenUrl":"https://example.com/oauth/token","scopes":{"read":"Read access","write":"Write access"}}},
+  },
+} as const;
+
 // Generated Request Types
 
 export const NewBookingRequest = Booking.and(z.object({
@@ -261,7 +269,8 @@ export type GetStationsOperation = OperationDefinition<
   undefined,
   typeof GetStationsResponse,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined; internalServerError: undefined }>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined; internalServerError: undefined }>,
+  readonly [{ readonly OAuth2: readonly ["read"] }]
 >;
 
 export type GetTripsOperation = OperationDefinition<
@@ -270,7 +279,8 @@ export type GetTripsOperation = OperationDefinition<
   undefined,
   typeof GetTripsResponse,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined; internalServerError: undefined }>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined; internalServerError: undefined }>,
+  readonly [{ readonly OAuth2: readonly ["read"] }]
 >;
 
 export type GetBookingsOperation = OperationDefinition<
@@ -279,7 +289,8 @@ export type GetBookingsOperation = OperationDefinition<
   undefined,
   typeof GetBookingsResponse,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined; internalServerError: undefined }>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined; internalServerError: undefined }>,
+  readonly [{ readonly OAuth2: readonly ["read"] }]
 >;
 
 export type CreateBookingOperation = OperationDefinition<
@@ -288,7 +299,8 @@ export type CreateBookingOperation = OperationDefinition<
   typeof Booking,
   typeof CreateBookingResponse,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; notFound: undefined; conflict: undefined; tooManyRequests: undefined; internalServerError: undefined }>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; notFound: undefined; conflict: undefined; tooManyRequests: undefined; internalServerError: undefined }>,
+  readonly [{ readonly OAuth2: readonly ["write"] }]
 >;
 
 export type GetBookingOperation = OperationDefinition<
@@ -297,7 +309,8 @@ export type GetBookingOperation = OperationDefinition<
   undefined,
   typeof GetBookingResponse,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; notFound: undefined; tooManyRequests: undefined; internalServerError: undefined }>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; notFound: undefined; tooManyRequests: undefined; internalServerError: undefined }>,
+  readonly [{ readonly OAuth2: readonly ["read"] }]
 >;
 
 export type DeleteBookingOperation = OperationDefinition<
@@ -306,7 +319,8 @@ export type DeleteBookingOperation = OperationDefinition<
   undefined,
   undefined,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; notFound: undefined; tooManyRequests: undefined; internalServerError: undefined }>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; notFound: undefined; tooManyRequests: undefined; internalServerError: undefined }>,
+  readonly [{ readonly OAuth2: readonly ["write"] }]
 >;
 
 export type CreateBookingPaymentOperation = OperationDefinition<
@@ -315,7 +329,8 @@ export type CreateBookingPaymentOperation = OperationDefinition<
   typeof BookingPayment,
   typeof CreateBookingPaymentResponse,
   undefined,
-  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined; internalServerError: undefined }>
+  OperationErrors<{ badRequest: undefined; unauthorized: undefined; forbidden: undefined; tooManyRequests: undefined; internalServerError: undefined }>,
+  readonly [{ readonly OAuth2: readonly ["read"] }]
 >;
 
 export type NewBookingOperation = OperationDefinition<
@@ -324,7 +339,8 @@ export type NewBookingOperation = OperationDefinition<
   typeof NewBookingRequest,
   undefined,
   undefined,
-  OperationErrors
+  OperationErrors,
+  readonly [{ readonly OAuth2: readonly ["read"] }]
 >;
 
 // Operation Objects
@@ -332,6 +348,7 @@ export const getStations: GetStationsOperation = {
   method: "get",
   path: paths.getStations,
   response: GetStationsResponse,
+  security: [{ OAuth2: ["read"] }],
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -345,6 +362,7 @@ export const getTrips: GetTripsOperation = {
   method: "get",
   path: paths.getTrips,
   response: GetTripsResponse,
+  security: [{ OAuth2: ["read"] }],
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -358,6 +376,7 @@ export const getBookings: GetBookingsOperation = {
   method: "get",
   path: paths.getBookings,
   response: GetBookingsResponse,
+  security: [{ OAuth2: ["read"] }],
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -372,6 +391,7 @@ export const createBooking: CreateBookingOperation = {
   path: paths.createBooking,
   request: Booking,
   response: CreateBookingResponse,
+  security: [{ OAuth2: ["write"] }],
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -386,6 +406,7 @@ export const getBooking: GetBookingOperation = {
   method: "get",
   path: paths.getBooking,
   response: GetBookingResponse,
+  security: [{ OAuth2: ["read"] }],
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -400,6 +421,7 @@ export const deleteBooking: DeleteBookingOperation = {
   method: "delete",
   path: paths.deleteBooking,
   response: undefined,
+  security: [{ OAuth2: ["write"] }],
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -415,6 +437,7 @@ export const createBookingPayment: CreateBookingPaymentOperation = {
   path: paths.createBookingPayment,
   request: BookingPayment,
   response: CreateBookingPaymentResponse,
+  security: [{ OAuth2: ["read"] }],
     errors: {
       badRequest: undefined,
       unauthorized: undefined,
@@ -428,6 +451,7 @@ export const newBooking: NewBookingOperation = {
   method: "post",
   path: paths.newBooking,
   request: NewBookingRequest,
+  security: [{ OAuth2: ["read"] }],
 } as const;
 "
 `;

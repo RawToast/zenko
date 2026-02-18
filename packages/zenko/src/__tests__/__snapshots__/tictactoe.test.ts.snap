@@ -54,6 +54,32 @@ export const headers = {
   putSquare: () => headerSchemas.putSquare.parse({}),
 } as const;
 
+// Security Schemes
+export const securitySchemes = {
+  defaultApiKey: {
+    type: "apiKey",
+    name: "api-key",
+    in: "header",
+  },
+  basicHttpAuthentication: {
+    type: "http",
+    scheme: "basic",
+  },
+  bearerHttpAuthentication: {
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT",
+  },
+  app2AppOauth: {
+    type: "oauth2",
+    flows: {"clientCredentials":{"tokenUrl":"https://learn.openapis.org/oauth/2.0/token","scopes":{"board:read":"Read the board"}}},
+  },
+  user2AppOauth: {
+    type: "oauth2",
+    flows: {"authorizationCode":{"authorizationUrl":"https://learn.openapis.org/oauth/2.0/auth","tokenUrl":"https://learn.openapis.org/oauth/2.0/token","scopes":{"board:read":"Read the board","board:write":"Write to the board"}}},
+  },
+} as const;
+
 // Operation Types
 export type GetBoardOperation = OperationDefinition<
   "get",
@@ -61,7 +87,8 @@ export type GetBoardOperation = OperationDefinition<
   undefined,
   typeof status,
   undefined,
-  OperationErrors
+  OperationErrors,
+  readonly [{ readonly defaultApiKey: readonly [] }, { readonly app2AppOauth: readonly ["board:read"] }]
 >;
 
 export type GetSquareOperation = OperationDefinition<
@@ -70,7 +97,8 @@ export type GetSquareOperation = OperationDefinition<
   undefined,
   typeof mark,
   undefined,
-  OperationErrors<{ badRequest: typeof errorMessage }>
+  OperationErrors<{ badRequest: typeof errorMessage }>,
+  readonly [{ readonly bearerHttpAuthentication: readonly [] }, { readonly user2AppOauth: readonly ["board:read"] }]
 >;
 
 export type PutSquareOperation = OperationDefinition<
@@ -79,7 +107,8 @@ export type PutSquareOperation = OperationDefinition<
   typeof mark,
   typeof status,
   undefined,
-  OperationErrors<{ badRequest: typeof errorMessage }>
+  OperationErrors<{ badRequest: typeof errorMessage }>,
+  readonly [{ readonly bearerHttpAuthentication: readonly [] }, { readonly user2AppOauth: readonly ["board:write"] }]
 >;
 
 // Operation Objects
@@ -87,12 +116,14 @@ export const getBoard: GetBoardOperation = {
   method: "get",
   path: paths.getBoard,
   response: status,
+  security: [{ defaultApiKey: [] }, { app2AppOauth: ["board:read"] }],
 } as const;
 
 export const getSquare: GetSquareOperation = {
   method: "get",
   path: paths.getSquare,
   response: mark,
+  security: [{ bearerHttpAuthentication: [] }, { user2AppOauth: ["board:read"] }],
     errors: {
       badRequest: errorMessage,
     },
@@ -103,6 +134,7 @@ export const putSquare: PutSquareOperation = {
   path: paths.putSquare,
   request: mark,
   response: status,
+  security: [{ bearerHttpAuthentication: [] }, { user2AppOauth: ["board:write"] }],
     errors: {
       badRequest: errorMessage,
     },
@@ -164,6 +196,32 @@ export const headers = {
   putSquare: () => headerSchemas.putSquare.parse({}),
 } as const;
 
+// Security Schemes
+export const securitySchemes = {
+  defaultApiKey: {
+    type: "apiKey",
+    name: "api-key",
+    in: "header",
+  },
+  basicHttpAuthentication: {
+    type: "http",
+    scheme: "basic",
+  },
+  bearerHttpAuthentication: {
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT",
+  },
+  app2AppOauth: {
+    type: "oauth2",
+    flows: {"clientCredentials":{"tokenUrl":"https://learn.openapis.org/oauth/2.0/token","scopes":{"board:read":"Read the board"}}},
+  },
+  user2AppOauth: {
+    type: "oauth2",
+    flows: {"authorizationCode":{"authorizationUrl":"https://learn.openapis.org/oauth/2.0/auth","tokenUrl":"https://learn.openapis.org/oauth/2.0/token","scopes":{"board:read":"Read the board","board:write":"Write to the board"}}},
+  },
+} as const;
+
 // Operation Types
 export type GetBoardOperation = OperationDefinition<
   "get",
@@ -171,7 +229,8 @@ export type GetBoardOperation = OperationDefinition<
   undefined,
   typeof status,
   undefined,
-  OperationErrors
+  OperationErrors,
+  readonly [{ readonly defaultApiKey: readonly [] }, { readonly app2AppOauth: readonly ["board:read"] }]
 >;
 
 export type GetSquareOperation = OperationDefinition<
@@ -180,7 +239,8 @@ export type GetSquareOperation = OperationDefinition<
   undefined,
   typeof mark,
   undefined,
-  OperationErrors<{ badRequest: typeof errorMessage }>
+  OperationErrors<{ badRequest: typeof errorMessage }>,
+  readonly [{ readonly bearerHttpAuthentication: readonly [] }, { readonly user2AppOauth: readonly ["board:read"] }]
 >;
 
 export type PutSquareOperation = OperationDefinition<
@@ -189,7 +249,8 @@ export type PutSquareOperation = OperationDefinition<
   typeof mark,
   typeof status,
   undefined,
-  OperationErrors<{ badRequest: typeof errorMessage }>
+  OperationErrors<{ badRequest: typeof errorMessage }>,
+  readonly [{ readonly bearerHttpAuthentication: readonly [] }, { readonly user2AppOauth: readonly ["board:write"] }]
 >;
 
 // Operation Objects
@@ -197,12 +258,14 @@ export const getBoard: GetBoardOperation = {
   method: "get",
   path: paths.getBoard,
   response: status,
+  security: [{ defaultApiKey: [] }, { app2AppOauth: ["board:read"] }],
 } as const;
 
 export const getSquare: GetSquareOperation = {
   method: "get",
   path: paths.getSquare,
   response: mark,
+  security: [{ bearerHttpAuthentication: [] }, { user2AppOauth: ["board:read"] }],
     errors: {
       badRequest: errorMessage,
     },
@@ -213,6 +276,7 @@ export const putSquare: PutSquareOperation = {
   path: paths.putSquare,
   request: mark,
   response: status,
+  security: [{ bearerHttpAuthentication: [] }, { user2AppOauth: ["board:write"] }],
     errors: {
       badRequest: errorMessage,
     },

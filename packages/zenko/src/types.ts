@@ -20,6 +20,8 @@ export type AnyHeaderFn = HeaderFn<any, unknown> | (() => unknown)
 export type OperationErrors<TError = unknown> =
   TError extends Record<string, unknown> ? TError : Record<string, TError>
 
+export type SecurityRequirement = Readonly<Record<string, readonly string[]>>
+
 export type OperationDefinition<
   TMethod extends RequestMethod,
   TPath extends (...args: any[]) => string,
@@ -27,6 +29,7 @@ export type OperationDefinition<
   TResponse = undefined,
   THeaders extends AnyHeaderFn | undefined = undefined,
   TErrors extends OperationErrors | undefined = undefined,
+  TSecurity extends readonly SecurityRequirement[] | undefined = undefined,
 > = {
   method: TMethod
   path: TPath
@@ -34,4 +37,5 @@ export type OperationDefinition<
   response?: TResponse
   headers?: THeaders
   errors?: TErrors
+  security?: TSecurity
 }

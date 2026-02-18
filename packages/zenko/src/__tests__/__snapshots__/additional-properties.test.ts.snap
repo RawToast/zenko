@@ -115,7 +115,8 @@ export type CreateMetadataOperation = OperationDefinition<
   typeof MetadataInput,
   typeof Metadata,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type GetConfigOperation = OperationDefinition<
@@ -124,7 +125,8 @@ export type GetConfigOperation = OperationDefinition<
   undefined,
   typeof Config,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type UpdateConfigOperation = OperationDefinition<
@@ -133,7 +135,8 @@ export type UpdateConfigOperation = OperationDefinition<
   typeof Config,
   typeof Config,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type CreateLabelsOperation = OperationDefinition<
@@ -142,7 +145,8 @@ export type CreateLabelsOperation = OperationDefinition<
   typeof Labels,
   undefined,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 // Operation Objects

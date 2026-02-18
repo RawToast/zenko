@@ -1,0 +1,143 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Security Schemes generates security schemes metadata from tictactoe spec: security-schemes-tictactoe 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const errorMessage = z.string();
+
+export type errorMessage = z.infer<typeof errorMessage>;
+
+export const coordinate = z.number().int();
+
+export type coordinate = z.infer<typeof coordinate>;
+
+export const mark = z.enum([".", "X", "O"]);
+
+export type mark = z.infer<typeof mark>;
+
+export const board = z.array(z.array(mark).min(3).max(3)).min(3).max(3);
+
+export type board = z.infer<typeof board>;
+
+export const winner = z.enum([".", "X", "O"]);
+
+export type winner = z.infer<typeof winner>;
+
+export const status = z.object({
+  winner: winner.optional(),
+  board: board.optional(),
+});
+
+export type status = z.infer<typeof status>;
+
+// Path Functions
+export const paths = {
+  getBoard: () => "/board",
+  getSquare: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+  putSquare: ({ row, column }: { row: string, column: string }) => \`/board/\${row}/\${column}\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  getBoard: z.object({}),
+  getSquare: z.object({}),
+  putSquare: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  getBoard: () => headerSchemas.getBoard.parse({}),
+  getSquare: () => headerSchemas.getSquare.parse({}),
+  putSquare: () => headerSchemas.putSquare.parse({}),
+} as const;
+
+// Security Schemes
+export const securitySchemes = {
+  defaultApiKey: {
+    type: "apiKey",
+    name: "api-key",
+    in: "header",
+  },
+  basicHttpAuthentication: {
+    type: "http",
+    scheme: "basic",
+  },
+  bearerHttpAuthentication: {
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT",
+  },
+  app2AppOauth: {
+    type: "oauth2",
+    flows: {"clientCredentials":{"tokenUrl":"https://learn.openapis.org/oauth/2.0/token","scopes":{"board:read":"Read the board"}}},
+  },
+  user2AppOauth: {
+    type: "oauth2",
+    flows: {"authorizationCode":{"authorizationUrl":"https://learn.openapis.org/oauth/2.0/auth","tokenUrl":"https://learn.openapis.org/oauth/2.0/token","scopes":{"board:read":"Read the board","board:write":"Write to the board"}}},
+  },
+} as const;
+
+// Operation Types
+export type GetBoardOperation = OperationDefinition<
+  "get",
+  typeof paths.getBoard,
+  undefined,
+  typeof status,
+  undefined,
+  OperationErrors,
+  readonly [{ readonly defaultApiKey: readonly [] }, { readonly app2AppOauth: readonly ["board:read"] }]
+>;
+
+export type GetSquareOperation = OperationDefinition<
+  "get",
+  typeof paths.getSquare,
+  undefined,
+  typeof mark,
+  undefined,
+  OperationErrors<{ badRequest: typeof errorMessage }>,
+  readonly [{ readonly bearerHttpAuthentication: readonly [] }, { readonly user2AppOauth: readonly ["board:read"] }]
+>;
+
+export type PutSquareOperation = OperationDefinition<
+  "put",
+  typeof paths.putSquare,
+  typeof mark,
+  typeof status,
+  undefined,
+  OperationErrors<{ badRequest: typeof errorMessage }>,
+  readonly [{ readonly bearerHttpAuthentication: readonly [] }, { readonly user2AppOauth: readonly ["board:write"] }]
+>;
+
+// Operation Objects
+export const getBoard: GetBoardOperation = {
+  method: "get",
+  path: paths.getBoard,
+  response: status,
+  security: [{ defaultApiKey: [] }, { app2AppOauth: ["board:read"] }],
+} as const;
+
+export const getSquare: GetSquareOperation = {
+  method: "get",
+  path: paths.getSquare,
+  response: mark,
+  security: [{ bearerHttpAuthentication: [] }, { user2AppOauth: ["board:read"] }],
+    errors: {
+      badRequest: errorMessage,
+    },
+} as const;
+
+export const putSquare: PutSquareOperation = {
+  method: "put",
+  path: paths.putSquare,
+  request: mark,
+  response: status,
+  security: [{ bearerHttpAuthentication: [] }, { user2AppOauth: ["board:write"] }],
+    errors: {
+      badRequest: errorMessage,
+    },
+} as const;
+"
+`;

@@ -234,7 +234,8 @@ export type CreateEntityOperation = OperationDefinition<
   typeof Entity,
   typeof Entity,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type GetResourceOperation = OperationDefinition<
@@ -243,7 +244,8 @@ export type GetResourceOperation = OperationDefinition<
   undefined,
   typeof Resource,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type ValidateDataOperation = OperationDefinition<
@@ -252,7 +254,8 @@ export type ValidateDataOperation = OperationDefinition<
   typeof ComplexValidation,
   typeof ValidateDataResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 // Operation Objects

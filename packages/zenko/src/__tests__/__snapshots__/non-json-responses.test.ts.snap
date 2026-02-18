@@ -150,7 +150,8 @@ export type ExportUsersCsvOperation = OperationDefinition<
   undefined,
   typeof ExportUsersCsvResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type ExportDataXmlOperation = OperationDefinition<
@@ -159,7 +160,8 @@ export type ExportDataXmlOperation = OperationDefinition<
   undefined,
   typeof ExportDataXmlResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type DownloadFileOperation = OperationDefinition<
@@ -168,7 +170,8 @@ export type DownloadFileOperation = OperationDefinition<
   undefined,
   typeof DownloadFileResponse,
   undefined,
-  OperationErrors<{ notFound: undefined }>
+  OperationErrors<{ notFound: undefined }>,
+  undefined
 >;
 
 export type GetDocumentPdfOperation = OperationDefinition<
@@ -177,7 +180,8 @@ export type GetDocumentPdfOperation = OperationDefinition<
   undefined,
   typeof GetDocumentPdfResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type GetImageOperation = OperationDefinition<
@@ -186,7 +190,8 @@ export type GetImageOperation = OperationDefinition<
   undefined,
   typeof GetImageResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type GetLogsOperation = OperationDefinition<
@@ -195,7 +200,8 @@ export type GetLogsOperation = OperationDefinition<
   undefined,
   typeof GetLogsResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type StreamEventsOperation = OperationDefinition<
@@ -204,7 +210,8 @@ export type StreamEventsOperation = OperationDefinition<
   undefined,
   typeof StreamEventsResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type GetReportOperation = OperationDefinition<
@@ -213,7 +220,8 @@ export type GetReportOperation = OperationDefinition<
   undefined,
   typeof Report,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type GetHealthTextOperation = OperationDefinition<
@@ -222,7 +230,8 @@ export type GetHealthTextOperation = OperationDefinition<
   undefined,
   typeof GetHealthTextResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type DownloadArchiveOperation = OperationDefinition<
@@ -231,7 +240,8 @@ export type DownloadArchiveOperation = OperationDefinition<
   undefined,
   typeof DownloadArchiveResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type GetMarkdownDocOperation = OperationDefinition<
@@ -240,7 +250,8 @@ export type GetMarkdownDocOperation = OperationDefinition<
   undefined,
   typeof GetMarkdownDocResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 export type GetRssFeedOperation = OperationDefinition<
@@ -249,7 +260,8 @@ export type GetRssFeedOperation = OperationDefinition<
   undefined,
   typeof GetRssFeedResponse,
   undefined,
-  OperationErrors
+  OperationErrors,
+  undefined
 >;
 
 // Operation Objects
