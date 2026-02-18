@@ -180,6 +180,38 @@ describe("Security Schemes", () => {
     expect(securityMatch).not.toBeNull()
   })
 
+  test("generates openIdConnect scheme with openIdConnectUrl", () => {
+    const spec = {
+      openapi: "3.1.0",
+      info: { title: "Test", version: "1.0.0" },
+      paths: {
+        "/items": {
+          get: {
+            operationId: "list-items",
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+      components: {
+        securitySchemes: {
+          oidc: {
+            type: "openIdConnect",
+            openIdConnectUrl:
+              "https://auth.example.com/.well-known/openid-configuration",
+          },
+        },
+      },
+    }
+
+    const result = generate(spec)
+
+    expect(result).toContain('"openIdConnect"')
+    expect(result).toContain(
+      '"https://auth.example.com/.well-known/openid-configuration"'
+    )
+    expect(result).toContain("openIdConnectUrl:")
+  })
+
   test("handles global security: [] (explicitly no auth for entire API)", () => {
     const spec = {
       openapi: "3.1.0",
