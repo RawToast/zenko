@@ -210,7 +210,7 @@ describe("TicTacToeClientFetch", () => {
       })
     )
 
-    await client.putSquare("1", "1", "X" as any)
+    await client.putSquare("1", "1", "X")
 
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/board/1/1"),

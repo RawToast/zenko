@@ -1,7 +1,7 @@
 /**
  * Generate a standalone helper types file for use with `helpers: "file"` mode.
  *
- * @returns TypeScript source containing PathFn, RequestMethod, HeaderFn, AnyHeaderFn, OperationErrors, and OperationDefinition type definitions.
+ * @returns TypeScript source containing PathFn, RequestMethod, HeaderFn, AnyHeaderFn, OperationErrors, SecurityRequirement, and OperationDefinition type definitions.
  */
 export function generateHelperFile(): string {
   const output: string[] = []

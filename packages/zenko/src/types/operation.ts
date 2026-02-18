@@ -1,4 +1,4 @@
-import type { RequestMethod } from "../types"
+import type { RequestMethod, SecurityRequirement } from "../types"
 
 export type PathParam = {
   name: string
@@ -19,7 +19,7 @@ export type RequestHeader = {
   required?: boolean
 }
 
-export type SecurityRequirement = Readonly<Record<string, readonly string[]>>
+export type { SecurityRequirement }
 
 export type OperationErrorMap = Record<string, string>
 

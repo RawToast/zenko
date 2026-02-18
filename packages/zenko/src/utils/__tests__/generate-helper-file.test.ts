@@ -43,5 +43,6 @@ describe("generateHelperFile", () => {
     expect(helperContent).toContain("export type AnyHeaderFn")
     expect(helperContent).toContain("export type OperationErrors")
     expect(helperContent).toContain("export type OperationDefinition")
+    expect(helperContent).toContain("export type SecurityRequirement")
   })
 })
