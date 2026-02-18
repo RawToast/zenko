@@ -83,13 +83,14 @@ export class TicTacToeClientFetch {
     options?: RequestInit
   ): Promise<T> {
     const url = `${this.baseUrl}${path}`
+    const { headers: userHeaders, ...restOptions } = options || {}
     const response = await fetch(url, {
+      ...restOptions,
       headers: {
         "Content-Type": "application/json",
         ...this.getAuthHeaders(),
-        ...(options?.headers as Record<string, string>),
+        ...(userHeaders as Record<string, string>),
       },
-      ...options,
     })
 
     if (!response.ok) {
