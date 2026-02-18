@@ -662,23 +662,21 @@ function generateOperationTypes(
     const errorsType = buildOperationErrorsType(op.errors)
 
     // Build security type - use inline literal to avoid self-referential typeof
-    let securityType = "undefined"
-    if (op.security !== undefined) {
-      if (op.security.length === 0) {
-        securityType = "readonly []"
-      } else {
-        const entries = op.security.map((req) => {
-          const props = Object.entries(req)
-            .map(
-              ([scheme, scopes]) =>
-                `readonly ${formatPropertyName(scheme)}: readonly ${JSON.stringify(scopes)}`
-            )
-            .join("; ")
-          return `{ ${props} }`
-        })
-        securityType = `readonly [${entries.join(", ")}]`
-      }
-    }
+    const securityType = (() => {
+      if (op.security === undefined) return "undefined"
+      if (op.security.length === 0) return "readonly []"
+
+      const entries = op.security.map((req) => {
+        const props = Object.entries(req)
+          .map(
+            ([scheme, scopes]) =>
+              `readonly ${formatPropertyName(scheme)}: readonly ${JSON.stringify(scopes)}`
+          )
+          .join("; ")
+        return `{ ${props} }`
+      })
+      return `readonly [${entries.join(", ")}]`
+    })()
 
     buffer.push(
       `export type ${capitalize(camelCaseOperationId)}Operation = OperationDefinition<`
