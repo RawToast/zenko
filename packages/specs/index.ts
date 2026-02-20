@@ -14,6 +14,7 @@ export const complexCompositionYamlPath = resourcePath(
 export const dateEnumYamlPath = resourcePath("date-enum.yaml")
 export const dateTimeOffsetYamlPath = resourcePath("datetime-offset.yaml")
 export const enumDemoYamlPath = resourcePath("enum-demo.yaml")
+export const fireblocksV2YamlPath = resourcePath("fireblocks-v2.yaml")
 export const formDataYamlPath = resourcePath("form-data.yaml")
 export const inlineResponseArrayYamlPath = resourcePath(
   "inline-response-array.yaml"

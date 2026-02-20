@@ -56,6 +56,11 @@
           "enum": ["optional", "nullable", "nullish"],
           "default": "optional",
           "description": "How to handle optional fields: 'optional' (z.optional() - field can be undefined), 'nullable' (z.nullable() - field can be null), or 'nullish' (z.nullish() - field can be undefined or null)"
+        },
+        "operationTypeSuffix": {
+          "type": "string",
+          "default": "Operation",
+          "description": "Suffix appended to operation type names (e.g., 'GetUserOperation'). Override to avoid naming collisions with schema types that already use 'Operation' in their name."
         }
       }
     },

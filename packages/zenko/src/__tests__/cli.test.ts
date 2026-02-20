@@ -223,6 +223,35 @@ describe("CLI", () => {
     expect(output).toContain("export const Error =")
   })
 
+  test("supports operationTypeSuffix in config file", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+
+    const configDir = path.join(tempDir, "operation-suffix-config")
+    const configOutput = path.join(configDir, "operation-suffix-output.ts")
+    fs.mkdirSync(configDir, { recursive: true })
+
+    const configPath = path.join(configDir, "zenko.config.json")
+    const config = {
+      schemas: [
+        {
+          input: path.relative(configDir, petstoreYamlPath),
+          output: "operation-suffix-output.ts",
+          types: { operationTypeSuffix: "Op" },
+        },
+      ],
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+
+    execSync(`bun run ${cliPath} --config ${configPath}`, {
+      encoding: "utf8",
+    })
+
+    const output = fs.readFileSync(configOutput, "utf8")
+    expect(output).toContain("export type ListPetsOp = OperationDefinition<")
+    expect(output).toContain(": ListPetsOp")
+    expect(output).not.toContain("ListPetsOperation")
+  })
+
   test("supports openEnums in config file", () => {
     const cliPath = path.join(process.cwd(), "src/cli.ts")
     const dateEnumPath = dateEnumYamlPath
