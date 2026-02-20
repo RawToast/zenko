@@ -16,14 +16,13 @@
     "check:ci": "turbo check-types lint:check format:check",
     "dev": "turbo watch lint format check-types test",
     "zenko": "bun run --cwd packages/zenko",
-    "nuke": "rimraf --glob '**/node_modules' --glob '**/dist' --glob '**/coverage' --glob 'packages/examples/**/*.gen.ts'"
+    "nuke": "bun run --bun nuke.ts"
   },
   "devDependencies": {
     "bun-scan": "1.1.0",
     "oxfmt": "0.32.0",
     "oxlint": "1.47.0",
     "oxlint-tsgolint": "0.12.2",
-    "rimraf": "6.1.2",
     "turbo": "2.8.9"
   },
   "engines": {

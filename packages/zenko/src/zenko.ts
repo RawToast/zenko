@@ -43,6 +43,7 @@ export type TypesConfig = {
   helpersOutput?: string
   treeShake?: boolean
   optionalType?: "optional" | "nullable" | "nullish"
+  operationTypeSuffix?: string
 }
 
 export type EnumConfig = {
@@ -424,7 +425,7 @@ export function generateWithMetadata(
   for (const op of operations) {
     const camelCaseOperationId = toCamelCase(op.operationId)
     const typeAnnotation = typesConfig.emit
-      ? `: ${capitalize(camelCaseOperationId)}Operation`
+      ? `: ${operationTypeName(camelCaseOperationId, typesConfig.operationTypeSuffix)}`
       : ""
     output.push(`export const ${camelCaseOperationId}${typeAnnotation} = {`)
     output.push(`  method: "${op.method}",`)
@@ -535,12 +536,24 @@ function hasAnyErrors(group: OperationErrorGroup): boolean {
 function normalizeTypesConfig(
   config: TypesConfig | undefined
 ): NormalizedTypesConfig {
+  const operationTypeSuffix = config?.operationTypeSuffix ?? "Operation"
+
+  if (
+    operationTypeSuffix !== "" &&
+    !/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(operationTypeSuffix)
+  ) {
+    throw new Error(
+      `Invalid operationTypeSuffix "${operationTypeSuffix}": must be a valid TypeScript identifier suffix (letters, digits, underscores, or $). Use "" for no suffix.`
+    )
+  }
+
   return {
     emit: config?.emit ?? true,
     helpers: config?.helpers ?? "package",
     helpersOutput: config?.helpersOutput ?? "./zenko-types",
     treeShake: config?.treeShake ?? true,
     optionalType: config?.optionalType ?? "optional",
+    operationTypeSuffix,
   }
 }
 
@@ -550,6 +563,18 @@ type NormalizedTypesConfig = {
   helpersOutput: string
   treeShake: boolean
   optionalType: "optional" | "nullable" | "nullish"
+  operationTypeSuffix: string
+}
+
+/**
+ * Computes the operation type name for a given operationId.
+ * Uses the configured suffix to avoid naming collisions with schema types.
+ */
+function operationTypeName(
+  camelCaseOperationId: string,
+  suffix: string
+): string {
+  return `${capitalize(camelCaseOperationId)}${suffix}`
 }
 
 /**
@@ -633,7 +658,8 @@ function appendHelperTypesImport(
 /**
  * Appends TypeScript operation type definitions to the output buffer.
  *
- * For each operation, emits an `export type <OperationId>Operation = OperationDefinition<...>` declaration
+ * For each operation, emits an `export type <OperationId><Suffix> = OperationDefinition<...>` declaration
+ * (where Suffix is configured via `config.operationTypeSuffix`, defaulting to "Operation")
  * (including the HTTP method literal, path fn, request/response types, headers type, and errors type)
  * into the provided `buffer` when `config.emit` is true.
  *
@@ -652,6 +678,10 @@ function generateOperationTypes(
 
   for (const op of operations) {
     const camelCaseOperationId = toCamelCase(op.operationId)
+    const typeName = operationTypeName(
+      camelCaseOperationId,
+      config.operationTypeSuffix
+    )
     const headerType = op.requestHeaders?.length
       ? isValidJSIdentifier(camelCaseOperationId)
         ? `typeof headers.${camelCaseOperationId}`
@@ -678,9 +708,7 @@ function generateOperationTypes(
       return `readonly [${entries.join(", ")}]`
     })()
 
-    buffer.push(
-      `export type ${capitalize(camelCaseOperationId)}Operation = OperationDefinition<`
-    )
+    buffer.push(`export type ${typeName} = OperationDefinition<`)
     buffer.push(`  "${op.method}",`)
     buffer.push(
       `  ${isValidJSIdentifier(camelCaseOperationId) ? `typeof paths.${camelCaseOperationId}` : `(typeof paths)[${formatPropertyName(camelCaseOperationId)}]`},`
