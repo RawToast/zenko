@@ -528,10 +528,13 @@ function hasAnyErrors(group: OperationErrorGroup): boolean {
 }
 
 /**
- * Determines whether a given string is one of the supported HTTP request methods.
+ * Normalizes a {@link TypesConfig} into a {@link NormalizedTypesConfig}.
+ * Defaults `operationTypeSuffix` to `"Operation"`, validates it as a valid
+ * TypeScript identifier (or empty string), and throws an {@link Error} when
+ * validation fails.
  *
- * @param method - The HTTP method name to check (expected in lowercase).
- * @returns `true` if `method` is one of `"get"`, `"put"`, `"post"`, `"delete"`, `"options"`, `"head"`, `"patch"`, or `"trace"`, `false` otherwise.
+ * @param config - The types configuration to normalize (may be undefined).
+ * @returns A fully populated {@link NormalizedTypesConfig}.
  */
 function normalizeTypesConfig(
   config: TypesConfig | undefined
