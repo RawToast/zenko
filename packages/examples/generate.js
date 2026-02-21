@@ -6,6 +6,7 @@ import {
   petstoreYamlPath,
   tictactoeYamlPath,
   trainTravelYamlPath,
+  fireblocksV2YamlPath,
 } from "@zenko/specs"
 import { generate } from "zenko"
 
@@ -15,6 +16,7 @@ const specInputPaths = {
   "petstore.yaml": petstoreYamlPath,
   "tictactoe.yaml": tictactoeYamlPath,
   "train-travel.yaml": trainTravelYamlPath,
+  "fireblocks-v2.yaml": fireblocksV2YamlPath,
 }
 
 function generateSchema(inputFile, outputFile, options) {
@@ -86,12 +88,22 @@ try {
     openEnums: ["ProductStatus"], // Make ProductStatus open, Category remains closed
   })
 
+  const fireblocksSuccess = generateSchema(
+    "fireblocks-v2.yaml",
+    "fireblocks-v2.gen.ts",
+    {
+      types: {
+        operationTypeSuffix: "Ops",
+      },
+    }
+  )
   if (
     !petstoreSuccess ||
     !trainTravelSuccess ||
     !authApiSuccess ||
     !tictactoeSuccess ||
-    !enumDemoSuccess
+    !enumDemoSuccess ||
+    !fireblocksSuccess
   ) {
     process.exit(1)
   }

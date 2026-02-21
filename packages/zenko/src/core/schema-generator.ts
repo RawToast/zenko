@@ -538,7 +538,8 @@ export function getZodTypeFromSchema(
           nameMap
         ))
     ) {
-      return `z.lazy(() => ${resolvedName})`
+      // Add explicit type annotation to prevent 'any' type inference with circular refs
+      return `z.lazy((): z.ZodTypeAny => ${resolvedName})`
     }
     return resolvedName
   }
@@ -876,13 +877,28 @@ export function buildString(
 
 /**
  * Appends a default value to a Zod type expression when the OpenAPI schema defines one.
+ * Skips applying default(null) for schemas that don't accept null values to prevent type errors.
  *
  * @param zodType - The Zod type expression to modify (as a string)
  * @param schema - The OpenAPI schema object that may contain a `default` value
- * @returns The original `zodType` with `.default(<value>)` appended if `schema.default` is defined, otherwise the unmodified `zodType`
+ * @returns The original `zodType` with `.default(<value>)` appended if `schema.default` is defined and valid, otherwise the unmodified `zodType`
  */
 function applyDefaultModifier(zodType: string, schema: any): string {
   if (!schema || schema.default === undefined) return zodType
+
+  // Don't apply null default if the Zod type doesn't accept null values
+  // A Zod type accepts null if it has .nullable() or .nullish() applied
+  if (schema.default === null) {
+    const acceptsNull =
+      zodType.includes(".nullable()") ||
+      zodType.includes(".nullish()") ||
+      schema.type === "null" ||
+      (Array.isArray(schema.type) && schema.type.includes("null"))
+    if (!acceptsNull) {
+      return zodType
+    }
+  }
+
   return `${zodType}.default(${JSON.stringify(schema.default)})`
 }
 
