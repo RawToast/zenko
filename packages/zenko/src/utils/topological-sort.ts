@@ -67,5 +67,7 @@ export function extractDependencies(schema: any): string[] {
 }
 
 export function extractRefName(ref: string): string {
-  return ref.split("/").pop() || "Unknown"
+  const name = ref.split("/").pop() || "Unknown"
+  // Strip .yml and .yaml extensions from external file refs
+  return name.replace(/\.(yml|yaml)$/i, "")
 }

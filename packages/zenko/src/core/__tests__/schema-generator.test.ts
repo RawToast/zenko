@@ -462,7 +462,7 @@ describe("getZodTypeFromSchema", () => {
       schemaRegistry,
       "A"
     )
-    expect(result).toBe("z.lazy(() => B)")
+    expect(result).toBe("z.lazy((): z.ZodType => B)")
   })
 
   test("should handle enum", () => {
@@ -853,7 +853,7 @@ describe("schemaReferencesName - uncovered branches", () => {
       schemaRegistry,
       "Child"
     )
-    expect(result).toBe("z.lazy(() => Parent)")
+    expect(result).toBe("z.lazy((): z.ZodType => Parent)")
   })
 
   test("should detect self-reference through not schema", () => {
@@ -874,7 +874,7 @@ describe("schemaReferencesName - uncovered branches", () => {
       schemaRegistry,
       "Target"
     )
-    expect(result).toBe("z.lazy(() => NotWrapper)")
+    expect(result).toBe("z.lazy((): z.ZodType => NotWrapper)")
   })
 
   test("should use z.lazy for recursion via resolved schema in registry", () => {
@@ -901,7 +901,7 @@ describe("schemaReferencesName - uncovered branches", () => {
       schemaRegistry,
       "Self"
     )
-    expect(result).toBe("z.lazy(() => Wrapper)")
+    expect(result).toBe("z.lazy((): z.ZodType => Wrapper)")
   })
 })
 
@@ -1050,5 +1050,158 @@ describe("isOpenEnum", () => {
   test("should return false when enum name is not in the array", () => {
     expect(isOpenEnum("Other", ["Status", "Color"])).toBe(false)
     expect(isOpenEnum("NotInList", [])).toBe(false)
+  })
+})
+
+describe("z.lazy with z.ZodType annotation", () => {
+  test("should include explicit z.ZodType type annotation for circular refs", () => {
+    const schemaRegistry = {
+      A: {
+        type: "object",
+        properties: { b: { $ref: "#/components/schemas/B" } },
+      },
+      B: {
+        type: "object",
+        properties: { a: { $ref: "#/components/schemas/A" } },
+      },
+    }
+    const schema = { $ref: "#/components/schemas/B" }
+    const result = getZodTypeFromSchema(
+      schema,
+      defaultOptions,
+      undefined,
+      schemaRegistry,
+      "A"
+    )
+    expect(result).toBe("z.lazy((): z.ZodType => B)")
+  })
+
+  test("should include type annotation for self-referential schemas", () => {
+    const schemaRegistry = {
+      Node: {
+        type: "object",
+        properties: {
+          children: {
+            type: "array",
+            items: { $ref: "#/components/schemas/Node" },
+          },
+        },
+      },
+    }
+    const schema = { $ref: "#/components/schemas/Node" }
+    const result = getZodTypeFromSchema(
+      schema,
+      defaultOptions,
+      undefined,
+      schemaRegistry,
+      "Node"
+    )
+    expect(result).toBe("z.lazy((): z.ZodType => Node)")
+  })
+})
+
+describe("applyDefaultModifier behavior", () => {
+  test("should NOT emit .default(null) for non-nullable string schema", () => {
+    const schemaRegistry = {
+      Config: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            default: null,
+          },
+        },
+      },
+    }
+    const generatedTypes = new Set<string>()
+    const result = generateZodSchema(
+      "Config",
+      schemaRegistry.Config,
+      generatedTypes,
+      defaultOptions
+    )
+    // Should NOT contain .default(null) since string doesn't accept null
+    expect(result).not.toContain(".default(null)")
+    // But should still generate the schema
+    expect(result).toContain("export const Config =")
+    expect(result).toContain("z.string()")
+  })
+
+  test("should NOT emit .default(null) for non-nullable number schema", () => {
+    const schemaRegistry = {
+      Settings: {
+        type: "object",
+        properties: {
+          count: {
+            type: "number",
+            default: null,
+          },
+        },
+      },
+    }
+    const generatedTypes = new Set<string>()
+    const result = generateZodSchema(
+      "Settings",
+      schemaRegistry.Settings,
+      generatedTypes,
+      defaultOptions
+    )
+    expect(result).not.toContain(".default(null)")
+    expect(result).toContain("z.number()")
+  })
+
+  test("should emit .default(null) for nullable schema types", () => {
+    const schemaRegistry = {
+      Config: {
+        type: "object",
+        properties: {
+          description: {
+            type: ["string", "null"],
+            default: null,
+          },
+        },
+      },
+    }
+    const generatedTypes = new Set<string>()
+    const result = generateZodSchema(
+      "Config",
+      schemaRegistry.Config,
+      generatedTypes,
+      defaultOptions
+    )
+    // Should contain .default(null) since type includes null
+    expect(result).toContain(".default(null)")
+  })
+
+  test("should emit non-null defaults normally", () => {
+    const schemaRegistry = {
+      Config: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            default: "default-name",
+          },
+          count: {
+            type: "number",
+            default: 42,
+          },
+          enabled: {
+            type: "boolean",
+            default: true,
+          },
+        },
+      },
+    }
+    const generatedTypes = new Set<string>()
+    const result = generateZodSchema(
+      "Config",
+      schemaRegistry.Config,
+      generatedTypes,
+      defaultOptions
+    )
+    expect(result).toContain('.default("default-name")')
+    expect(result).toContain(".default(42)")
+    expect(result).toContain(".default(true)")
   })
 })

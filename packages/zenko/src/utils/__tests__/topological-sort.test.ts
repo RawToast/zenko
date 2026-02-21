@@ -236,4 +236,28 @@ describe("extractRefName", () => {
   test("should handle malformed ref", () => {
     expect(extractRefName("/")).toBe("Unknown")
   })
+
+  test("should strip .yml extension from external file refs", () => {
+    expect(extractRefName("./models/User.yml")).toBe("User")
+    expect(extractRefName("common.yml")).toBe("common")
+    expect(extractRefName("#/components/schemas/User.yml")).toBe("User")
+  })
+
+  test("should strip .yaml extension from external file refs", () => {
+    expect(extractRefName("./models/User.yaml")).toBe("User")
+    expect(extractRefName("common.yaml")).toBe("common")
+    expect(extractRefName("#/components/schemas/User.yaml")).toBe("User")
+  })
+
+  test("should handle .yml/.yaml extensions case-insensitively", () => {
+    expect(extractRefName("User.YML")).toBe("User")
+    expect(extractRefName("User.Yaml")).toBe("User")
+    expect(extractRefName("User.YAML")).toBe("User")
+  })
+
+  test("should not strip extensions that are not .yml/.yaml", () => {
+    expect(extractRefName("User.json")).toBe("User.json")
+    expect(extractRefName("User.ts")).toBe("User.ts")
+    expect(extractRefName("User.yml.backup")).toBe("User.yml.backup")
+  })
 })

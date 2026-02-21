@@ -63,13 +63,13 @@ exports[`generate Edge cases handles circular dependencies gracefully: circular-
 // Generated Zod Schemas
 
 export const B = z.object({
-  a: z.lazy(() => A).optional(),
+  a: z.lazy((): z.ZodType => A).optional(),
 });
 
 export type B = z.infer<typeof B>;
 
 export const A = z.object({
-  b: z.lazy(() => B).optional(),
+  b: z.lazy((): z.ZodType => B).optional(),
 });
 
 export type A = z.infer<typeof A>;

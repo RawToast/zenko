@@ -108,7 +108,10 @@ export function generateWithMetadata(
     operationIds,
     openEnums = false,
   } = options
-  const typesConfig = normalizeTypesConfig(options.types)
+  const typesConfig = normalizeTypesConfig({
+    ...options.types,
+    operationTypeSuffix: options.types?.operationTypeSuffix ?? "Operation",
+  })
   const enumConfig = resolveEnumConfig(openEnums)
   const schemaOptions: SchemaOptions = {
     strictDates,
