@@ -462,7 +462,7 @@ describe("getZodTypeFromSchema", () => {
       schemaRegistry,
       "A"
     )
-    expect(result).toBe("z.lazy((): z.ZodTypeAny => B)")
+    expect(result).toBe("z.lazy((): z.ZodType => B)")
   })
 
   test("should handle enum", () => {
@@ -853,7 +853,7 @@ describe("schemaReferencesName - uncovered branches", () => {
       schemaRegistry,
       "Child"
     )
-    expect(result).toBe("z.lazy((): z.ZodTypeAny => Parent)")
+    expect(result).toBe("z.lazy((): z.ZodType => Parent)")
   })
 
   test("should detect self-reference through not schema", () => {
@@ -874,7 +874,7 @@ describe("schemaReferencesName - uncovered branches", () => {
       schemaRegistry,
       "Target"
     )
-    expect(result).toBe("z.lazy((): z.ZodTypeAny => NotWrapper)")
+    expect(result).toBe("z.lazy((): z.ZodType => NotWrapper)")
   })
 
   test("should use z.lazy for recursion via resolved schema in registry", () => {
@@ -901,7 +901,7 @@ describe("schemaReferencesName - uncovered branches", () => {
       schemaRegistry,
       "Self"
     )
-    expect(result).toBe("z.lazy((): z.ZodTypeAny => Wrapper)")
+    expect(result).toBe("z.lazy((): z.ZodType => Wrapper)")
   })
 })
 
@@ -1053,8 +1053,8 @@ describe("isOpenEnum", () => {
   })
 })
 
-describe("z.lazy with z.ZodTypeAny annotation", () => {
-  test("should include explicit z.ZodTypeAny type annotation for circular refs", () => {
+describe("z.lazy with z.ZodType annotation", () => {
+  test("should include explicit z.ZodType type annotation for circular refs", () => {
     const schemaRegistry = {
       A: {
         type: "object",
@@ -1073,7 +1073,7 @@ describe("z.lazy with z.ZodTypeAny annotation", () => {
       schemaRegistry,
       "A"
     )
-    expect(result).toBe("z.lazy((): z.ZodTypeAny => B)")
+    expect(result).toBe("z.lazy((): z.ZodType => B)")
   })
 
   test("should include type annotation for self-referential schemas", () => {
@@ -1096,7 +1096,7 @@ describe("z.lazy with z.ZodTypeAny annotation", () => {
       schemaRegistry,
       "Node"
     )
-    expect(result).toBe("z.lazy((): z.ZodTypeAny => Node)")
+    expect(result).toBe("z.lazy((): z.ZodType => Node)")
   })
 })
 

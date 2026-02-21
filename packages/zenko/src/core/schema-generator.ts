@@ -539,7 +539,7 @@ export function getZodTypeFromSchema(
         ))
     ) {
       // Add explicit type annotation to prevent 'any' type inference with circular refs
-      return `z.lazy((): z.ZodTypeAny => ${resolvedName})`
+      return `z.lazy((): z.ZodType => ${resolvedName})`
     }
     return resolvedName
   }
