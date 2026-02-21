@@ -142,7 +142,7 @@ export type FlexibleValue = z.infer<typeof FlexibleValue>;
 
 export const HierarchicalData = Identifiable.merge(z.object({
   parent: z.union([z.null(), Identifiable]).optional(),
-  children: z.array(z.lazy((): z.ZodTypeAny => HierarchicalData)).optional(),
+  children: z.array(z.lazy((): z.ZodType => HierarchicalData)).optional(),
 }));
 
 export type HierarchicalData = z.infer<typeof HierarchicalData>;

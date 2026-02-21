@@ -144,8 +144,8 @@ describe("Complex Composition", () => {
     // HierarchicalData references itself in children
     expect(result).toContain("export const HierarchicalData =")
 
-    // Should handle circular references with z.lazy() and z.ZodTypeAny annotation
-    expect(result).toContain("z.lazy((): z.ZodTypeAny => HierarchicalData)")
+    // Should handle circular references with z.lazy() and z.ZodType annotation
+    expect(result).toContain("z.lazy((): z.ZodType => HierarchicalData)")
   })
 
   test("handles null in anyOf", () => {
