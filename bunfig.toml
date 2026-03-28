@@ -2,7 +2,7 @@
 exact = true
 linker = "isolated"
 minimumReleaseAge = 259200 # 3 days
-minimumReleaseAgeExcludes = ["bun-scan", "axios"]
+minimumReleaseAgeExcludes = ["bun-scan"]
 
 [install.security]
 scanner = "bun-scan"
