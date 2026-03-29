@@ -48,6 +48,12 @@
       "bun": "./src/types.ts",
       "import": "./dist/types.mjs",
       "require": "./dist/types.cjs"
+    },
+    "./treaty": {
+      "types": "./dist/treaty.d.ts",
+      "bun": "./src/treaty.ts",
+      "import": "./dist/treaty.mjs",
+      "require": "./dist/treaty.cjs"
     }
   },
   "publishConfig": {
