@@ -59,5 +59,15 @@ export const bySource: BySourceOperation = {
       serviceUnavailable: undefined,
     },
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  bySource: {
+    method: "get",
+    path: "/logs",
+    successResponses: {"200":"z.array(AdminLog)"},
+    errorResponses: {"400":"undefined","403":"undefined","404":"undefined","500":"undefined","503":"undefined"},
+  },
+} as const;
 "
 `;

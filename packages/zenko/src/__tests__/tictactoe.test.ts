@@ -101,6 +101,19 @@ describe("TicTacToe", () => {
     expect(result).toContain("export type status =")
   })
 
+  test("emits operationMetadata with path and status maps", () => {
+    const tictactoeContent = fs.readFileSync(tictactoeYamlPath, "utf8")
+    const specYaml = parseYaml(tictactoeContent)
+    const result = generate(specYaml)
+
+    expect(result).toContain("export const operationMetadata = {")
+    expect(result).toContain("getSquare: {")
+    expect(result).toContain('method: "get"')
+    expect(result).toContain('path: "/board/{row}/{column}"')
+    expect(result).toContain('"200":"mark"')
+    expect(result).toContain('"400":"errorMessage"')
+  })
+
   test("generates path functions with parameters", () => {
     const tictactoeContent = fs.readFileSync(tictactoeYamlPath, "utf8")
     const specYaml = parseYaml(tictactoeContent)

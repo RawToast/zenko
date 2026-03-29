@@ -149,6 +149,22 @@ export const getVehicle: GetVehicleOperation = {
       notFound: Error,
     },
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  createPayment: {
+    method: "post",
+    path: "/payments",
+    successResponses: {"201":"Payment"},
+    errorResponses: {"400":"Error"},
+  },
+  getVehicle: {
+    method: "get",
+    path: "/vehicles/{vehicleId}",
+    successResponses: {"200":"Vehicle"},
+    errorResponses: {"404":"Error"},
+  },
+} as const;
 "
 `;
 
@@ -207,5 +223,9 @@ export const headers = {
 } as const;
 
 // Operation Types
-// Operation Objects"
+// Operation Objects
+// Operation Metadata
+export const operationMetadata = {
+} as const;
+"
 `;

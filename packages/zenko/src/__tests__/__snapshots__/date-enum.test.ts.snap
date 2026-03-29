@@ -72,6 +72,15 @@ export const createSomething: CreateSomethingOperation = {
       internalServerError: CreateSomethingErrorResponse,
     },
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  createSomething: {
+    method: "post",
+    path: "/my-service/{someId}/create",
+    errorResponses: {"500":"CreateSomethingErrorResponse"},
+  },
+} as const;
 "
 `;
 
@@ -146,6 +155,15 @@ export const createSomething: CreateSomethingOperation = {
     errors: {
       internalServerError: CreateSomethingErrorResponse,
     },
+} as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  createSomething: {
+    method: "post",
+    path: "/my-service/{someId}/create",
+    errorResponses: {"500":"CreateSomethingErrorResponse"},
+  },
 } as const;
 "
 `;
@@ -227,6 +245,15 @@ export const createSomething: CreateSomethingOperation = {
     errors: {
       internalServerError: CreateSomethingErrorResponse,
     },
+} as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  createSomething: {
+    method: "post",
+    path: "/my-service/{someId}/create",
+    errorResponses: {"500":"CreateSomethingErrorResponse"},
+  },
 } as const;
 "
 `;

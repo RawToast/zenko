@@ -11,6 +11,7 @@ import type { RequestMethod } from "../types"
 import type {
   Operation,
   OperationErrorGroup,
+  OperationResponseMap,
   PathParam,
   QueryParam,
   RequestHeader,
@@ -40,11 +41,12 @@ export function parseOperations(
 
         const pathParams = extractPathParams(path)
         const requestType = getRequestType(operation, nameMap)
-        const { successResponse, errors } = getResponseTypes(
-          operation,
-          (operation as { operationId: string }).operationId,
-          nameMap
-        )
+        const { successResponse, errors, successResponses, errorResponses } =
+          getResponseTypes(
+            operation,
+            (operation as { operationId: string }).operationId,
+            nameMap
+          )
         const resolvedParameters = collectParameters(pathItem, operation, spec)
         const requestHeaders = getRequestHeaders(resolvedParameters)
         const queryParams = getQueryParams(resolvedParameters)
@@ -58,6 +60,8 @@ export function parseOperations(
           queryParams,
           requestType,
           responseType: successResponse,
+          successResponses,
+          errorResponses,
           requestHeaders,
           errors,
           security,
@@ -76,11 +80,12 @@ export function parseOperations(
         const path = webhookName
         const pathParams = extractPathParams(path)
         const requestType = getRequestType(operation, nameMap)
-        const { successResponse, errors } = getResponseTypes(
-          operation,
-          (operation as { operationId: string }).operationId,
-          nameMap
-        )
+        const { successResponse, errors, successResponses, errorResponses } =
+          getResponseTypes(
+            operation,
+            (operation as { operationId: string }).operationId,
+            nameMap
+          )
         const resolvedParameters = collectParameters(
           webhookItem,
           operation,
@@ -98,6 +103,8 @@ export function parseOperations(
           queryParams,
           requestType,
           responseType: successResponse,
+          successResponses,
+          errorResponses,
           requestHeaders,
           errors,
           security,
@@ -219,6 +226,8 @@ function getResponseTypes(
 ): {
   successResponse?: string
   errors?: OperationErrorGroup
+  successResponses?: OperationResponseMap
+  errorResponses?: OperationResponseMap
 } {
   const responses = operation.responses ?? {}
   const successCodes = new Map<string, string>()
@@ -273,8 +282,64 @@ function getResponseTypes(
     nameMap
   )
   const errors = buildErrorGroups(errorEntries, operationId, nameMap)
+  const successResponses = buildSuccessResponsesMap(
+    successCodes,
+    operationId,
+    nameMap
+  )
+  const errorResponses = buildErrorResponsesMap(
+    errorEntries,
+    operationId,
+    nameMap
+  )
 
-  return { successResponse, errors }
+  return {
+    successResponse,
+    errors,
+    successResponses,
+    errorResponses,
+  }
+}
+
+function buildSuccessResponsesMap(
+  successCodes: Map<string, unknown>,
+  operationId: string,
+  nameMap?: Map<string, string>
+): OperationResponseMap | undefined {
+  if (successCodes.size === 0) return undefined
+
+  const map: OperationResponseMap = {}
+  for (const [code, schema] of successCodes) {
+    if (typeof schema === "string") {
+      map[code] = schema
+    } else {
+      map[code] = resolveResponseType(
+        schema,
+        `${capitalize(toCamelCase(operationId))}Status${code}`,
+        nameMap
+      )
+    }
+  }
+  return map
+}
+
+function buildErrorResponsesMap(
+  errorEntries: Array<{ code: string; schema: any }>,
+  operationId: string,
+  nameMap?: Map<string, string>
+): OperationResponseMap | undefined {
+  if (errorEntries.length === 0) return undefined
+
+  const map: OperationResponseMap = {}
+  for (const { code, schema } of errorEntries) {
+    const identifier = mapStatusToIdentifier(code)
+    map[code] = resolveResponseType(
+      schema,
+      `${capitalize(toCamelCase(operationId))}${capitalize(identifier)}`,
+      nameMap
+    )
+  }
+  return map
 }
 
 function selectSuccessResponse(

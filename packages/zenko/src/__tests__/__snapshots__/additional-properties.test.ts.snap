@@ -175,5 +175,28 @@ export const createLabels: CreateLabelsOperation = {
   path: paths.createLabels,
   request: Labels,
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  createMetadata: {
+    method: "post",
+    path: "/metadata",
+    successResponses: {"201":"Metadata"},
+  },
+  getConfig: {
+    method: "get",
+    path: "/config",
+    successResponses: {"200":"Config"},
+  },
+  updateConfig: {
+    method: "put",
+    path: "/config",
+    successResponses: {"200":"Config"},
+  },
+  createLabels: {
+    method: "post",
+    path: "/labels",
+  },
+} as const;
 "
 `;

@@ -453,5 +453,55 @@ export const newBooking: NewBookingOperation = {
   request: NewBookingRequest,
   security: [{ OAuth2: ["read"] }],
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  getStations: {
+    method: "get",
+    path: "/stations",
+    successResponses: {"200":"GetStationsStatus200"},
+    errorResponses: {"400":"undefined","401":"undefined","403":"undefined","429":"undefined","500":"undefined"},
+  },
+  getTrips: {
+    method: "get",
+    path: "/trips",
+    successResponses: {"200":"GetTripsStatus200"},
+    errorResponses: {"400":"undefined","401":"undefined","403":"undefined","429":"undefined","500":"undefined"},
+  },
+  getBookings: {
+    method: "get",
+    path: "/bookings",
+    successResponses: {"200":"GetBookingsStatus200"},
+    errorResponses: {"400":"undefined","401":"undefined","403":"undefined","429":"undefined","500":"undefined"},
+  },
+  createBooking: {
+    method: "post",
+    path: "/bookings",
+    successResponses: {"201":"CreateBookingStatus201"},
+    errorResponses: {"400":"undefined","401":"undefined","404":"undefined","409":"undefined","429":"undefined","500":"undefined"},
+  },
+  getBooking: {
+    method: "get",
+    path: "/bookings/{bookingId}",
+    successResponses: {"200":"GetBookingStatus200"},
+    errorResponses: {"400":"undefined","401":"undefined","403":"undefined","404":"undefined","429":"undefined","500":"undefined"},
+  },
+  deleteBooking: {
+    method: "delete",
+    path: "/bookings/{bookingId}",
+    successResponses: {"204":"undefined"},
+    errorResponses: {"400":"undefined","401":"undefined","403":"undefined","404":"undefined","429":"undefined","500":"undefined"},
+  },
+  createBookingPayment: {
+    method: "post",
+    path: "/bookings/{bookingId}/payment",
+    successResponses: {"200":"CreateBookingPaymentStatus200"},
+    errorResponses: {"400":"undefined","401":"undefined","403":"undefined","429":"undefined","500":"undefined"},
+  },
+  newBooking: {
+    method: "post",
+    path: "newBooking",
+  },
+} as const;
 "
 `;

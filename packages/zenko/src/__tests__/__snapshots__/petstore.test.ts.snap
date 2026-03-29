@@ -111,6 +111,27 @@ export const showPetById: ShowPetByIdOperation = {
       defaultError: Error,
     },
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  listPets: {
+    method: "get",
+    path: "/pets",
+    successResponses: {"200":"Pets"},
+    errorResponses: {"default":"Error"},
+  },
+  createPets: {
+    method: "post",
+    path: "/pets",
+    errorResponses: {"default":"Error"},
+  },
+  showPetById: {
+    method: "get",
+    path: "/pets/{petId}",
+    successResponses: {"200":"Pet"},
+    errorResponses: {"default":"Error"},
+  },
+} as const;
 "
 `;
 
@@ -224,6 +245,27 @@ export const showPetById: ShowPetByIdOperation = {
     errors: {
       defaultError: Error,
     },
+} as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  listPets: {
+    method: "get",
+    path: "/pets",
+    successResponses: {"200":"Pets"},
+    errorResponses: {"default":"Error"},
+  },
+  createPets: {
+    method: "post",
+    path: "/pets",
+    errorResponses: {"default":"Error"},
+  },
+  showPetById: {
+    method: "get",
+    path: "/pets/{petId}",
+    successResponses: {"200":"Pet"},
+    errorResponses: {"default":"Error"},
+  },
 } as const;
 "
 `;

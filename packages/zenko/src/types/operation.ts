@@ -25,6 +25,9 @@ export type OperationErrorMap = Record<string, string>
 
 export type OperationErrorGroup = OperationErrorMap
 
+/** Maps HTTP status code string to resolved response type name (Zod schema symbol). */
+export type OperationResponseMap = Record<string, string>
+
 export type Operation = {
   operationId: string
   path: string
@@ -33,6 +36,10 @@ export type Operation = {
   queryParams: QueryParam[]
   requestType?: string
   responseType?: string
+  /** Per-status success response types (2xx, 204, 3xx with empty body). */
+  successResponses?: OperationResponseMap
+  /** Per-status error response types (4xx/5xx). */
+  errorResponses?: OperationResponseMap
   requestHeaders?: RequestHeader[]
   errors?: OperationErrorGroup
   security?: SecurityRequirement[]

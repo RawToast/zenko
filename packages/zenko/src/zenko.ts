@@ -465,6 +465,8 @@ export function generateWithMetadata(
     output.push("")
   }
 
+  generateOperationMetadata(output, operations)
+
   const result: GenerateResult = {
     output: output.join("\n"),
   }
@@ -727,6 +729,33 @@ function generateOperationTypes(
     buffer.push(`>;`)
     buffer.push("")
   }
+}
+
+/**
+ * Emits `operationMetadata` for Treaty-style clients: method, path template, and per-status response type names.
+ */
+function generateOperationMetadata(buffer: string[], operations: Operation[]) {
+  buffer.push("// Operation Metadata")
+  buffer.push("export const operationMetadata = {")
+
+  for (const op of operations) {
+    const camelCaseOperationId = toCamelCase(op.operationId)
+    buffer.push(`  ${formatPropertyName(camelCaseOperationId)}: {`)
+    buffer.push(`    method: ${JSON.stringify(op.method)},`)
+    buffer.push(`    path: ${JSON.stringify(op.path)},`)
+    if (op.successResponses && Object.keys(op.successResponses).length > 0) {
+      buffer.push(
+        `    successResponses: ${JSON.stringify(op.successResponses)},`
+      )
+    }
+    if (op.errorResponses && Object.keys(op.errorResponses).length > 0) {
+      buffer.push(`    errorResponses: ${JSON.stringify(op.errorResponses)},`)
+    }
+    buffer.push("  },")
+  }
+
+  buffer.push("} as const;")
+  buffer.push("")
 }
 
 function buildOperationErrorsType(errors?: OperationErrorGroup): string {
