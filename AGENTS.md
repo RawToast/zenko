@@ -30,7 +30,7 @@ Run all commands from the **workspace root**
 ### Build
 
 ```bash
-bun zenko build          # Build zenko package (uses tsup)
+bun zenko build          # Build zenko package (uses tsdown)
 turbo build              # Build all packages
 ```
 

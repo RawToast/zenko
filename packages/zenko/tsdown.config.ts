@@ -1,4 +1,4 @@
-import { defineConfig } from "tsup"
+import { defineConfig } from "tsdown"
 
 export default defineConfig({
   // Main library entry point
@@ -33,10 +33,8 @@ export default defineConfig({
   shims: true,
 
   // External dependencies (don't bundle them)
-  external: ["fs"],
-
   // CJS interop for better compatibility
-  cjsInterop: true,
+  cjsDefault: true,
 
   // Minify output for smaller bundles
   minify: true,
@@ -46,5 +44,8 @@ export default defineConfig({
     return {
       js: format === "esm" ? ".mjs" : ".cjs",
     }
+  },
+  deps: {
+    neverBundle: ["fs"],
   },
 })
