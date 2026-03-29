@@ -15,7 +15,7 @@ export function generateTreatyModuleFromMetadata(
   const routeBody = emitTreatyRouteTree(tree)
 
   const lines: string[] = [
-    `import { createTreatyClient } from "zenko/treaty";`,
+    `import { createTreatyClient, type TreatyClient } from "zenko/treaty";`,
     `import { ${exportNames.join(", ")} } from ${JSON.stringify(options.importPath)};`,
     "",
     "export const treatyRoutes = {",
@@ -25,10 +25,10 @@ export function generateTreatyModuleFromMetadata(
     "export function createClient(",
     "  baseUrl: string,",
     "  init?: { fetch?: typeof fetch }",
-    ") {",
+    "): TreatyClient<typeof treatyRoutes> {",
     "  return createTreatyClient({",
     "    baseUrl,",
-    "    routes: treatyRoutes as any,",
+    "    routes: treatyRoutes,",
     "    fetch: init?.fetch,",
     "  })",
     "}",

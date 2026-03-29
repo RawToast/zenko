@@ -37,7 +37,7 @@ describe("generateTreatyModuleFromMetadata", () => {
     })
 
     expect(output).toContain(
-      'import { createTreatyClient } from "zenko/treaty"'
+      'import { createTreatyClient, type TreatyClient } from "zenko/treaty"'
     )
     expect(output).toContain("export const treatyRoutes = {")
     expect(output).toContain("export function createClient(")

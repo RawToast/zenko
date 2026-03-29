@@ -1,3 +1,18 @@
+import type { TreatyClient, TreatyRoutesConstraint } from "./treaty-infer"
+import type { RouteNode, TreatyResult } from "./treaty-types"
+
+export type {
+  RouteNode,
+  TreatyFailure,
+  TreatyResult,
+  TreatySuccess,
+} from "./treaty-types"
+export type {
+  LeafCall,
+  TreatyClient,
+  TreatyRoutesConstraint,
+} from "./treaty-infer"
+
 const HTTP_METHODS = new Set([
   "get",
   "post",
@@ -10,31 +25,10 @@ const HTTP_METHODS = new Set([
   "trace",
 ])
 
-export type TreatySuccess<T> = {
-  data: T
-  error: null
-  response: Response
-  status: number
-  headers: Headers
-}
-
-export type TreatyFailure = {
-  data: null
-  error: { status: number; body: unknown }
-  response: Response
-  status: number
-  headers: Headers
-}
-
-export type TreatyResult<T> = TreatySuccess<T> | TreatyFailure
-
 type RouteLeaf = {
   method: string
   path: string | (() => string) | ((params: Record<string, string>) => string)
 }
-
-/** Nested route tree: segments, `:param` keys, and HTTP method leaves (see `isLeaf`). */
-export type RouteNode = Record<string, unknown>
 
 function isLeaf(node: unknown): node is RouteLeaf {
   if (typeof node !== "object" || node === null) return false
@@ -243,16 +237,18 @@ function createLeafCaller(options: {
   }
 }
 
-export function createTreatyClient(config: {
+export function createTreatyClient<
+  const R extends TreatyRoutesConstraint,
+>(config: {
   baseUrl: string
-  routes: RouteNode
+  routes: R
   fetch?: typeof fetch
-}): any {
+}): TreatyClient<R> {
   const fetchImpl = config.fetch ?? globalThis.fetch
   return createRouteProxy({
     baseUrl: config.baseUrl,
     node: config.routes as RouteNode,
     params: {},
     fetchImpl,
-  })
+  }) as TreatyClient<R>
 }

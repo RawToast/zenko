@@ -17,6 +17,9 @@ export {
 } from "./src/treaty-generator"
 export {
   createTreatyClient,
+  type LeafCall,
   type RouteNode,
+  type TreatyClient,
   type TreatyResult,
+  type TreatyRoutesConstraint,
 } from "./src/treaty"

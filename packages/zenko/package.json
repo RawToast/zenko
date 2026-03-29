@@ -39,7 +39,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "bun": "./src/zenko.ts",
+      "bun": "./index.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
@@ -75,7 +75,8 @@
     "typescript": "5.9.3"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5",
+    "zod": "^4"
   },
   "peerDependenciesMeta": {
     "typescript": {

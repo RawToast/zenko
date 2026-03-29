@@ -1,4 +1,4 @@
-import { describe, test, expect, mock, afterEach } from "bun:test"
+import { describe, test, expect, mock } from "bun:test"
 import { createTreatyClient } from "../treaty"
 
 const routes = {
@@ -19,16 +19,9 @@ const routes = {
   },
 } as const
 
-const originalFetch = global.fetch
-
 describe("createTreatyClient", () => {
-  afterEach(() => {
-    global.fetch = originalFetch
-  })
-
   test("calls GET leaves and returns a success envelope", async () => {
     const fetchMock = mock<typeof fetch>()
-    global.fetch = fetchMock as unknown as typeof fetch
 
     fetchMock.mockResolvedValue(
       new Response(JSON.stringify({ winner: "." }), {
@@ -40,6 +33,7 @@ describe("createTreatyClient", () => {
     const client = createTreatyClient({
       baseUrl: "https://api.test.com",
       routes,
+      fetch: fetchMock as unknown as typeof fetch,
     })
     const result = await client.board.get()
 
@@ -53,7 +47,6 @@ describe("createTreatyClient", () => {
 
   test("walks dynamic segments and sends JSON bodies", async () => {
     const fetchMock = mock<typeof fetch>()
-    global.fetch = fetchMock as unknown as typeof fetch
 
     fetchMock.mockResolvedValue(
       new Response(JSON.stringify({ ok: true }), {
@@ -65,6 +58,7 @@ describe("createTreatyClient", () => {
     const client = createTreatyClient({
       baseUrl: "https://api.test.com",
       routes,
+      fetch: fetchMock as unknown as typeof fetch,
     })
     await client.board({ row: "1" })({ column: "2" }).put("X")
 
