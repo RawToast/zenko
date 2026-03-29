@@ -9,10 +9,12 @@ import {
   type TypesConfig,
   type EnumConfig,
 } from "./zenko.js"
+import { generateTreatyModule } from "./treaty-generator.js"
 
 type CliConfigEntry = {
   input: string
   output: string
+  treatyOutput?: string
   strictDates?: boolean
   strictNumeric?: boolean
   dateTimeOffset?: boolean | string[]
@@ -34,20 +36,59 @@ type ParsedArgs = {
   positional: string[]
 }
 
+type ParsedWithCommand = ParsedArgs & {
+  command: "generate" | "treaty"
+}
+
+function deriveCommand(parsed: ParsedArgs): ParsedWithCommand {
+  if (parsed.positional[0] === "treaty") {
+    return {
+      ...parsed,
+      command: "treaty",
+      positional: parsed.positional.slice(1),
+    }
+  }
+  return { ...parsed, command: "generate" }
+}
+
 async function main() {
   const args = process.argv.slice(2)
-  const parsed = parseArgs(args)
+  const parsed = deriveCommand(parseArgs(args))
 
-  if (
-    parsed.showHelp ||
-    (!parsed.configPath && parsed.positional.length === 0)
-  ) {
+  if (parsed.showHelp) {
     printHelp()
-    process.exit(parsed.showHelp ? 0 : 1)
+    process.exit(0)
     return
   }
 
   try {
+    if (parsed.command === "treaty") {
+      if (parsed.configPath) {
+        console.error("❌ Error: zenko treaty does not support --config")
+        process.exit(1)
+        return
+      }
+      if (parsed.positional.length !== 2) {
+        printHelp()
+        process.exit(1)
+        return
+      }
+      const [inputFile, outputFile] = parsed.positional
+      if (!inputFile || !outputFile) {
+        printHelp()
+        process.exit(1)
+        return
+      }
+      await generateTreatySingle({ inputFile, outputFile })
+      return
+    }
+
+    if (!parsed.configPath && parsed.positional.length === 0) {
+      printHelp()
+      process.exit(1)
+      return
+    }
+
     if (parsed.configPath) {
       await runFromConfig(parsed)
     } else {
@@ -121,6 +162,7 @@ function parseArgs(args: string[]): ParsedArgs {
 function printHelp() {
   console.log("Usage:")
   console.log("  zenko <input-file> <output-file> [options]")
+  console.log("  zenko treaty <generated-ts-file> <output-file>")
   console.log("  zenko --config <config-file> [options]")
   console.log("")
   console.log("Options:")
@@ -139,6 +181,35 @@ function printHelp() {
   console.log(
     '  {"types"?: { emit?, helpers?, helpersOutput?, optionalType?, treeShake? }, "schemas": [{ input, output, strictDates?, strictNumeric?, dateTimeOffset?, types? }] }'
   )
+}
+
+async function generateTreatySingle(options: {
+  inputFile: string
+  outputFile: string
+}) {
+  const resolvedInput = path.resolve(options.inputFile)
+  const resolvedOutput = path.resolve(options.outputFile)
+  const importPath = relativeImportForTreaty(
+    path.dirname(resolvedOutput),
+    resolvedInput
+  )
+  const output = await generateTreatyModule({
+    inputFile: resolvedInput,
+    importPath,
+  })
+
+  fs.mkdirSync(path.dirname(resolvedOutput), { recursive: true })
+  fs.writeFileSync(resolvedOutput, output, { encoding: "utf8" })
+
+  console.log(`✅ Generated treaty client in ${resolvedOutput}`)
+}
+
+function relativeImportForTreaty(outDir: string, inputPath: string): string {
+  let rel = path.relative(outDir, inputPath).replace(/\\/g, "/")
+  if (!rel.startsWith(".")) {
+    rel = `./${rel}`
+  }
+  return rel.replace(/\.tsx?$/, "")
 }
 
 async function runFromConfig(parsed: ParsedArgs) {
@@ -164,6 +235,14 @@ async function runFromConfig(parsed: ParsedArgs) {
       operationIds: entry.operationIds,
       openEnums: entry.openEnums,
     })
+
+    if (entry.treatyOutput) {
+      const treatyFile = resolvePath(entry.treatyOutput, baseDir)
+      await generateTreatySingle({
+        inputFile: outputFile,
+        outputFile: treatyFile,
+      })
+    }
   }
 }
 

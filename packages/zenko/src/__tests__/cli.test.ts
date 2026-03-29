@@ -2,7 +2,13 @@ import { describe, test, expect, beforeAll, afterAll } from "bun:test"
 import { execSync } from "child_process"
 import * as fs from "fs"
 import * as path from "path"
-import { dateEnumYamlPath, petstoreYamlPath } from "@zenko/specs"
+import {
+  dateEnumYamlPath,
+  petstoreYamlPath,
+  tictactoeYamlPath,
+} from "@zenko/specs"
+import { generate } from "../zenko"
+import { parseYaml } from "../utils/yaml"
 
 describe("CLI", () => {
   const tempDir = path.join(process.cwd(), "temp-test")
@@ -56,6 +62,7 @@ describe("CLI", () => {
 
     expect(output).toContain("Usage:")
     expect(output).toContain("zenko <input-file> <output-file>")
+    expect(output).toContain("zenko treaty <generated-ts-file> <output-file>")
     expect(output).toContain("Options:")
     expect(output).toContain("--strict-dates")
     expect(output).toContain("--strict-numeric")
@@ -88,6 +95,25 @@ describe("CLI", () => {
         encoding: "utf8",
       })
     }).toThrow()
+  })
+
+  test("generates treaty module from a Zenko .gen.ts file", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+    const yaml = fs.readFileSync(tictactoeYamlPath, "utf8")
+    const spec = parseYaml(yaml)
+    const genPath = path.join(tempDir, "tictactoe.gen.ts")
+    fs.writeFileSync(genPath, generate(spec))
+    const outputPath = path.join(tempDir, "tictactoe.treaty.gen.ts")
+
+    execSync(`bun run ${cliPath} treaty ${genPath} ${outputPath}`, {
+      encoding: "utf8",
+    })
+
+    const output = fs.readFileSync(outputPath, "utf8")
+    expect(output).toContain("export const treatyRoutes = {")
+    expect(output).toContain(
+      'import { createTreatyClient } from "zenko/treaty"'
+    )
   })
 
   test("handles JSON input files", () => {
@@ -149,6 +175,37 @@ describe("CLI", () => {
     const output = fs.readFileSync(configOutput, "utf8")
     expect(output).toContain('import { z } from "zod"')
     expect(output).toContain("export const paths =")
+  })
+
+  test("supports treatyOutput in config file", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+    const petstorePath = petstoreYamlPath
+
+    const configDir = path.join(tempDir, "treaty-config")
+    const configOutput = path.join(configDir, "api.gen.ts")
+    const treatyOutput = path.join(configDir, "api.treaty.gen.ts")
+    fs.mkdirSync(configDir, { recursive: true })
+
+    const configPath = path.join(configDir, "zenko.config.json")
+    const config = {
+      schemas: [
+        {
+          input: path.relative(configDir, petstorePath),
+          output: "api.gen.ts",
+          treatyOutput: "api.treaty.gen.ts",
+        },
+      ],
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+
+    execSync(`bun run ${cliPath} --config ${configPath}`, {
+      encoding: "utf8",
+    })
+
+    expect(fs.existsSync(configOutput)).toBe(true)
+    expect(fs.existsSync(treatyOutput)).toBe(true)
+    const treaty = fs.readFileSync(treatyOutput, "utf8")
+    expect(treaty).toContain("export const treatyRoutes = {")
   })
 
   test("supports strict flags on single run", () => {

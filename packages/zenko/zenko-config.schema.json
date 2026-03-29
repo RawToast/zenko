@@ -77,6 +77,10 @@
           "type": "string",
           "description": "Path for generated TypeScript output file. Relative to config file directory."
         },
+        "treatyOutput": {
+          "type": "string",
+          "description": "Optional path for a treaty-style client module generated from the main Zenko .gen.ts output. Relative to the config file directory."
+        },
         "strictDates": {
           "type": "boolean",
           "description": "Enable strict ISO 8601 date/time format validation in Zod schemas. Overrides global setting."
