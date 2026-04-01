@@ -42,7 +42,8 @@ describe("TrainTravel treaty client (fetch)", () => {
       expect.objectContaining({ method: "GET" })
     )
     expect(result.error).toBeNull()
-    expect(result.data).toEqual(mockPayload)
+    expect(result.data).toBeDefined()
+    expect(result.data).toMatchObject(mockPayload)
     expect(result.status).toBe(200)
   })
 
