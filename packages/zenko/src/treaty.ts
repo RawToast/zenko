@@ -206,12 +206,14 @@ function createLeafCaller(options: {
           : JSON.stringify(body)
     }
 
+    const { method: _, body: __, ...safeInit } = init ?? {}
+
     const response = await fetchImpl(url, {
+      ...safeInit,
       method: upper,
       headers:
         Object.keys(headers).length > 0 ? new Headers(headers) : undefined,
       body: isGetOrHead ? undefined : requestBody,
-      ...init,
     })
 
     const resBody = await parseResponseBody(response)

@@ -17,7 +17,7 @@ export type OperationMeta = {
   path: string
 }
 
-/** Path template segments: `/{a}/{b}` → `["a", ":b"]` */
+/** Path template segments: `/{a}/{b}` → `[":a", ":b"]` */
 export function pathTemplateToSegments(path: string): string[] {
   return path
     .split("/")

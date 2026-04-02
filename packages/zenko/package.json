@@ -39,19 +39,19 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "bun": "./index.ts",
+      "bun": "./dist/index.mjs",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
     "./types": {
       "types": "./dist/types.d.ts",
-      "bun": "./src/types.ts",
+      "bun": "./dist/types.mjs",
       "import": "./dist/types.mjs",
       "require": "./dist/types.cjs"
     },
     "./treaty": {
       "types": "./dist/treaty.d.ts",
-      "bun": "./src/treaty.ts",
+      "bun": "./dist/treaty.mjs",
       "import": "./dist/treaty.mjs",
       "require": "./dist/treaty.cjs"
     }

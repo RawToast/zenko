@@ -45,7 +45,7 @@ describe("createTreatyClient", () => {
     expect(result.data).toEqual({ winner: "." })
   })
 
-  test("walks dynamic segments and sends JSON bodies", async () => {
+  test("walks dynamic segments and sends raw string bodies", async () => {
     const fetchMock = mock<typeof fetch>()
 
     fetchMock.mockResolvedValue(
