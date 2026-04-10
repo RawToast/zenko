@@ -57,9 +57,44 @@ describe("treaty-tree", () => {
       getBoard: { method: "BREW", path: "/board" },
     })
 
-    expect(result).toEqual({
-      ok: false,
-      error: new Error("Unsupported method BREW for getBoard"),
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error("Expected unsupported method to fail")
+    }
+
+    expect(result.error).toMatchObject({
+      message: "Unsupported method BREW for getBoard",
+    })
+  })
+
+  test("buildTreatyRouteTree returns an error for empty paths", () => {
+    const result = buildTreatyRouteTree({
+      getRoot: { method: "GET", path: "/" },
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error("Expected empty path to fail")
+    }
+
+    expect(result.error).toMatchObject({
+      message: "Empty path for getRoot",
+    })
+  })
+
+  test("buildTreatyRouteTree returns an error for duplicate operations", () => {
+    const result = buildTreatyRouteTree({
+      getBoard: { method: "GET", path: "/board" },
+      getBoardAgain: { method: "GET", path: "/board" },
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error("Expected duplicate operation to fail")
+    }
+
+    expect(result.error).toMatchObject({
+      message: 'Duplicate get on board for getBoardAgain vs "getBoard"',
     })
   })
 })

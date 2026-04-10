@@ -57,7 +57,15 @@ export function buildTreatyRouteTree(
         ),
       }
     }
-    insertOperation(root, segments, method, operationExport)
+    const insertResult = insertOperation(
+      root,
+      segments,
+      method,
+      operationExport
+    )
+    if (!insertResult.ok) {
+      return insertResult
+    }
   }
 
   return { ok: true, value: root }
@@ -68,9 +76,12 @@ function insertOperation(
   segments: string[],
   method: string,
   operationExport: string
-): void {
+): Result<void> {
   if (segments.length === 0) {
-    throw new Error(`Empty path for ${operationExport}`)
+    return {
+      ok: false,
+      error: new Error(`Empty path for ${operationExport}`),
+    }
   }
 
   let cursor = tree
@@ -91,7 +102,10 @@ function insertOperation(
         const duplicateMessage =
           `Duplicate ${method} on ${segment} ` + `for ${operationExport} vs `
         const existingOperation = JSON.stringify(bucket[method])
-        throw new Error(duplicateMessage + existingOperation)
+        return {
+          ok: false,
+          error: new Error(duplicateMessage + existingOperation),
+        }
       }
       bucket[method] = operationExport
       cursor[segment] = bucket
@@ -108,6 +122,8 @@ function insertOperation(
       cursor = cursor[segment] as TreatyRouteTree
     }
   }
+
+  return { ok: true, value: undefined }
 }
 
 /**
