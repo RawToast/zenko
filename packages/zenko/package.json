@@ -1,6 +1,6 @@
 {
   "name": "zenko",
-  "version": "0.2.2-beta.2",
+  "version": "0.2.2-beta.3",
   "description": "Generate TypeScript types and path functions from OpenAPI specs",
   "keywords": [
     "api",
