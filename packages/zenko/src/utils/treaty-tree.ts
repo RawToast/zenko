@@ -17,7 +17,7 @@ export type OperationMeta = {
   path: string
 }
 
-/** Path template segments: `/{a}/{b}` → `[":a", ":b"]` */
+/** Path template segments: `/{a}/{b}` → `[":a", ":b"]`; `"/"` → `[]` (root). */
 export function pathTemplateToSegments(path: string): string[] {
   return path
     .split("/")
@@ -71,17 +71,36 @@ export function buildTreatyRouteTree(
   return { ok: true, value: root }
 }
 
-function insertOperation(
+export function insertOperation(
   tree: TreatyRouteTree,
   segments: string[],
   method: string,
   operationExport: string
 ): Result<void> {
   if (segments.length === 0) {
-    return {
-      ok: false,
-      error: new Error(`Empty path for ${operationExport}`),
+    const existing = tree
+    const bucket: Record<string, unknown> =
+      existing !== undefined &&
+      typeof existing === "object" &&
+      existing !== null &&
+      !Array.isArray(existing)
+        ? { ...(existing as Record<string, unknown>) }
+        : {}
+    if (bucket[method] !== undefined) {
+      const duplicateMessage =
+        `Duplicate ${method} on root ` + `for ${operationExport} vs `
+      const existingOperation = JSON.stringify(bucket[method])
+      return {
+        ok: false,
+        error: new Error(duplicateMessage + existingOperation),
+      }
     }
+    bucket[method] = operationExport
+    for (const key of Object.keys(tree)) {
+      delete (tree as Record<string, unknown>)[key]
+    }
+    Object.assign(tree, bucket)
+    return { ok: true, value: undefined }
   }
 
   let cursor = tree
@@ -111,6 +130,21 @@ function insertOperation(
       cursor[segment] = bucket
     } else {
       const next = cursor[segment]
+      if (
+        next !== undefined &&
+        typeof next !== "object" &&
+        next !== null &&
+        !Array.isArray(next)
+      ) {
+        return {
+          ok: false,
+          error: new Error(
+            `TreatyRouteTree conflict at segment ${JSON.stringify(segment)}: ` +
+              `cannot add nested path for ${method} (${operationExport}); ` +
+              `existing value is not an object: ${JSON.stringify(next)}`
+          ),
+        }
+      }
       if (
         next === undefined ||
         typeof next !== "object" ||

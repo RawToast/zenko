@@ -2,7 +2,9 @@ import { describe, test, expect } from "bun:test"
 import {
   buildTreatyRouteTree,
   emitTreatyRouteTree,
+  insertOperation,
   pathTemplateToSegments,
+  type TreatyRouteTree,
 } from "../treaty-tree"
 
 describe("treaty-tree", () => {
@@ -12,6 +14,10 @@ describe("treaty-tree", () => {
       ":row",
       ":column",
     ])
+  })
+
+  test("pathTemplateToSegments maps root path to empty segments", () => {
+    expect(pathTemplateToSegments("/")).toEqual([])
   })
 
   test("buildTreatyRouteTree merges static and dynamic segments", () => {
@@ -67,19 +73,58 @@ describe("treaty-tree", () => {
     })
   })
 
-  test("buildTreatyRouteTree returns an error for empty paths", () => {
+  test("buildTreatyRouteTree accepts root path / as top-level method leaves", () => {
     const result = buildTreatyRouteTree({
       getRoot: { method: "GET", path: "/" },
+      postRoot: { method: "POST", path: "/" },
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw result.error
+    }
+
+    expect(result.value).toEqual({
+      get: "getRoot",
+      post: "postRoot",
+    })
+  })
+
+  test("buildTreatyRouteTree returns an error for duplicate methods on root", () => {
+    const result = buildTreatyRouteTree({
+      getRoot: { method: "GET", path: "/" },
+      getRootAgain: { method: "GET", path: "/" },
     })
 
     expect(result.ok).toBe(false)
     if (result.ok) {
-      throw new Error("Expected empty path to fail")
+      throw new Error("Expected duplicate root GET to fail")
     }
 
     expect(result.error).toMatchObject({
-      message: "Empty path for getRoot",
+      message: 'Duplicate get on root for getRootAgain vs "getRoot"',
     })
+  })
+
+  test("insertOperation errors when a non-object leaf blocks a longer path", () => {
+    const tree: TreatyRouteTree = { api: "existingOperation" }
+    const result = insertOperation(
+      tree,
+      ["api", "v1", "users"],
+      "get",
+      "getUsers"
+    )
+
+    expect(result.ok).toBe(false)
+    if (result.ok) {
+      throw new Error("Expected primitive leaf collision to fail")
+    }
+
+    expect(result.error.message).toContain('"api"')
+    expect(result.error.message).toContain("get")
+    expect(result.error.message).toContain("getUsers")
+    expect(result.error.message).toContain("existingOperation")
+    expect(tree.api).toBe("existingOperation")
   })
 
   test("buildTreatyRouteTree returns an error for duplicate operations", () => {
