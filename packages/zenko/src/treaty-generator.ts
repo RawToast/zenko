@@ -11,8 +11,11 @@ export function generateTreatyModuleFromMetadata(
   options: { importPath: string }
 ): string {
   const tree = buildTreatyRouteTree(metadata)
+  if (!tree.ok) {
+    throw tree.error
+  }
   const exportNames = Object.keys(metadata).sort()
-  const routeBody = emitTreatyRouteTree(tree)
+  const routeBody = emitTreatyRouteTree(tree.value)
 
   const lines: string[] = [
     `import { createTreatyClient, type TreatyClient } from "zenko/treaty";`,

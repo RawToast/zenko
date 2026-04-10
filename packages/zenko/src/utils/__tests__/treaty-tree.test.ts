@@ -15,13 +15,17 @@ describe("treaty-tree", () => {
   })
 
   test("buildTreatyRouteTree merges static and dynamic segments", () => {
-    const tree = buildTreatyRouteTree({
+    const result = buildTreatyRouteTree({
       getBoard: { method: "get", path: "/board" },
       getSquare: { method: "get", path: "/board/{row}/{column}" },
       putSquare: { method: "put", path: "/board/{row}/{column}" },
     })
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw result.error
+    }
 
-    expect(tree).toEqual({
+    expect(result.value).toEqual({
       board: {
         get: "getBoard",
         ":row": {
@@ -35,12 +39,27 @@ describe("treaty-tree", () => {
   })
 
   test("emitTreatyRouteTree emits quoted :param keys", () => {
-    const tree = buildTreatyRouteTree({
+    const result = buildTreatyRouteTree({
       getSquare: { method: "get", path: "/board/{row}/{column}" },
     })
-    const emitted = emitTreatyRouteTree(tree)
+    expect(result.ok).toBe(true)
+    if (!result.ok) {
+      throw result.error
+    }
+    const emitted = emitTreatyRouteTree(result.value)
     expect(emitted).toContain("board: {")
     expect(emitted).toContain('":row": {')
     expect(emitted).toContain("getSquare,")
+  })
+
+  test("buildTreatyRouteTree returns an error for unsupported methods", () => {
+    const result = buildTreatyRouteTree({
+      getBoard: { method: "BREW", path: "/board" },
+    })
+
+    expect(result).toEqual({
+      ok: false,
+      error: new Error("Unsupported method BREW for getBoard"),
+    })
   })
 })

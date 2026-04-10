@@ -34,26 +34,33 @@ export function pathTemplateToSegments(path: string): string[] {
  */
 export type TreatyRouteTree = Record<string, unknown>
 
+export type Result<T, E = Error> =
+  | { ok: true; value: T }
+  | { ok: false; error: E }
+
 /**
  * Merges operations into a single route tree. Same path prefix shares one object (e.g. `board` has `get` and `:row`).
  */
 export function buildTreatyRouteTree(
   metadata: Record<string, OperationMeta>
-): TreatyRouteTree {
+): Result<TreatyRouteTree> {
   const root: TreatyRouteTree = {}
 
   for (const [operationExport, meta] of Object.entries(metadata)) {
     const segments = pathTemplateToSegments(meta.path)
     const method = meta.method.toLowerCase()
     if (!HTTP_METHODS.has(method)) {
-      throw new Error(
-        `Unsupported method ${meta.method} for ${operationExport}`
-      )
+      return {
+        ok: false,
+        error: new Error(
+          `Unsupported method ${meta.method} for ${operationExport}`
+        ),
+      }
     }
     insertOperation(root, segments, method, operationExport)
   }
 
-  return root
+  return { ok: true, value: root }
 }
 
 function insertOperation(
@@ -81,9 +88,10 @@ function insertOperation(
           ? { ...(existing as Record<string, unknown>) }
           : {}
       if (bucket[method] !== undefined) {
-        throw new Error(
-          `Duplicate ${method} on ${segment} for ${operationExport} vs ${JSON.stringify(bucket[method])}`
-        )
+        const duplicateMessage =
+          `Duplicate ${method} on ${segment} ` + `for ${operationExport} vs `
+        const existingOperation = JSON.stringify(bucket[method])
+        throw new Error(duplicateMessage + existingOperation)
       }
       bucket[method] = operationExport
       cursor[segment] = bucket
