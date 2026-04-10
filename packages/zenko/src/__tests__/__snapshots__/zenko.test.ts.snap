@@ -16,7 +16,11 @@ export const headers = {
 } as const;
 
 // Operation Types
-// Operation Objects"
+// Operation Objects
+// Operation Metadata
+export const operationMetadata = {
+} as const;
+"
 `;
 
 exports[`generate Edge cases handles spec with no components: no-components-spec-output 1`] = `
@@ -54,6 +58,14 @@ export const getTest: GetTestOperation = {
   method: "get",
   path: paths.getTest,
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  getTest: {
+    method: "get",
+    path: "/test",
+  },
+} as const;
 "
 `;
 
@@ -87,7 +99,11 @@ export const headers = {
 } as const;
 
 // Operation Types
-// Operation Objects"
+// Operation Objects
+// Operation Metadata
+export const operationMetadata = {
+} as const;
+"
 `;
 
 exports[`generate Response inference infers string error responses without schemas: error-response-inference 1`] = `
@@ -136,6 +152,16 @@ export const getErrorWithoutSchema: GetErrorWithoutSchemaOperation = {
     errors: {
       internalServerError: string,
     },
+} as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  getErrorWithoutSchema: {
+    method: "get",
+    path: "/error",
+    successResponses: {"200":"GetErrorWithoutSchemaStatus200"},
+    errorResponses: {"500":"string"},
+  },
 } as const;
 "
 `;
@@ -265,6 +291,27 @@ export const showPetById: ShowPetByIdOperation = {
     errors: {
       defaultError: Error,
     },
+} as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  listPets: {
+    method: "get",
+    path: "/pets",
+    successResponses: {"200":"Pets"},
+    errorResponses: {"default":"Error"},
+  },
+  createPets: {
+    method: "post",
+    path: "/pets",
+    errorResponses: {"default":"Error"},
+  },
+  showPetById: {
+    method: "get",
+    path: "/pets/{petId}",
+    successResponses: {"200":"Pet"},
+    errorResponses: {"default":"Error"},
+  },
 } as const;
 "
 `;

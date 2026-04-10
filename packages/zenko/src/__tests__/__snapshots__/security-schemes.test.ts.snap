@@ -139,5 +139,26 @@ export const putSquare: PutSquareOperation = {
       badRequest: errorMessage,
     },
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  getBoard: {
+    method: "get",
+    path: "/board",
+    successResponses: {"200":"status"},
+  },
+  getSquare: {
+    method: "get",
+    path: "/board/{row}/{column}",
+    successResponses: {"200":"mark"},
+    errorResponses: {"400":"errorMessage"},
+  },
+  putSquare: {
+    method: "put",
+    path: "/board/{row}/{column}",
+    successResponses: {"200":"status"},
+    errorResponses: {"400":"errorMessage"},
+  },
+} as const;
 "
 `;

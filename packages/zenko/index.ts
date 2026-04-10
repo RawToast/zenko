@@ -11,3 +11,15 @@ export {
   type OperationDefinition,
   type SecurityRequirement,
 } from "./src/types"
+export {
+  generateTreatyModule,
+  generateTreatyModuleFromMetadata,
+} from "./src/treaty-generator"
+export {
+  createTreatyClient,
+  type LeafCall,
+  type RouteNode,
+  type TreatyClient,
+  type TreatyResult,
+  type TreatyRoutesConstraint,
+} from "./src/treaty"

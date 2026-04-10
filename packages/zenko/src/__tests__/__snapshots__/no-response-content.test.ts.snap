@@ -43,5 +43,15 @@ export const PutSomething: PutSomethingOperation = {
       serviceUnavailable: undefined,
     },
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  PutSomething: {
+    method: "put",
+    path: "/data",
+    successResponses: {"204":"undefined"},
+    errorResponses: {"400":"undefined","403":"undefined","404":"undefined","500":"undefined","503":"undefined"},
+  },
+} as const;
 "
 `;

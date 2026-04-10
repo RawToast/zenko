@@ -278,5 +278,24 @@ export const validateData: ValidateDataOperation = {
   request: ComplexValidation,
   response: ValidateDataResponse,
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  createEntity: {
+    method: "post",
+    path: "/entities",
+    successResponses: {"201":"Entity"},
+  },
+  getResource: {
+    method: "get",
+    path: "/resources/{resourceId}",
+    successResponses: {"200":"Resource"},
+  },
+  validateData: {
+    method: "post",
+    path: "/validate",
+    successResponses: {"200":"ValidateDataStatus200"},
+  },
+} as const;
 "
 `;

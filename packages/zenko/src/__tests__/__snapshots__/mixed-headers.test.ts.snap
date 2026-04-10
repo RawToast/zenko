@@ -43,5 +43,13 @@ export const createMatrix: CreateMatrixOperation = {
   path: paths.createMatrix,
   headers: headers.createMatrix,
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  createMatrix: {
+    method: "post",
+    path: "/matrix",
+  },
+} as const;
 "
 `;

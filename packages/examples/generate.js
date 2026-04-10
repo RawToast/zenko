@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, mkdirSync } from "fs"
-import { dirname, resolve } from "path"
+import { dirname, relative, resolve } from "path"
 import {
   authApiYamlPath,
   enumDemoYamlPath,
@@ -8,7 +8,7 @@ import {
   trainTravelYamlPath,
   fireblocksV2YamlPath,
 } from "@zenko/specs"
-import { generate } from "zenko"
+import { generate, generateTreatyModule } from "zenko"
 
 const specInputPaths = {
   "auth-api.yaml": authApiYamlPath,
@@ -69,47 +69,86 @@ function generateSchema(inputFile, outputFile, options) {
   }
 }
 
-try {
-  // Generate schemas for both specs
-  const petstoreSuccess = generateSchema("petstore.yaml", "petstore.gen.ts")
-  const trainTravelSuccess = generateSchema(
-    "train-travel.yaml",
-    "train-travel.gen.ts",
-    {
-      operationIds: ["get-stations"], // Include only ~10% of operations (1 of 8)
-      types: {
-        optionalType: "nullish",
-      },
+async function generateTrainTravelTreatyModule() {
+  try {
+    const genPath = resolve("./src/schema/train-travel.gen.ts")
+    const treatyPath = resolve("./src/schema/train-travel.treaty.gen.ts")
+    const outDir = dirname(treatyPath)
+    let importPath = relative(outDir, genPath).replace(/\\/g, "/")
+    if (!importPath.startsWith(".")) {
+      importPath = `./${importPath}`
     }
-  )
-  const authApiSuccess = generateSchema("auth-api.yaml", "auth-api.gen.ts")
-  const tictactoeSuccess = generateSchema("tictactoe.yaml", "tictactoe.gen.ts")
-  const enumDemoSuccess = generateSchema("enum-demo.yaml", "enum-demo.gen.ts", {
-    openEnums: ["ProductStatus"], // Make ProductStatus open, Category remains closed
-  })
+    importPath = importPath.replace(/\.tsx?$/, "")
+    const output = await generateTreatyModule({
+      inputFile: genPath,
+      importPath,
+    })
+    writeFileSync(treatyPath, output)
+    console.log("✅ Generated train-travel.treaty.gen.ts in src/schema/")
+    return true
+  } catch (error) {
+    console.error(
+      "❌ Error during treaty generation for train-travel:",
+      error.message
+    )
+    return false
+  }
+}
 
-  const fireblocksSuccess = generateSchema(
-    "fireblocks-v2.yaml",
-    "fireblocks-v2.gen.ts",
-    {
-      types: {
-        operationTypeSuffix: "Ops",
-      },
+;(async () => {
+  try {
+    const petstoreSuccess = generateSchema("petstore.yaml", "petstore.gen.ts")
+    const trainTravelSuccess = generateSchema(
+      "train-travel.yaml",
+      "train-travel.gen.ts",
+      {
+        operationIds: ["get-stations"], // Include only ~10% of operations (1 of 8)
+        types: {
+          optionalType: "nullish",
+        },
+      }
+    )
+    const authApiSuccess = generateSchema("auth-api.yaml", "auth-api.gen.ts")
+    const tictactoeSuccess = generateSchema(
+      "tictactoe.yaml",
+      "tictactoe.gen.ts"
+    )
+    const enumDemoSuccess = generateSchema(
+      "enum-demo.yaml",
+      "enum-demo.gen.ts",
+      {
+        openEnums: ["ProductStatus"], // Make ProductStatus open, Category remains closed
+      }
+    )
+
+    const fireblocksSuccess = generateSchema(
+      "fireblocks-v2.yaml",
+      "fireblocks-v2.gen.ts",
+      {
+        types: {
+          operationTypeSuffix: "Ops",
+        },
+      }
+    )
+    if (
+      !petstoreSuccess ||
+      !trainTravelSuccess ||
+      !authApiSuccess ||
+      !tictactoeSuccess ||
+      !enumDemoSuccess ||
+      !fireblocksSuccess
+    ) {
+      process.exit(1)
     }
-  )
-  if (
-    !petstoreSuccess ||
-    !trainTravelSuccess ||
-    !authApiSuccess ||
-    !tictactoeSuccess ||
-    !enumDemoSuccess ||
-    !fireblocksSuccess
-  ) {
+
+    const trainTravelTreatySuccess = await generateTrainTravelTreatyModule()
+    if (!trainTravelTreatySuccess) {
+      process.exit(1)
+    }
+
+    console.log("All schemas generated successfully!")
+  } catch (error) {
+    console.error("❌ Error during code generation:", error.message)
     process.exit(1)
   }
-
-  console.log("All schemas generated successfully!")
-} catch (error) {
-  console.error("❌ Error during code generation:", error.message)
-  process.exit(1)
-}
+})()

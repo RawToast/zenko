@@ -155,5 +155,20 @@ export const searchItems: SearchItemsOperation = {
   path: paths.searchItems,
   response: z.array(SearchResult),
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  createContact: {
+    method: "post",
+    path: "/contacts",
+    successResponses: {"201":"Contact"},
+    errorResponses: {"400":"undefined"},
+  },
+  searchItems: {
+    method: "get",
+    path: "/search",
+    successResponses: {"200":"z.array(SearchResult)"},
+  },
+} as const;
 "
 `;

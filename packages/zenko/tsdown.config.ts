@@ -5,6 +5,7 @@ export default defineConfig({
   entry: {
     index: "index.ts",
     cli: "src/cli.ts",
+    treaty: "src/treaty.ts",
   },
 
   // Output both CJS and ESM formats

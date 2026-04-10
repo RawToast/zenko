@@ -251,6 +251,39 @@ export const uploadDocument: UploadDocumentOperation = {
   request: DocumentUpload,
   response: Document,
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  uploadFile: {
+    method: "post",
+    path: "/upload",
+    successResponses: {"201":"UploadResponse"},
+  },
+  uploadMultipleFiles: {
+    method: "post",
+    path: "/upload-multiple",
+    successResponses: {"201":"MultiUploadResponse"},
+  },
+  createProfile: {
+    method: "post",
+    path: "/profile",
+    successResponses: {"201":"Profile"},
+  },
+  submitContactForm: {
+    method: "post",
+    path: "/contact",
+  },
+  login: {
+    method: "post",
+    path: "/login",
+    successResponses: {"200":"LoginResponse"},
+  },
+  uploadDocument: {
+    method: "post",
+    path: "/documents",
+    successResponses: {"201":"Document"},
+  },
+} as const;
 "
 `;
 
@@ -295,6 +328,39 @@ export const uploadDocument: UploadDocumentOperation = {
   path: paths.uploadDocument,
   request: DocumentUpload,
   response: Document,
+} as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  uploadFile: {
+    method: "post",
+    path: "/upload",
+    successResponses: {"201":"UploadResponse"},
+  },
+  uploadMultipleFiles: {
+    method: "post",
+    path: "/upload-multiple",
+    successResponses: {"201":"MultiUploadResponse"},
+  },
+  createProfile: {
+    method: "post",
+    path: "/profile",
+    successResponses: {"201":"Profile"},
+  },
+  submitContactForm: {
+    method: "post",
+    path: "/contact",
+  },
+  login: {
+    method: "post",
+    path: "/login",
+    successResponses: {"200":"LoginResponse"},
+  },
+  uploadDocument: {
+    method: "post",
+    path: "/documents",
+    successResponses: {"201":"Document"},
+  },
 } as const;
 "
 `;

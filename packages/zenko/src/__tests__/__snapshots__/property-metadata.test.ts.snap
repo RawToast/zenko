@@ -188,5 +188,34 @@ export const updateSettings: UpdateSettingsOperation = {
   request: SettingsUpdate,
   response: Settings,
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  createUser: {
+    method: "post",
+    path: "/users",
+    successResponses: {"201":"User"},
+  },
+  getUser: {
+    method: "get",
+    path: "/users/{userId}",
+    successResponses: {"200":"User"},
+  },
+  updateUser: {
+    method: "put",
+    path: "/users/{userId}",
+    successResponses: {"200":"User"},
+  },
+  getSettings: {
+    method: "get",
+    path: "/settings",
+    successResponses: {"200":"Settings"},
+  },
+  updateSettings: {
+    method: "put",
+    path: "/settings",
+    successResponses: {"200":"Settings"},
+  },
+} as const;
 "
 `;

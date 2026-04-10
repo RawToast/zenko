@@ -46,6 +46,14 @@ export const newPet: NewPetOperation = {
   path: paths.newPet,
   request: Pet,
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  newPet: {
+    method: "post",
+    path: "newPet",
+  },
+} as const;
 "
 `;
 
@@ -119,6 +127,19 @@ export const newPet: NewPetOperation = {
   method: "post",
   path: paths.newPet,
   request: Pet,
+} as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  listPets: {
+    method: "get",
+    path: "/pets",
+    successResponses: {"200":"z.array(Pet)"},
+  },
+  newPet: {
+    method: "post",
+    path: "newPet",
+  },
 } as const;
 "
 `;

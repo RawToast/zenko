@@ -339,5 +339,70 @@ export const getRssFeed: GetRssFeedOperation = {
   path: paths.getRssFeed,
   response: GetRssFeedResponse,
 } as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  exportUsersCsv: {
+    method: "get",
+    path: "/export/users",
+    successResponses: {"200":"ExportUsersCsvStatus200"},
+  },
+  exportDataXml: {
+    method: "get",
+    path: "/export/data",
+    successResponses: {"200":"ExportDataXmlStatus200"},
+  },
+  downloadFile: {
+    method: "get",
+    path: "/download/{fileId}",
+    successResponses: {"200":"DownloadFileStatus200"},
+    errorResponses: {"404":"undefined"},
+  },
+  getDocumentPdf: {
+    method: "get",
+    path: "/documents/{documentId}/pdf",
+    successResponses: {"200":"GetDocumentPdfStatus200"},
+  },
+  getImage: {
+    method: "get",
+    path: "/images/{imageId}",
+    successResponses: {"200":"GetImageStatus200"},
+  },
+  getLogs: {
+    method: "get",
+    path: "/logs",
+    successResponses: {"200":"GetLogsStatus200"},
+  },
+  streamEvents: {
+    method: "get",
+    path: "/stream/events",
+    successResponses: {"200":"StreamEventsStatus200"},
+  },
+  getReport: {
+    method: "get",
+    path: "/reports/{reportId}",
+    successResponses: {"200":"Report"},
+  },
+  getHealthText: {
+    method: "get",
+    path: "/api/health",
+    successResponses: {"200":"GetHealthTextStatus200"},
+  },
+  downloadArchive: {
+    method: "get",
+    path: "/download/zip/{archiveId}",
+    successResponses: {"200":"DownloadArchiveStatus200"},
+  },
+  getMarkdownDoc: {
+    method: "get",
+    path: "/markdown/{docId}",
+    successResponses: {"200":"GetMarkdownDocStatus200"},
+  },
+  getRssFeed: {
+    method: "get",
+    path: "/feed",
+    successResponses: {"200":"GetRssFeedStatus200"},
+  },
+} as const;
 "
 `;

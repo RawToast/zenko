@@ -1,6 +1,6 @@
 {
   "name": "zenko",
-  "version": "0.2.2-beta.2",
+  "version": "0.2.2-beta.3",
   "description": "Generate TypeScript types and path functions from OpenAPI specs",
   "keywords": [
     "api",
@@ -39,15 +39,21 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "bun": "./src/zenko.ts",
+      "bun": "./dist/index.mjs",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
     "./types": {
       "types": "./dist/types.d.ts",
-      "bun": "./src/types.ts",
+      "bun": "./dist/types.mjs",
       "import": "./dist/types.mjs",
       "require": "./dist/types.cjs"
+    },
+    "./treaty": {
+      "types": "./dist/treaty.d.ts",
+      "bun": "./dist/treaty.mjs",
+      "import": "./dist/treaty.mjs",
+      "require": "./dist/treaty.cjs"
     }
   },
   "publishConfig": {
@@ -69,7 +75,8 @@
     "typescript": "5.9.3"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5",
+    "zod": "^4"
   },
   "peerDependenciesMeta": {
     "typescript": {
