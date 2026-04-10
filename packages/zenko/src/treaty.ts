@@ -197,13 +197,23 @@ function createLeafCaller(options: {
         : init?.headers),
     }
 
-    let requestBody: string | ArrayBuffer | undefined
+    let requestBody: string | ArrayBuffer | Blob | FormData | undefined
     if (!isGetOrHead && body !== undefined) {
-      headers["content-type"] = headers["content-type"] ?? "application/json"
-      requestBody =
-        typeof body === "string" || body instanceof ArrayBuffer
-          ? body
-          : JSON.stringify(body)
+      if (typeof FormData !== "undefined" && body instanceof FormData) {
+        requestBody = body
+        delete headers["content-type"]
+      } else if (typeof Blob !== "undefined" && body instanceof Blob) {
+        requestBody = body
+        if (body.type) {
+          headers["content-type"] = body.type
+        }
+      } else {
+        headers["content-type"] = headers["content-type"] ?? "application/json"
+        requestBody =
+          typeof body === "string" || body instanceof ArrayBuffer
+            ? body
+            : JSON.stringify(body)
+      }
     }
 
     const { method: _, body: __, ...safeInit } = init ?? {}
