@@ -15,7 +15,6 @@
     "sourceMap": true,
     "paths": {
       "zenko": ["../zenko/index.ts"],
-      // "zenko/treaty": ["../zenko/src/treaty.ts"],
       "~/*": ["./src/*"]
     }
   },
