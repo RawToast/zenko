@@ -10,13 +10,12 @@
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "paths": {
       "zenko": ["../zenko/index.ts"],
-      "zenko/treaty": ["../zenko/src/treaty.ts"],
+      // "zenko/treaty": ["../zenko/src/treaty.ts"],
       "~/*": ["./src/*"]
     }
   },

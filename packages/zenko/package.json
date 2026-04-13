@@ -29,28 +29,38 @@
     "README.md",
     "dist/**/*.cjs",
     "dist/**/*.d.cts",
+    "dist/**/*.d.mts",
     "dist/**/*.d.ts",
     "dist/**/*.mjs"
   ],
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": {
+        "import": "./dist/index.d.mts",
+        "require": "./dist/index.d.cts"
+      },
       "bun": "./dist/index.mjs",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
     "./types": {
-      "types": "./dist/types.d.ts",
+      "types": {
+        "import": "./dist/types.d.mts",
+        "require": "./dist/types.d.cts"
+      },
       "bun": "./dist/types.mjs",
       "import": "./dist/types.mjs",
       "require": "./dist/types.cjs"
     },
     "./treaty": {
-      "types": "./dist/treaty.d.ts",
+      "types": {
+        "import": "./dist/treaty.d.mts",
+        "require": "./dist/treaty.d.cts"
+      },
       "bun": "./dist/treaty.mjs",
       "import": "./dist/treaty.mjs",
       "require": "./dist/treaty.cjs"
