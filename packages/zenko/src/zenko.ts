@@ -751,6 +751,9 @@ function generateOperationMetadata(buffer: string[], operations: Operation[]) {
     if (op.errorResponses && Object.keys(op.errorResponses).length > 0) {
       buffer.push(`    errorResponses: ${JSON.stringify(op.errorResponses)},`)
     }
+    if (op.errorStatusKeys && Object.keys(op.errorStatusKeys).length > 0) {
+      buffer.push(`    errorStatusKeys: ${JSON.stringify(op.errorStatusKeys)},`)
+    }
     buffer.push("  },")
   }
 

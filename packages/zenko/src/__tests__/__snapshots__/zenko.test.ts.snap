@@ -161,6 +161,7 @@ export const operationMetadata = {
     path: "/error",
     successResponses: {"200":"GetErrorWithoutSchemaStatus200"},
     errorResponses: {"500":"string"},
+    errorStatusKeys: {"500":"internalServerError"},
   },
 } as const;
 "
@@ -300,17 +301,20 @@ export const operationMetadata = {
     path: "/pets",
     successResponses: {"200":"Pets"},
     errorResponses: {"default":"Error"},
+    errorStatusKeys: {"default":"defaultError"},
   },
   createPets: {
     method: "post",
     path: "/pets",
     errorResponses: {"default":"Error"},
+    errorStatusKeys: {"default":"defaultError"},
   },
   showPetById: {
     method: "get",
     path: "/pets/{petId}",
     successResponses: {"200":"Pet"},
     errorResponses: {"default":"Error"},
+    errorStatusKeys: {"default":"defaultError"},
   },
 } as const;
 "

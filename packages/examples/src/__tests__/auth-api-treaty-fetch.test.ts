@@ -9,7 +9,7 @@ describe("Auth API treaty client (fetch)", () => {
     global.fetch = originalFetch
   })
 
-  it("posts login and returns a success envelope", async () => {
+  it("posts login and returns success", async () => {
     const fetchMock = setupFetchMock()
     const mockPayload = {
       accessToken: "tok",
@@ -32,7 +32,7 @@ describe("Auth API treaty client (fetch)", () => {
       password: "secret",
       staySignedIn: true,
     }
-    const result = await client.auth.login.post(body)
+    const result = await client.loginUser({ body })
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
@@ -42,9 +42,11 @@ describe("Auth API treaty client (fetch)", () => {
         body: JSON.stringify(body),
       })
     )
-    expect(result.error).toBeNull()
-    expect(result.data).toEqual(mockPayload)
-    expect(result.status).toBe(200)
+    expect(result.kind).toBe("success")
+    if (result.kind === "success") {
+      expect(result.data).toEqual(mockPayload)
+      expect(result.status).toBe(200)
+    }
   })
 
   it("sends FormData for multipart feedback without forcing JSON content-type", async () => {
@@ -68,7 +70,7 @@ describe("Auth API treaty client (fetch)", () => {
     const client = createClient(origin, {
       fetch: fetchMock as unknown as typeof fetch,
     })
-    const result = await client.feedback.post(form)
+    const result = await client.submitFeedback({ body: form })
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${origin}/feedback`,
@@ -80,9 +82,11 @@ describe("Auth API treaty client (fetch)", () => {
     const call = fetchMock.mock.calls[0]
     const init = call?.[1] as RequestInit & { headers?: Headers }
     expect(init.headers).toBeUndefined()
-    expect(result.error).toBeNull()
-    expect(result.data).toEqual(mockPayload)
-    expect(result.status).toBe(201)
+    expect(result.kind).toBe("success")
+    if (result.kind === "success") {
+      expect(result.data).toEqual(mockPayload)
+      expect(result.status).toBe(201)
+    }
   })
 
   it("patches profile and returns updated user", async () => {
@@ -103,9 +107,7 @@ describe("Auth API treaty client (fetch)", () => {
     const client = createClient(origin, {
       fetch: fetchMock as unknown as typeof fetch,
     })
-    const result = await client.settings.profile.patch({
-      displayName: "New",
-    })
+    const result = await client.updateProfile({ body: { displayName: "New" } })
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${origin}/settings/profile`,
@@ -114,11 +116,13 @@ describe("Auth API treaty client (fetch)", () => {
         body: JSON.stringify({ displayName: "New" }),
       })
     )
-    expect(result.error).toBeNull()
-    expect(result.data).toEqual(mockPayload)
+    expect(result.kind).toBe("success")
+    if (result.kind === "success") {
+      expect(result.data).toEqual(mockPayload)
+    }
   })
 
-  it("returns an error envelope for non-OK login", async () => {
+  it("returns http branch for non-OK login", async () => {
     const fetchMock = setupFetchMock()
     const errorBody = { code: 401, message: "Invalid credentials" }
 
@@ -132,14 +136,18 @@ describe("Auth API treaty client (fetch)", () => {
     const client = createClient(origin, {
       fetch: fetchMock as unknown as typeof fetch,
     })
-    const result = await client.auth.login.post({
-      email: "x@y.com",
-      password: "bad",
+    const result = await client.loginUser({
+      body: {
+        email: "x@y.com",
+        password: "bad",
+      },
     })
 
-    expect(result.data).toBeNull()
-    expect(result.error).toEqual({ status: 401, body: errorBody })
-    expect(result.status).toBe(401)
+    expect(result.kind).toBe("http")
+    if (result.kind === "http") {
+      expect(result.error).toEqual(errorBody)
+      expect(result.status).toBe(401)
+    }
   })
 })
 

@@ -97,12 +97,14 @@ export const operationMetadata = {
     path: "/pets",
     successResponses: {"200":"Pets"},
     errorResponses: {"default":"Error"},
+    errorStatusKeys: {"default":"defaultError"},
   },
   showPetById: {
     method: "get",
     path: "/pets/{petId}",
     successResponses: {"200":"Pet"},
     errorResponses: {"default":"Error"},
+    errorStatusKeys: {"default":"defaultError"},
   },
 } as const;
 "

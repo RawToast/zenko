@@ -17,9 +17,16 @@ export {
 } from "./src/treaty-generator"
 export {
   createTreatyClient,
+  orThrow,
+  unwrap,
   type LeafCall,
   type RouteNode,
   type TreatyClient,
+  type TreatyOperationMeta,
+  type TreatyOperationsClient,
+  type TreatyRequest,
   type TreatyResult,
+  type TreatyResultFor,
+  type TreatyRouteTreeClient,
   type TreatyRoutesConstraint,
 } from "./src/treaty"

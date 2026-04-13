@@ -21,6 +21,9 @@ function metadataFromSpec(spec: OpenAPISpec): Record<string, OperationMeta> {
     metadata[toCamelCase(op.operationId)] = {
       method: op.method,
       path: op.path,
+      ...(op.successResponses ? { successResponses: op.successResponses } : {}),
+      ...(op.errorResponses ? { errorResponses: op.errorResponses } : {}),
+      ...(op.errorStatusKeys ? { errorStatusKeys: op.errorStatusKeys } : {}),
     }
   }
   return metadata
@@ -36,9 +39,10 @@ describe("generateTreatyModuleFromMetadata", () => {
       importPath: "./tictactoe.gen",
     })
 
-    expect(output).toContain(
-      'import { createTreatyClient, type TreatyClient } from "zenko/treaty"'
-    )
+    expect(output).toContain("import {")
+    expect(output).toContain("createTreatyClient")
+    expect(output).toContain("export const operations = {")
+    expect(output).toContain("export const operationMetadata =")
     expect(output).toContain("export const treatyRoutes = {")
     expect(output).toContain("export function createClient(")
     expect(output).toContain("getBoard")

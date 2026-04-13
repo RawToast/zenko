@@ -1,4 +1,6 @@
-import { describe, test, expect, mock } from "bun:test"
+import { describe, expect, mock, test } from "bun:test"
+import { z } from "zod"
+
 import { createTreatyClient } from "../treaty"
 
 const routes = {
@@ -19,7 +21,7 @@ const routes = {
   },
 } as const
 
-describe("createTreatyClient", () => {
+describe("createTreatyClient (route tree)", () => {
   test("calls GET leaves and returns a success envelope", async () => {
     const fetchMock = mock<typeof fetch>()
 
@@ -41,8 +43,10 @@ describe("createTreatyClient", () => {
       "https://api.test.com/board",
       expect.objectContaining({ method: "GET" })
     )
-    expect(result.error).toBeNull()
-    expect(result.data).toEqual({ winner: "." })
+    expect(result.kind).toBe("success")
+    if (result.kind === "success") {
+      expect(result.data).toEqual({ winner: "." })
+    }
   })
 
   test("walks dynamic segments and sends raw string bodies", async () => {
@@ -69,5 +73,97 @@ describe("createTreatyClient", () => {
         body: "X",
       })
     )
+  })
+})
+
+describe("createTreatyClient (operations + metadata)", () => {
+  const Pet = z.object({ id: z.number(), name: z.string() })
+  const Err = z.object({ message: z.string() })
+
+  const showPetById = {
+    method: "get" as const,
+    path: ({ petId }: { petId: string }) => `/pets/${petId}`,
+    response: Pet,
+    errors: { notFound: Err, defaultError: Err },
+  } as const
+
+  const operationMetadata = {
+    showPetById: {
+      method: "get",
+      path: "/pets/{petId}",
+      successResponses: { "200": "Pet" },
+      errorResponses: { "404": "Err", default: "Err" },
+      errorStatusKeys: { "404": "notFound", default: "defaultError" },
+    },
+  } as const
+
+  test("returns kind=success for 200 JSON", async () => {
+    const fetchMock = mock<typeof fetch>()
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ id: 42, name: "Neko" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    )
+    const client = createTreatyClient({
+      baseUrl: "https://api.test.com",
+      operations: { showPetById },
+      operationMetadata,
+      options: { fetch: fetchMock as unknown as typeof fetch },
+    })
+    const result = await client.showPetById({ params: { petId: "42" } })
+    expect(result.kind).toBe("success")
+    if (result.kind === "success") {
+      expect(result.data).toEqual({ id: 42, name: "Neko" })
+    }
+  })
+
+  test("returns kind=http with specStatus for known error responses", async () => {
+    const fetchMock = mock<typeof fetch>()
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ message: "missing" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      })
+    )
+    const client = createTreatyClient({
+      baseUrl: "https://api.test.com",
+      operations: { showPetById },
+      operationMetadata,
+      options: { fetch: fetchMock as unknown as typeof fetch },
+    })
+    const result = await client.showPetById({ params: { petId: "missing" } })
+    expect(result).toMatchObject({ kind: "http", specStatus: 404 })
+  })
+
+  test("returns kind=transport when fetch rejects", async () => {
+    const fetchMock = mock<typeof fetch>()
+    fetchMock.mockRejectedValue(new TypeError("network down"))
+    const client = createTreatyClient({
+      baseUrl: "https://api.test.com",
+      operations: { showPetById },
+      operationMetadata,
+      options: { fetch: fetchMock as unknown as typeof fetch },
+    })
+    const result = await client.showPetById({ params: { petId: "42" } })
+    expect(result.kind).toBe("transport")
+  })
+
+  test("returns kind=parse when a typed JSON body cannot be parsed", async () => {
+    const fetchMock = mock<typeof fetch>()
+    fetchMock.mockResolvedValue(
+      new Response("not json", {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    )
+    const client = createTreatyClient({
+      baseUrl: "https://api.test.com",
+      operations: { showPetById },
+      operationMetadata,
+      options: { fetch: fetchMock as unknown as typeof fetch },
+    })
+    const result = await client.showPetById({ params: { petId: "42" } })
+    expect(result.kind).toBe("parse")
   })
 })

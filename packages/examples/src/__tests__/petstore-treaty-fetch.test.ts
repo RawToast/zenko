@@ -23,18 +23,20 @@ describe("Petstore treaty client (fetch)", () => {
     const client = createClient(origin, {
       fetch: fetchMock as unknown as typeof fetch,
     })
-    const result = await client.pets.get()
+    const result = await client.listPets()
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${origin}/pets`,
       expect.objectContaining({ method: "GET" })
     )
-    expect(result.error).toBeNull()
-    expect(result.data).toEqual(mockPets)
-    expect(result.status).toBe(200)
+    expect(result.kind).toBe("success")
+    if (result.kind === "success") {
+      expect(result.data).toEqual(mockPets)
+      expect(result.status).toBe(200)
+    }
   })
 
-  it("appends query params for listPets via treaty options", async () => {
+  it("appends query params for listPets via treaty request", async () => {
     const fetchMock = setupFetchMock()
     const mockPets: { id: number; name: string; tag?: string }[] = []
 
@@ -49,14 +51,16 @@ describe("Petstore treaty client (fetch)", () => {
       fetch: fetchMock as unknown as typeof fetch,
     })
 
-    const result = await client.pets.get({ query: { limit: 10 } })
+    const result = await client.listPets({ query: { limit: 10 } })
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${origin}/pets?limit=10`,
       expect.objectContaining({ method: "GET" })
     )
-    expect(result.error).toBeNull()
-    expect(result.data).toEqual(mockPets)
+    expect(result.kind).toBe("success")
+    if (result.kind === "success") {
+      expect(result.data).toEqual(mockPets)
+    }
   })
 
   it("creates a pet with POST JSON body", async () => {
@@ -73,7 +77,7 @@ describe("Petstore treaty client (fetch)", () => {
     const client = createClient(origin, {
       fetch: fetchMock as unknown as typeof fetch,
     })
-    const result = await client.pets.post(payload)
+    const result = await client.createPets({ body: payload })
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${origin}/pets`,
@@ -82,11 +86,13 @@ describe("Petstore treaty client (fetch)", () => {
         body: JSON.stringify(payload),
       })
     )
-    expect(result.error).toBeNull()
-    expect(result.status).toBe(201)
+    expect(result.kind).toBe("success")
+    if (result.kind === "success") {
+      expect(result.status).toBe(201)
+    }
   })
 
-  it("fetches a pet by id via dynamic segment", async () => {
+  it("fetches a pet by id via path params", async () => {
     const fetchMock = setupFetchMock()
     const mockPet = { id: 42, name: "Spot", tag: "dog" }
 
@@ -100,17 +106,19 @@ describe("Petstore treaty client (fetch)", () => {
     const client = createClient(origin, {
       fetch: fetchMock as unknown as typeof fetch,
     })
-    const result = await client.pets({ petId: "42" }).get()
+    const result = await client.showPetById({ params: { petId: "42" } })
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${origin}/pets/42`,
       expect.objectContaining({ method: "GET" })
     )
-    expect(result.error).toBeNull()
-    expect(result.data).toEqual(mockPet)
+    expect(result.kind).toBe("success")
+    if (result.kind === "success") {
+      expect(result.data).toEqual(mockPet)
+    }
   })
 
-  it("returns an error envelope for non-OK responses", async () => {
+  it("returns http branch for non-OK responses with typed error body", async () => {
     const fetchMock = setupFetchMock()
     const errorBody = { code: 404, message: "Not found" }
 
@@ -124,11 +132,68 @@ describe("Petstore treaty client (fetch)", () => {
     const client = createClient(origin, {
       fetch: fetchMock as unknown as typeof fetch,
     })
-    const result = await client.pets({ petId: "missing" }).get()
+    const result = await client.showPetById({ params: { petId: "missing" } })
 
-    expect(result.data).toBeNull()
-    expect(result.error).toEqual({ status: 404, body: errorBody })
-    expect(result.status).toBe(404)
+    expect(result.kind).toBe("http")
+    if (result.kind === "http") {
+      expect(result.specStatus).toBe("default")
+      expect(result.error).toEqual(errorBody)
+      expect(result.status).toBe(404)
+    }
+  })
+
+  it("passes headers and RequestInit without changing the body contract", async () => {
+    const fetchMock = setupFetchMock()
+    const payload = { id: 9, name: "Mimi", tag: "cat" }
+    const controller = new AbortController()
+
+    fetchMock.mockResolvedValue(
+      new Response("", {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      })
+    )
+
+    const client = createClient(origin, {
+      fetch: fetchMock as unknown as typeof fetch,
+    })
+    await client.createPets({
+      body: payload,
+      headers: { authorization: "Bearer test" },
+      init: { signal: controller.signal },
+    })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${origin}/pets`,
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+        headers: expect.any(Headers),
+      })
+    )
+    const call = fetchMock.mock.calls[0]
+    const headers = call?.[1]?.headers as Headers
+    expect(headers?.get("authorization")).toBe("Bearer test")
+  })
+
+  it("supports legacy nested $routes alias", async () => {
+    const fetchMock = setupFetchMock()
+    const mockPet = { id: 1, name: "A", tag: "cat" }
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify(mockPet), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    )
+    const client = createClient(origin, {
+      fetch: fetchMock as unknown as typeof fetch,
+    })
+    const result = await client.$routes.pets({ petId: "1" }).get()
+    expect(result.kind).toBe("success")
+    if (result.kind === "success") {
+      expect(result.data).toEqual(mockPet)
+    }
   })
 })
 
@@ -138,7 +203,6 @@ function setupFetchMock() {
   return fetchMock
 }
 
-// example of oddness
-const client = createClient("http://petstore.swagger.io/v1", {
+const _client = createClient("http://petstore.swagger.io/v1", {
   fetch: mock<typeof fetch>() as unknown as typeof fetch,
 })
