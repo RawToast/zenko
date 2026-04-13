@@ -5,6 +5,7 @@ export default defineConfig({
   entry: {
     index: "index.ts",
     cli: "src/cli.ts",
+    types: "src/types.ts",
     treaty: "src/treaty.ts",
   },
 
