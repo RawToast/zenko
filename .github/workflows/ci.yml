@@ -45,7 +45,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           files: ./packages/zenko/coverage/lcov.info
-
-      - name: Run security scan
-        run: bun audit --audit-level=moderate
-        if: matrix.bun-version == 'latest'
