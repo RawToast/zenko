@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, mock } from "bun:test"
+import { TreatyErrorResult, TreatySuccess } from "zenko/treaty"
 import { createClient } from "~/schema/train-travel.treaty.gen"
 
 describe("TrainTravel treaty client (fetch)", () => {
@@ -34,17 +35,18 @@ describe("TrainTravel treaty client (fetch)", () => {
     const client = createClient(origin, {
       fetch: fetchMock as unknown as typeof fetch,
     })
-    const result = await client.stations.get()
+    const result = await client.getStations()
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
     expect(fetchMock).toHaveBeenCalledWith(
       `${origin}/stations`,
       expect.objectContaining({ method: "GET" })
     )
-    expect(result.error).toBeNull()
-    expect(result.data).toBeDefined()
-    expect(result.data).toMatchObject(mockPayload)
-    expect(result.status).toBe(200)
+    expect(result.kind).toBe("success")
+    const success = result as TreatySuccess<number, typeof mockPayload>
+    expect(success.data).toBeDefined()
+    expect(success.data).toMatchObject(mockPayload)
+    expect(success.status).toBe(200)
   })
 
   it("appends query params for GET via treaty options", async () => {
@@ -61,16 +63,24 @@ describe("TrainTravel treaty client (fetch)", () => {
     const client = createClient(origin, {
       fetch: fetchMock as unknown as typeof fetch,
     })
-    const result = await client.stations.get({
+    const result = await client.getStations({
       query: { limit: 10, page: 2, country: "DE" },
     })
 
+    const callUrl = fetchMock.mock.calls[0]?.[0] as string
+    expect(callUrl.startsWith(`${origin}/stations?`)).toBe(true)
+    expect(callUrl).toContain("limit=10")
+    expect(callUrl).toContain("page=2")
+    expect(callUrl).toContain("country=DE")
     expect(fetchMock).toHaveBeenCalledWith(
-      `${origin}/stations?limit=10&page=2&country=DE`,
+      callUrl,
       expect.objectContaining({ method: "GET" })
     )
-    expect(result.error).toBeNull()
-    expect(result.data).toEqual(mockPayload)
+
+    expect(result.kind).toBe("success")
+    const success = result as TreatySuccess<number, typeof mockPayload>
+    expect(success.data).toEqual(mockPayload)
+    expect(success.status).toBe(200)
   })
 
   it("returns an error envelope for non-OK responses", async () => {
@@ -87,11 +97,14 @@ describe("TrainTravel treaty client (fetch)", () => {
     const client = createClient(origin, {
       fetch: fetchMock as unknown as typeof fetch,
     })
-    const result = await client.stations.get()
+    const result = await client.getStations()
 
-    expect(result.data).toBeNull()
-    expect(result.error).toEqual({ status: 429, body: errorBody })
-    expect(result.status).toBe(429)
+    expect(result.kind).toBe("error")
+
+    const http = result as TreatyErrorResult<number, typeof errorBody>
+
+    expect(http.error).toEqual(errorBody)
+    expect(http.status).toBe(429)
   })
 })
 

@@ -67,6 +67,7 @@ export const operationMetadata = {
     path: "/logs",
     successResponses: {"200":"z.array(AdminLog)"},
     errorResponses: {"400":"undefined","403":"undefined","404":"undefined","500":"undefined","503":"undefined"},
+    errorStatusKeys: {"400":"badRequest","403":"forbidden","404":"notFound","500":"internalServerError","503":"serviceUnavailable"},
   },
 } as const;
 "

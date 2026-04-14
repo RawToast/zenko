@@ -40,6 +40,11 @@ export type Operation = {
   successResponses?: OperationResponseMap
   /** Per-status error response types (4xx/5xx). */
   errorResponses?: OperationResponseMap
+  /**
+   * Maps OpenAPI response keys (`"404"`, `"default"`, …) to identifiers used in
+   * `errors` (e.g. `"notFound"`, `"defaultError"`) for treaty runtime parsing.
+   */
+  errorStatusKeys?: Record<string, string>
   requestHeaders?: RequestHeader[]
   errors?: OperationErrorGroup
   security?: SecurityRequirement[]

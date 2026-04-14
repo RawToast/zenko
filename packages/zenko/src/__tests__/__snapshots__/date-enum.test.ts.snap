@@ -79,6 +79,7 @@ export const operationMetadata = {
     method: "post",
     path: "/my-service/{someId}/create",
     errorResponses: {"500":"CreateSomethingErrorResponse"},
+    errorStatusKeys: {"500":"internalServerError"},
   },
 } as const;
 "
@@ -163,6 +164,7 @@ export const operationMetadata = {
     method: "post",
     path: "/my-service/{someId}/create",
     errorResponses: {"500":"CreateSomethingErrorResponse"},
+    errorStatusKeys: {"500":"internalServerError"},
   },
 } as const;
 "
@@ -253,6 +255,7 @@ export const operationMetadata = {
     method: "post",
     path: "/my-service/{someId}/create",
     errorResponses: {"500":"CreateSomethingErrorResponse"},
+    errorStatusKeys: {"500":"internalServerError"},
   },
 } as const;
 "

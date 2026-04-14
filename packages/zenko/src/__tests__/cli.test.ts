@@ -110,10 +110,9 @@ describe("CLI", () => {
     })
 
     const output = fs.readFileSync(outputPath, "utf8")
+    expect(output).toContain("export const operations = {")
     expect(output).toContain("export const treatyRoutes = {")
-    expect(output).toContain(
-      'import { createTreatyClient, type TreatyClient } from "zenko/treaty"'
-    )
+    expect(output).toContain("createTreatyClient")
   })
 
   test("handles JSON input files", () => {

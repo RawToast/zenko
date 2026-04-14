@@ -357,6 +357,7 @@ export const operationMetadata = {
     path: "/download/{fileId}",
     successResponses: {"200":"DownloadFileStatus200"},
     errorResponses: {"404":"undefined"},
+    errorStatusKeys: {"404":"notFound"},
   },
   getDocumentPdf: {
     method: "get",

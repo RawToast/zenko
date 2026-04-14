@@ -69,10 +69,15 @@ function generateSchema(inputFile, outputFile, options) {
   }
 }
 
-async function generateTrainTravelTreatyModule() {
+/**
+ * @param {string} genFileName - e.g. "train-travel.gen.ts"
+ * @param {string} treatyFileName - e.g. "train-travel.treaty.gen.ts"
+ * @param {string} label - log label (e.g. "train-travel")
+ */
+async function generateTreatyModuleForGen(genFileName, treatyFileName, label) {
   try {
-    const genPath = resolve("./src/schema/train-travel.gen.ts")
-    const treatyPath = resolve("./src/schema/train-travel.treaty.gen.ts")
+    const genPath = resolve(`./src/schema/${genFileName}`)
+    const treatyPath = resolve(`./src/schema/${treatyFileName}`)
     const outDir = dirname(treatyPath)
     let importPath = relative(outDir, genPath).replace(/\\/g, "/")
     if (!importPath.startsWith(".")) {
@@ -84,11 +89,11 @@ async function generateTrainTravelTreatyModule() {
       importPath,
     })
     writeFileSync(treatyPath, output)
-    console.log("✅ Generated train-travel.treaty.gen.ts in src/schema/")
+    console.log(`✅ Generated ${treatyFileName} in src/schema/ (${label})`)
     return true
   } catch (error) {
     console.error(
-      "❌ Error during treaty generation for train-travel:",
+      `❌ Error during treaty generation for ${label}:`,
       error.message
     )
     return false
@@ -141,8 +146,32 @@ async function generateTrainTravelTreatyModule() {
       process.exit(1)
     }
 
-    const trainTravelTreatySuccess = await generateTrainTravelTreatyModule()
-    if (!trainTravelTreatySuccess) {
+    const [
+      trainTravelTreatySuccess,
+      authApiTreatySuccess,
+      petstoreTreatySuccess,
+    ] = await Promise.all([
+      generateTreatyModuleForGen(
+        "train-travel.gen.ts",
+        "train-travel.treaty.gen.ts",
+        "train-travel"
+      ),
+      generateTreatyModuleForGen(
+        "auth-api.gen.ts",
+        "auth-api.treaty.gen.ts",
+        "auth-api"
+      ),
+      generateTreatyModuleForGen(
+        "petstore.gen.ts",
+        "petstore.treaty.gen.ts",
+        "petstore"
+      ),
+    ])
+    if (
+      !trainTravelTreatySuccess ||
+      !authApiTreatySuccess ||
+      !petstoreTreatySuccess
+    ) {
       process.exit(1)
     }
 

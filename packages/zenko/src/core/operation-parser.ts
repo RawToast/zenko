@@ -41,12 +41,17 @@ export function parseOperations(
 
         const pathParams = extractPathParams(path)
         const requestType = getRequestType(operation, nameMap)
-        const { successResponse, errors, successResponses, errorResponses } =
-          getResponseTypes(
-            operation,
-            (operation as { operationId: string }).operationId,
-            nameMap
-          )
+        const {
+          successResponse,
+          errors,
+          successResponses,
+          errorResponses,
+          errorStatusKeys,
+        } = getResponseTypes(
+          operation,
+          (operation as { operationId: string }).operationId,
+          nameMap
+        )
         const resolvedParameters = collectParameters(pathItem, operation, spec)
         const requestHeaders = getRequestHeaders(resolvedParameters)
         const queryParams = getQueryParams(resolvedParameters)
@@ -62,6 +67,7 @@ export function parseOperations(
           responseType: successResponse,
           successResponses,
           errorResponses,
+          errorStatusKeys,
           requestHeaders,
           errors,
           security,
@@ -80,12 +86,17 @@ export function parseOperations(
         const path = webhookName
         const pathParams = extractPathParams(path)
         const requestType = getRequestType(operation, nameMap)
-        const { successResponse, errors, successResponses, errorResponses } =
-          getResponseTypes(
-            operation,
-            (operation as { operationId: string }).operationId,
-            nameMap
-          )
+        const {
+          successResponse,
+          errors,
+          successResponses,
+          errorResponses,
+          errorStatusKeys,
+        } = getResponseTypes(
+          operation,
+          (operation as { operationId: string }).operationId,
+          nameMap
+        )
         const resolvedParameters = collectParameters(
           webhookItem,
           operation,
@@ -105,6 +116,7 @@ export function parseOperations(
           responseType: successResponse,
           successResponses,
           errorResponses,
+          errorStatusKeys,
           requestHeaders,
           errors,
           security,
@@ -228,6 +240,7 @@ function getResponseTypes(
   errors?: OperationErrorGroup
   successResponses?: OperationResponseMap
   errorResponses?: OperationResponseMap
+  errorStatusKeys?: Record<string, string>
 } {
   const responses = operation.responses ?? {}
   const successCodes = new Map<string, string>()
@@ -292,13 +305,26 @@ function getResponseTypes(
     operationId,
     nameMap
   )
+  const errorStatusKeys = buildErrorStatusKeys(errorEntries)
 
   return {
     successResponse,
     errors,
     successResponses,
     errorResponses,
+    errorStatusKeys,
   }
+}
+
+function buildErrorStatusKeys(
+  errorEntries: Array<{ code: string; schema: any }>
+): Record<string, string> | undefined {
+  if (errorEntries.length === 0) return undefined
+  const map: Record<string, string> = {}
+  for (const { code } of errorEntries) {
+    map[code] = mapStatusToIdentifier(code)
+  }
+  return map
 }
 
 function buildSuccessResponsesMap(

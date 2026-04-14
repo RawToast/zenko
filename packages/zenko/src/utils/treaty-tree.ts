@@ -15,6 +15,9 @@ const HTTP_METHODS = new Set([
 export type OperationMeta = {
   method: string
   path: string
+  successResponses?: Record<string, string>
+  errorResponses?: Record<string, string>
+  errorStatusKeys?: Record<string, string>
 }
 
 /** Path template segments: `/{a}/{b}` → `[":a", ":b"]`; `"/"` → `[]` (root). */

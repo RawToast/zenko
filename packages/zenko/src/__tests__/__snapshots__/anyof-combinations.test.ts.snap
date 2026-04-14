@@ -163,6 +163,7 @@ export const operationMetadata = {
     path: "/contacts",
     successResponses: {"201":"Contact"},
     errorResponses: {"400":"undefined"},
+    errorStatusKeys: {"400":"badRequest"},
   },
   searchItems: {
     method: "get",

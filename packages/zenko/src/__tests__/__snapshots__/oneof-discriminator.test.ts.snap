@@ -157,12 +157,14 @@ export const operationMetadata = {
     path: "/payments",
     successResponses: {"201":"Payment"},
     errorResponses: {"400":"Error"},
+    errorStatusKeys: {"400":"badRequest"},
   },
   getVehicle: {
     method: "get",
     path: "/vehicles/{vehicleId}",
     successResponses: {"200":"Vehicle"},
     errorResponses: {"404":"Error"},
+    errorStatusKeys: {"404":"notFound"},
   },
 } as const;
 "

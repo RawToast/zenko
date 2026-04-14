@@ -1,16 +1,35 @@
-import type { TreatyClient, TreatyRoutesConstraint } from "./treaty-infer"
-import type { RouteNode, TreatyResult } from "./treaty-types"
+import type { ZodType } from "zod"
+
+import type {
+  AnyOperationDefinition,
+  TreatyOperationsClient,
+  TreatyOperationMeta,
+  TreatyRequest,
+  TreatyRouteTreeClient,
+  TreatyRoutesConstraint,
+} from "./treaty-infer"
+import type { TreatyResult } from "./treaty-types"
+import { type RouteNode as RouteNodeExport, unwrap } from "./treaty-types"
 
 export type {
   RouteNode,
-  TreatyFailure,
+  TreatyErrorResult,
   TreatyResult,
   TreatySuccess,
+  TreatyUnexpectedError,
+  TreatyUnexpectedSubtype,
 } from "./treaty-types"
+export { unwrap }
+export const orThrow = unwrap
 export type {
   LeafCall,
+  TreatyOperationsClient,
+  TreatyOperationMeta,
+  TreatyRequest,
   TreatyClient,
+  TreatyRouteTreeClient,
   TreatyRoutesConstraint,
+  TreatyResultFor,
 } from "./treaty-infer"
 
 const HTTP_METHODS = new Set([
@@ -25,35 +44,16 @@ const HTTP_METHODS = new Set([
   "trace",
 ])
 
-type RouteLeaf = {
-  method: string
-  path: string | (() => string) | ((params: Record<string, string>) => string)
-}
+type AnyOp = AnyOperationDefinition
 
-function isLeaf(node: unknown): node is RouteLeaf {
-  if (typeof node !== "object" || node === null) return false
-  const n = node as Record<string, unknown>
-  return (
-    typeof n.method === "string" &&
-    (typeof n.path === "function" || typeof n.path === "string")
-  )
+export type TreatyClientOptions = {
+  fetch?: typeof fetch
 }
 
 function joinUrl(baseUrl: string, path: string): string {
   const base = baseUrl.replace(/\/$/, "")
   const p = path.startsWith("/") ? path : `/${path}`
   return `${base}${p}`
-}
-
-function resolvePath(
-  path: RouteLeaf["path"],
-  params: Record<string, string>
-): string {
-  if (typeof path === "string") return path
-  if (path.length === 0) {
-    return (path as () => string)()
-  }
-  return (path as (p: Record<string, string>) => string)(params)
 }
 
 function serializeQueryValue(value: unknown): string {
@@ -82,22 +82,294 @@ function buildQueryString(query: Record<string, unknown>): string {
   return parts.length ? `?${parts.join("&")}` : ""
 }
 
-async function parseResponseBody(response: Response): Promise<unknown> {
-  const contentType = response.headers.get("content-type") ?? ""
-  if (contentType.includes("application/json")) {
-    try {
-      return await response.json()
-    } catch {
-      return null
+async function readRawBody(response: Response): Promise<string> {
+  try {
+    return await response.clone().text()
+  } catch {
+    return ""
+  }
+}
+
+function mergePathInput(
+  req: TreatyRequest<Record<string, unknown>, unknown> | undefined
+): Record<string, unknown> {
+  const params = req?.params ?? {}
+  const query = req?.query ?? {}
+  return { ...params, ...query }
+}
+
+function resolveErrorKey(
+  meta: TreatyOperationMeta,
+  status: number
+): string | undefined {
+  const keys = meta.errorStatusKeys
+  if (!keys) return undefined
+  const code = String(status)
+  if (keys[code]) return keys[code]
+  if (keys.default !== undefined) return keys.default
+  return undefined
+}
+
+function pickSpecStatus(
+  meta: TreatyOperationMeta,
+  status: number
+): number | "default" | "unlisted" {
+  const er = meta.errorResponses
+  if (!er) return "unlisted"
+  const code = String(status)
+  if (code in er) return status
+  if ("default" in er) return "default"
+  return "unlisted"
+}
+
+async function executeOperation(options: {
+  baseUrl: string
+  op: AnyOp
+  meta: TreatyOperationMeta
+  req?: TreatyRequest<Record<string, unknown>, unknown>
+  fetchImpl: typeof fetch
+}): Promise<TreatyResult> {
+  const { baseUrl, op, meta, req, fetchImpl } = options
+
+  const method = meta.method.toLowerCase()
+  if (!HTTP_METHODS.has(method)) {
+    return {
+      kind: "unexpectedError",
+      subtype: "other",
+      error: new Error(`Unsupported method ${method}`),
     }
   }
-  const text = await response.text()
-  return text === "" ? null : text
+
+  const upper = method.toUpperCase()
+  const isGetOrHead = method === "get" || method === "head"
+
+  let pathStr: string
+  try {
+    const pathFn =
+      typeof op.path === "function" ? op.path : () => String(op.path)
+    const merged = mergePathInput(req)
+    pathStr = (pathFn as (input?: Record<string, unknown>) => string)(merged)
+  } catch (e) {
+    return {
+      kind: "unexpectedError",
+      subtype: "other",
+      error: e,
+    }
+  }
+
+  const url = joinUrl(baseUrl, pathStr)
+
+  const headerRecord: Record<string, string> = {
+    ...(req?.headers && typeof req.headers === "object"
+      ? (req.headers as Record<string, string>)
+      : {}),
+  }
+
+  let requestBody: string | ArrayBuffer | Blob | FormData | undefined
+  if (!isGetOrHead && req?.body !== undefined) {
+    const body = req.body
+    if (typeof FormData !== "undefined" && body instanceof FormData) {
+      requestBody = body
+    } else if (typeof Blob !== "undefined" && body instanceof Blob) {
+      requestBody = body
+      if (body.type) {
+        headerRecord["content-type"] = body.type
+      }
+    } else {
+      headerRecord["content-type"] =
+        headerRecord["content-type"] ?? "application/json"
+      requestBody =
+        typeof body === "string" || body instanceof ArrayBuffer
+          ? body
+          : JSON.stringify(body)
+    }
+  }
+
+  const { init } = req ?? {}
+  const safeInit: Omit<RequestInit, "method" | "body" | "headers"> = {
+    ...init,
+  }
+
+  let response: Response
+  try {
+    response = await fetchImpl(url, {
+      ...safeInit,
+      method: upper,
+      headers:
+        Object.keys(headerRecord).length > 0
+          ? new Headers(headerRecord)
+          : undefined,
+      body: isGetOrHead ? undefined : requestBody,
+    })
+  } catch (e) {
+    const err = e instanceof Error ? e : new Error(String(e))
+    return { kind: "unexpectedError", subtype: "transport", error: err }
+  }
+
+  const status = response.status
+  const rawBody = await readRawBody(response)
+
+  if (response.ok) {
+    return parseSuccessResponse(op, response, status, rawBody)
+  }
+
+  return parseHttpError(op, meta, response, status, rawBody)
+}
+
+function parseSuccessResponse(
+  op: AnyOp,
+  response: Response,
+  status: number,
+  rawBody: string
+): TreatyResult {
+  const schema = op.response as ZodType | undefined
+  if (!schema) {
+    return {
+      kind: "success",
+      status,
+      data: undefined as unknown,
+      response,
+      headers: response.headers,
+    }
+  }
+
+  const contentType = response.headers.get("content-type") ?? ""
+  let parsed: unknown
+  if (contentType.includes("application/json")) {
+    try {
+      parsed = rawBody === "" ? null : JSON.parse(rawBody)
+    } catch (e) {
+      const err = e instanceof Error ? e : new Error(String(e))
+      return {
+        kind: "unexpectedError",
+        subtype: "parse",
+        status,
+        error: err,
+        rawBody,
+        response,
+        headers: response.headers,
+      }
+    }
+  } else {
+    parsed = rawBody === "" ? null : rawBody
+  }
+
+  const result = schema.safeParse(parsed)
+  if (!result.success) {
+    return {
+      kind: "unexpectedError",
+      subtype: "parse",
+      status,
+      error: result.error,
+      rawBody,
+      response,
+      headers: response.headers,
+    }
+  }
+
+  return {
+    kind: "success",
+    status,
+    data: result.data,
+    response,
+    headers: response.headers,
+  }
+}
+
+function parseHttpError(
+  op: AnyOp,
+  meta: TreatyOperationMeta,
+  response: Response,
+  status: number,
+  rawBody: string
+): TreatyResult {
+  const specStatus = pickSpecStatus(meta, status)
+  const errKey = resolveErrorKey(meta, status)
+  const errSchema = (
+    errKey && op.errors && op.errors[errKey] ? op.errors[errKey] : undefined
+  ) as ZodType | undefined
+
+  const contentType = response.headers.get("content-type") ?? ""
+  let parsed: unknown
+  if (contentType.includes("application/json")) {
+    try {
+      parsed = rawBody === "" ? null : JSON.parse(rawBody)
+    } catch (e) {
+      const err = e instanceof Error ? e : new Error(String(e))
+      return {
+        kind: "unexpectedError",
+        subtype: "parse",
+        status,
+        error: err,
+        rawBody,
+        response,
+        headers: response.headers,
+      }
+    }
+  } else {
+    parsed = rawBody === "" ? null : rawBody
+  }
+
+  if (errSchema) {
+    const result = errSchema.safeParse(parsed)
+    if (!result.success) {
+      return {
+        kind: "unexpectedError",
+        subtype: "parse",
+        status,
+        error: result.error,
+        rawBody,
+        response,
+        headers: response.headers,
+      }
+    }
+    return {
+      kind: "error",
+      specStatus,
+      status,
+      error: result.data,
+      response,
+      headers: response.headers,
+    }
+  }
+
+  return {
+    kind: "error",
+    specStatus,
+    status,
+    error: parsed,
+    response,
+    headers: response.headers,
+  }
+}
+
+/** Route-tree proxy (secondary API). */
+function isLeaf(node: unknown): node is {
+  method: string
+  path: string | (() => string) | ((params: Record<string, string>) => string)
+} {
+  if (typeof node !== "object" || node === null) return false
+  const n = node as Record<string, unknown>
+  return (
+    typeof n.method === "string" &&
+    (typeof n.path === "function" || typeof n.path === "string")
+  )
+}
+
+function resolvePath(
+  path: string | (() => string) | ((params: Record<string, string>) => string),
+  params: Record<string, string>
+): string {
+  if (typeof path === "string") return path
+  if (path.length === 0) {
+    return (path as () => string)()
+  }
+  return (path as (p: Record<string, string>) => string)(params)
 }
 
 function createRouteProxy(options: {
   baseUrl: string
-  node: RouteNode | RouteLeaf
+  node: RouteNodeExport | RouteLeafInner
   params: Record<string, string>
   fetchImpl: typeof fetch
 }): unknown {
@@ -123,7 +395,7 @@ function createRouteProxy(options: {
 
       return createRouteProxy({
         baseUrl,
-        node: child as RouteNode,
+        node: child as RouteNodeExport,
         params,
         fetchImpl,
       })
@@ -154,7 +426,7 @@ function createRouteProxy(options: {
 
       return createRouteProxy({
         baseUrl,
-        node: child as RouteNode,
+        node: child as RouteNodeExport,
         params: merged,
         fetchImpl,
       })
@@ -162,9 +434,14 @@ function createRouteProxy(options: {
   })
 }
 
+type RouteLeafInner = {
+  method: string
+  path: string | (() => string) | ((params: Record<string, string>) => string)
+}
+
 function createLeafCaller(options: {
   baseUrl: string
-  leaf: RouteLeaf
+  leaf: RouteLeafInner
   params: Record<string, string>
   fetchImpl: typeof fetch
 }) {
@@ -180,8 +457,17 @@ function createLeafCaller(options: {
       query?: Record<string, unknown>
       headers?: Record<string, string>
     }
-  ): Promise<TreatyResult<unknown>> => {
-    const pathStr = resolvePath(leaf.path, params)
+  ): Promise<TreatyResult> => {
+    let pathStr: string
+    try {
+      pathStr = resolvePath(leaf.path, params)
+    } catch (e) {
+      return {
+        kind: "unexpectedError",
+        subtype: "other",
+        error: e,
+      }
+    }
     let url = joinUrl(baseUrl, pathStr)
 
     const query = isGetOrHead
@@ -218,36 +504,86 @@ function createLeafCaller(options: {
 
     const { method: _, body: __, ...safeInit } = init ?? {}
 
-    const response = await fetchImpl(url, {
-      ...safeInit,
-      method: upper,
-      headers:
-        Object.keys(headers).length > 0 ? new Headers(headers) : undefined,
-      body: isGetOrHead ? undefined : requestBody,
-    })
+    let response: Response
+    try {
+      response = await fetchImpl(url, {
+        ...safeInit,
+        method: upper,
+        headers:
+          Object.keys(headers).length > 0 ? new Headers(headers) : undefined,
+        body: isGetOrHead ? undefined : requestBody,
+      })
+    } catch (e) {
+      const err = e instanceof Error ? e : new Error(String(e))
+      return { kind: "unexpectedError", subtype: "transport", error: err }
+    }
 
-    const resBody = await parseResponseBody(response)
-    const ok = response.ok
+    const rawBody = await readRawBody(response)
+    const contentType = response.headers.get("content-type") ?? ""
+    let parsed: unknown
+    if (contentType.includes("application/json")) {
+      try {
+        parsed = rawBody === "" ? null : JSON.parse(rawBody)
+      } catch (e) {
+        const err = e instanceof Error ? e : new Error(String(e))
+        return {
+          kind: "unexpectedError",
+          subtype: "parse",
+          status: response.status,
+          error: err,
+          rawBody,
+          response,
+          headers: response.headers,
+        }
+      }
+    } else {
+      parsed = rawBody === "" ? null : rawBody
+    }
 
-    if (!ok) {
+    if (!response.ok) {
       return {
-        data: null,
-        error: { status: response.status, body: resBody },
-        response,
+        kind: "error",
+        specStatus: "unlisted",
         status: response.status,
+        error: parsed,
+        response,
         headers: response.headers,
       }
     }
 
     return {
-      data: resBody,
-      error: null,
-      response,
+      kind: "success",
       status: response.status,
+      data: parsed,
+      response,
       headers: response.headers,
     }
   }
 }
+
+function createRouteTreeClient<const R extends TreatyRoutesConstraint>(config: {
+  baseUrl: string
+  routes: R
+  fetch?: typeof fetch
+}): TreatyRouteTreeClient<R> {
+  const fetchImpl = config.fetch ?? globalThis.fetch
+  return createRouteProxy({
+    baseUrl: config.baseUrl,
+    node: config.routes as RouteNodeExport,
+    params: {},
+    fetchImpl,
+  }) as TreatyRouteTreeClient<R>
+}
+
+export function createTreatyClient<
+  const T extends Record<string, AnyOp>,
+  const TMeta extends Record<keyof T & string, TreatyOperationMeta>,
+>(config: {
+  baseUrl: string
+  operations: T
+  operationMetadata: TMeta
+  options?: TreatyClientOptions
+}): TreatyOperationsClient<T, TMeta>
 
 export function createTreatyClient<
   const R extends TreatyRoutesConstraint,
@@ -255,12 +591,69 @@ export function createTreatyClient<
   baseUrl: string
   routes: R
   fetch?: typeof fetch
-}): TreatyClient<R> {
-  const fetchImpl = config.fetch ?? globalThis.fetch
-  return createRouteProxy({
-    baseUrl: config.baseUrl,
-    node: config.routes as RouteNode,
-    params: {},
-    fetchImpl,
-  }) as TreatyClient<R>
+}): TreatyRouteTreeClient<R>
+
+export function createTreatyClient(
+  config:
+    | {
+        baseUrl: string
+        operations: Record<string, AnyOp>
+        operationMetadata: Record<string, TreatyOperationMeta>
+        options?: TreatyClientOptions
+      }
+    | {
+        baseUrl: string
+        routes: TreatyRoutesConstraint
+        fetch?: typeof fetch
+      }
+): any {
+  if ("operations" in config) {
+    return createTreatyOperationClient(
+      config as {
+        baseUrl: string
+        operations: Record<string, AnyOp>
+        operationMetadata: Record<string, TreatyOperationMeta>
+        options?: TreatyClientOptions
+      }
+    )
+  }
+  return createRouteTreeClient(
+    config as {
+      baseUrl: string
+      routes: TreatyRoutesConstraint
+      fetch?: typeof fetch
+    }
+  )
+}
+
+function createTreatyOperationClient<
+  const T extends Record<string, AnyOp>,
+  const TMeta extends Record<keyof T & string, TreatyOperationMeta>,
+>(config: {
+  baseUrl: string
+  operations: T
+  operationMetadata: TMeta
+  options?: TreatyClientOptions
+}): TreatyOperationsClient<T, TMeta> {
+  const fetchImpl = config.options?.fetch ?? globalThis.fetch
+  const out = {} as Record<string, unknown>
+
+  for (const key of Object.keys(config.operations)) {
+    const op = config.operations[key]!
+    const meta = config.operationMetadata[key]
+    if (!meta) {
+      throw new Error(`Missing operationMetadata for "${key}"`)
+    }
+
+    out[key] = (req?: TreatyRequest<Record<string, unknown>, unknown>) =>
+      executeOperation({
+        baseUrl: config.baseUrl,
+        op,
+        meta,
+        req,
+        fetchImpl,
+      })
+  }
+
+  return out as TreatyOperationsClient<T, TMeta>
 }

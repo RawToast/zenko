@@ -152,12 +152,14 @@ export const operationMetadata = {
     path: "/board/{row}/{column}",
     successResponses: {"200":"mark"},
     errorResponses: {"400":"errorMessage"},
+    errorStatusKeys: {"400":"badRequest"},
   },
   putSquare: {
     method: "put",
     path: "/board/{row}/{column}",
     successResponses: {"200":"status"},
     errorResponses: {"400":"errorMessage"},
+    errorStatusKeys: {"400":"badRequest"},
   },
 } as const;
 "
@@ -315,12 +317,14 @@ export const operationMetadata = {
     path: "/board/{row}/{column}",
     successResponses: {"200":"mark"},
     errorResponses: {"400":"errorMessage"},
+    errorStatusKeys: {"400":"badRequest"},
   },
   putSquare: {
     method: "put",
     path: "/board/{row}/{column}",
     successResponses: {"200":"status"},
     errorResponses: {"400":"errorMessage"},
+    errorStatusKeys: {"400":"badRequest"},
   },
 } as const;
 "
