@@ -39,17 +39,8 @@ describe("generateTreatyModuleFromMetadata", () => {
       importPath: "./tictactoe.gen",
     })
 
-    expect(output).toContain("import {")
-    expect(output).toContain("createTreatyClient")
-    expect(output).toContain("export const operations = {")
-    expect(output).toContain("export const operationMetadata =")
-    expect(output).toContain("export const treatyRoutes = {")
-    expect(output).toContain("export function createClient(")
-    expect(output).toContain("getBoard")
-    expect(output).toContain("getSquare")
-    expect(output).toContain("putSquare")
-    expect(output).toContain("board: {")
-    expect(output).toContain("getSquare,")
-    expect(output).toContain("putSquare,")
+    expect(output).toMatchSnapshot(
+      "treaty-generated-tictactoe-module-full-output"
+    )
   })
 })

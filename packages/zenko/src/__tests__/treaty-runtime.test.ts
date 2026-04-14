@@ -1036,7 +1036,7 @@ describe("unwrap", () => {
         response: {} as Response,
         headers: new Headers(),
       } as TreatyResult)
-    ).toThrow("Treaty unwrap failed: error")
+    ).toThrow(/Treaty unwrap failed: kind=error; status=400/)
     expect(() =>
       unwrap({
         kind: "unexpectedError",
@@ -1047,6 +1047,8 @@ describe("unwrap", () => {
         response: {} as Response,
         headers: new Headers(),
       } as never)
-    ).toThrow("Treaty unwrap failed: unexpectedError")
+    ).toThrow(
+      /Treaty unwrap failed: kind=unexpectedError; subtype=parse; status=500/
+    )
   })
 })

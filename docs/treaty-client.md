@@ -1,6 +1,6 @@
 # Treaty client (Eden-style)
 
-Zenko can emit a **Eden Treaty-style HTTP client** on top of the same generated operations as the rest of the library. The client is a thin runtime around your OpenAPI-derived Zod operations: it performs `fetch`, builds URLs from path templates, serializes bodies, and returns a **discriminated result** so you can handle success, HTTP errors, and unexpected failures (network, parse, internal) without exceptions as the default contract.
+Zenko can emit **an Eden Treaty-style HTTP client** on top of the same generated operations as the rest of the library. The client is a thin runtime around your OpenAPI-derived Zod operations: it performs `fetch`, builds URLs from path templates, serializes bodies, and returns a **discriminated result** so you can handle success, HTTP errors, and unexpected failures (network, parse, internal) without exceptions as the default contract.
 
 This document describes the **operation-first** surface (`client.someOperation(...)`), the **result types**, and the optional **route-tree** alias (`$routes`). For the implementation history and roadmap, see the plans under `docs/plans/`.
 

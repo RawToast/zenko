@@ -1,0 +1,56 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`generateTreatyModuleFromMetadata emits treaty module with nested routes for tictactoe: treaty-generated-tictactoe-module-full-output 1`] = `
+"import {
+  createTreatyClient,
+  type TreatyOperationsClient,
+  type TreatyOperationMeta,
+  type TreatyRouteTreeClient,
+} from "zenko/treaty";
+import { getBoard, getSquare, putSquare } from "./tictactoe.gen";
+
+export const operations = {
+  getBoard,
+  getSquare,
+  putSquare,
+} as const;
+
+export const operationMetadata = {"getBoard":{"method":"get","path":"/board","successResponses":{"200":"status"}},"getSquare":{"method":"get","path":"/board/{row}/{column}","successResponses":{"200":"mark"},"errorResponses":{"400":"errorMessage"},"errorStatusKeys":{"400":"badRequest"}},"putSquare":{"method":"put","path":"/board/{row}/{column}","successResponses":{"200":"status"},"errorResponses":{"400":"errorMessage"},"errorStatusKeys":{"400":"badRequest"}}} as const satisfies Record<keyof typeof operations, TreatyOperationMeta>;
+
+export const treatyRoutes = {
+  board: {
+    get: getBoard,
+    ":row": {
+      ":column": {
+        get: getSquare,
+        put: putSquare,
+      },
+    },
+  },
+};
+
+export function createClient(
+  baseUrl: string,
+  init?: { fetch?: typeof fetch }
+): TreatyOperationsClient<typeof operations, typeof operationMetadata> & {
+  /**
+   * Nested path aliases for Eden-style chaining. Lighter runtime than
+   * \`operations\` (no operationMetadata-aware Zod / specStatus handling).
+   */
+  $routes: TreatyRouteTreeClient<typeof treatyRoutes>;
+} {
+  const client = createTreatyClient({
+    baseUrl,
+    operations,
+    operationMetadata,
+    options: { fetch: init?.fetch },
+  })
+  const routes = createTreatyClient({
+    baseUrl,
+    routes: treatyRoutes,
+    fetch: init?.fetch,
+  })
+  return Object.assign(client, { $routes: routes })
+}
+"
+`;

@@ -203,6 +203,8 @@ function setupFetchMock() {
   return fetchMock
 }
 
+// Instantiate `_client` only for compile-time type checks of the generated
+// `createClient` surface; unused at runtime.
 const _client = createClient("http://petstore.swagger.io/v1", {
   fetch: mock<typeof fetch>() as unknown as typeof fetch,
 })

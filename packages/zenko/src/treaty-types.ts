@@ -53,7 +53,52 @@ export type TreatyResult<TData = unknown> =
 /** @alias {@link TreatyResult} */
 export type TreatyAnyResult<TData = unknown> = TreatyResult<TData>
 
+function unwrapErrorDetail(value: unknown): string {
+  if (value === undefined || value === null) return "unknown"
+  if (value instanceof Error) return `${value.name}: ${value.message}`
+  switch (typeof value) {
+    case "string":
+      return value
+    case "number":
+    case "boolean":
+      return String(value)
+    case "bigint":
+      return `${value}n`
+    case "symbol":
+      return value.toString()
+    case "function":
+      return `[function ${value.name || "anonymous"}]`
+    case "object":
+      try {
+        return JSON.stringify(value)
+      } catch {
+        return "[object]"
+      }
+    default:
+      return "unknown"
+  }
+}
+
 export function unwrap<T>(result: TreatyResult<T>): T {
   if (result.kind === "success") return result.data
-  throw new Error(`Treaty unwrap failed: ${result.kind}`)
+
+  if (result.kind === "error") {
+    throw new Error(
+      `Treaty unwrap failed: kind=error; status=${result.status}; specStatus=${String(result.specStatus)}; error=${unwrapErrorDetail(result.error)}`
+    )
+  }
+
+  if (result.subtype === "transport") {
+    throw new Error(
+      `Treaty unwrap failed: kind=unexpectedError; subtype=transport; error=${unwrapErrorDetail(result.error)}`
+    )
+  }
+  if (result.subtype === "parse") {
+    throw new Error(
+      `Treaty unwrap failed: kind=unexpectedError; subtype=parse; status=${result.status}; error=${unwrapErrorDetail(result.error)}`
+    )
+  }
+  throw new Error(
+    `Treaty unwrap failed: kind=unexpectedError; subtype=other; error=${unwrapErrorDetail(result.error)}`
+  )
 }

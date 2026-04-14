@@ -146,21 +146,27 @@ async function generateTreatyModuleForGen(genFileName, treatyFileName, label) {
       process.exit(1)
     }
 
-    const trainTravelTreatySuccess = await generateTreatyModuleForGen(
-      "train-travel.gen.ts",
-      "train-travel.treaty.gen.ts",
-      "train-travel"
-    )
-    const authApiTreatySuccess = await generateTreatyModuleForGen(
-      "auth-api.gen.ts",
-      "auth-api.treaty.gen.ts",
-      "auth-api"
-    )
-    const petstoreTreatySuccess = await generateTreatyModuleForGen(
-      "petstore.gen.ts",
-      "petstore.treaty.gen.ts",
-      "petstore"
-    )
+    const [
+      trainTravelTreatySuccess,
+      authApiTreatySuccess,
+      petstoreTreatySuccess,
+    ] = await Promise.all([
+      generateTreatyModuleForGen(
+        "train-travel.gen.ts",
+        "train-travel.treaty.gen.ts",
+        "train-travel"
+      ),
+      generateTreatyModuleForGen(
+        "auth-api.gen.ts",
+        "auth-api.treaty.gen.ts",
+        "auth-api"
+      ),
+      generateTreatyModuleForGen(
+        "petstore.gen.ts",
+        "petstore.treaty.gen.ts",
+        "petstore"
+      ),
+    ])
     if (
       !trainTravelTreatySuccess ||
       !authApiTreatySuccess ||
