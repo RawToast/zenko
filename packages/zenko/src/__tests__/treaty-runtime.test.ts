@@ -225,3 +225,224 @@ describe("createTreatyClient (operations + metadata)", () => {
     })
   })
 })
+
+describe("createTreatyClient (operations) — branch coverage", () => {
+  const Pet = z.object({ id: z.number(), name: z.string() })
+
+  test("returns unexpectedError other when metadata method is not a supported HTTP verb", async () => {
+    const fetchMock = mock<typeof fetch>()
+    const getThing = {
+      method: "get" as const,
+      path: () => "/thing",
+      response: Pet,
+    } as const
+    const client = createTreatyClient({
+      baseUrl: "https://api.test.com",
+      operations: { getThing },
+      operationMetadata: {
+        getThing: {
+          method: "not-a-real-method",
+          path: "/thing",
+          successResponses: { "200": "Pet" },
+        },
+      },
+      options: { fetch: fetchMock as unknown as typeof fetch },
+    })
+    const result = await client.getThing()
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(result).toMatchObject({
+      kind: "unexpectedError",
+      subtype: "other",
+    })
+    if (result.kind === "unexpectedError" && result.subtype === "other") {
+      expect(String(result.error)).toContain("Unsupported method")
+    }
+  })
+
+  test("serializes POST bodies: FormData, Blob with type, and JSON object", async () => {
+    const fetchMock = mock<typeof fetch>()
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ id: 1, name: "a" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    )
+    const createThing = {
+      method: "post" as const,
+      path: () => "/things",
+      response: Pet,
+    } as const
+    const client = createTreatyClient({
+      baseUrl: "https://api.test.com",
+      operations: { createThing },
+      operationMetadata: {
+        createThing: {
+          method: "post",
+          path: "/things",
+          successResponses: { "200": "Pet" },
+        },
+      },
+      options: { fetch: fetchMock as unknown as typeof fetch },
+    })
+
+    const fd = new FormData()
+    fd.append("a", "b")
+    await client.createThing({ body: fd })
+    const formCall = fetchMock.mock.calls[0]
+    expect(formCall?.[1]?.body).toBe(fd)
+
+    const blob = new Blob(["{}"], { type: "application/json" })
+    await client.createThing({ body: blob })
+    const blobCall = fetchMock.mock.calls[1]
+    expect(blobCall?.[1]?.body).toBe(blob)
+    const blobHeaders = blobCall?.[1]?.headers as Headers
+    expect(blobHeaders?.get("content-type")).toMatch(/^application\/json/)
+
+    await client.createThing({ body: { id: 2, name: "obj" } })
+    const jsonCall = fetchMock.mock.calls[2]
+    expect(jsonCall?.[1]?.body).toBe(JSON.stringify({ id: 2, name: "obj" }))
+    const jsonHeaders = jsonCall?.[1]?.headers as Headers
+    expect(jsonHeaders?.get("content-type")).toBe("application/json")
+  })
+
+  test("returns success with undefined data when the operation has no response schema", async () => {
+    const fetchMock = mock<typeof fetch>()
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ extra: 1 }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    )
+    const noop = {
+      method: "get" as const,
+      path: () => "/noop",
+    } as const
+    const client = createTreatyClient({
+      baseUrl: "https://api.test.com",
+      operations: { noop },
+      operationMetadata: {
+        noop: { method: "get", path: "/noop" },
+      },
+      options: { fetch: fetchMock as unknown as typeof fetch },
+    })
+    const result = await client.noop()
+    expect(result).toMatchObject({ kind: "success", status: 200 })
+    if (result.kind === "success") {
+      expect(result.data).toBeUndefined()
+    }
+  })
+
+  test("returns kind=error with specStatus unlisted and raw parsed body when no error schema applies", async () => {
+    const fetchMock = mock<typeof fetch>()
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ reason: "nope" }), {
+        status: 503,
+        headers: { "Content-Type": "application/json" },
+      })
+    )
+    const fragile = {
+      method: "get" as const,
+      path: () => "/fragile",
+    } as const
+    const client = createTreatyClient({
+      baseUrl: "https://api.test.com",
+      operations: { fragile },
+      operationMetadata: {
+        fragile: { method: "get", path: "/fragile" },
+      },
+      options: { fetch: fetchMock as unknown as typeof fetch },
+    })
+    const result = await client.fragile()
+    expect(result).toMatchObject({
+      kind: "error",
+      specStatus: "unlisted",
+      status: 503,
+    })
+    if (result.kind === "error") {
+      expect(result.error).toEqual({ reason: "nope" })
+    }
+  })
+
+  test("returns unexpectedError parse when an error response body is JSON content-type but invalid JSON", async () => {
+    const fetchMock = mock<typeof fetch>()
+    fetchMock.mockResolvedValue(
+      new Response("not-json{", {
+        status: 502,
+        headers: { "Content-Type": "application/json" },
+      })
+    )
+    const fragile = {
+      method: "get" as const,
+      path: () => "/fragile",
+    } as const
+    const client = createTreatyClient({
+      baseUrl: "https://api.test.com",
+      operations: { fragile },
+      operationMetadata: {
+        fragile: { method: "get", path: "/fragile" },
+      },
+      options: { fetch: fetchMock as unknown as typeof fetch },
+    })
+    const result = await client.fragile()
+    expect(result).toMatchObject({
+      kind: "unexpectedError",
+      subtype: "parse",
+      status: 502,
+    })
+  })
+})
+
+describe("createTreatyClient (route tree) — error & parse branches", () => {
+  const routes = {
+    api: {
+      get: {
+        method: "get",
+        path: () => "/api/x",
+      },
+    },
+  } as const
+
+  test("returns kind=error with specStatus unlisted when the response is not ok", async () => {
+    const fetchMock = mock<typeof fetch>()
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ msg: "bad" }), {
+        status: 422,
+        headers: { "Content-Type": "application/json" },
+      })
+    )
+    const client = createTreatyClient({
+      baseUrl: "https://api.test.com",
+      routes,
+      fetch: fetchMock as unknown as typeof fetch,
+    })
+    const result = await client.api.get()
+    expect(result).toMatchObject({
+      kind: "error",
+      specStatus: "unlisted",
+      status: 422,
+    })
+    if (result.kind === "error") {
+      expect(result.error).toEqual({ msg: "bad" })
+    }
+  })
+
+  test("returns unexpectedError parse when JSON body is invalid on the route-tree client", async () => {
+    const fetchMock = mock<typeof fetch>()
+    fetchMock.mockResolvedValue(
+      new Response("oops{", {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    )
+    const client = createTreatyClient({
+      baseUrl: "https://api.test.com",
+      routes,
+      fetch: fetchMock as unknown as typeof fetch,
+    })
+    const result = await client.api.get()
+    expect(result).toMatchObject({
+      kind: "unexpectedError",
+      subtype: "parse",
+    })
+  })
+})
