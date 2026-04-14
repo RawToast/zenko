@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it, mock } from "bun:test"
+import { TreatyErrorResult } from "zenko"
+import { TreatySuccess } from "zenko/treaty"
 import { createClient } from "~/schema/auth-api.treaty.gen"
 
 describe("Auth API treaty client (fetch)", () => {
@@ -43,10 +45,9 @@ describe("Auth API treaty client (fetch)", () => {
       })
     )
     expect(result.kind).toBe("success")
-    if (result.kind === "success") {
-      expect(result.data).toEqual(mockPayload)
-      expect(result.status).toBe(200)
-    }
+    const success = result as TreatySuccess<number, typeof mockPayload>
+    expect(success.data).toEqual(mockPayload)
+    expect(success.status).toBe(200)
   })
 
   it("sends FormData for multipart feedback without forcing JSON content-type", async () => {
@@ -83,10 +84,9 @@ describe("Auth API treaty client (fetch)", () => {
     const init = call?.[1] as RequestInit & { headers?: Headers }
     expect(init.headers).toBeUndefined()
     expect(result.kind).toBe("success")
-    if (result.kind === "success") {
-      expect(result.data).toEqual(mockPayload)
-      expect(result.status).toBe(201)
-    }
+    const success = result as TreatySuccess<number, typeof mockPayload>
+    expect(success.data).toEqual(mockPayload)
+    expect(success.status).toBe(201)
   })
 
   it("patches profile and returns updated user", async () => {
@@ -117,12 +117,12 @@ describe("Auth API treaty client (fetch)", () => {
       })
     )
     expect(result.kind).toBe("success")
-    if (result.kind === "success") {
-      expect(result.data).toEqual(mockPayload)
-    }
+    const success = result as TreatySuccess<number, typeof mockPayload>
+    expect(success.data).toEqual(mockPayload)
+    expect(success.status).toBe(200)
   })
 
-  it("returns http branch for non-OK login", async () => {
+  it("returns error branch for non-OK login", async () => {
     const fetchMock = setupFetchMock()
     const errorBody = { code: 401, message: "Invalid credentials" }
 
@@ -143,11 +143,10 @@ describe("Auth API treaty client (fetch)", () => {
       },
     })
 
-    expect(result.kind).toBe("http")
-    if (result.kind === "http") {
-      expect(result.error).toEqual(errorBody)
-      expect(result.status).toBe(401)
-    }
+    expect(result.kind).toBe("error")
+    const error = result as TreatyErrorResult<number, typeof errorBody>
+    expect(error.error).toEqual(errorBody)
+    expect(error.status).toBe(401)
   })
 })
 

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, mock } from "bun:test"
-import { TreatyHttpError, TreatySuccess } from "zenko/treaty"
+import { TreatyErrorResult, TreatySuccess } from "zenko/treaty"
 import { createClient } from "~/schema/train-travel.treaty.gen"
 
 describe("TrainTravel treaty client (fetch)", () => {
@@ -67,8 +67,13 @@ describe("TrainTravel treaty client (fetch)", () => {
       query: { limit: 10, page: 2, country: "DE" },
     })
 
+    const callUrl = fetchMock.mock.calls[0]?.[0] as string
+    expect(callUrl.startsWith(`${origin}/stations?`)).toBe(true)
+    expect(callUrl).toContain("limit=10")
+    expect(callUrl).toContain("page=2")
+    expect(callUrl).toContain("country=DE")
     expect(fetchMock).toHaveBeenCalledWith(
-      `${origin}/stations?limit=10&page=2&country=DE`,
+      callUrl,
       expect.objectContaining({ method: "GET" })
     )
 
@@ -94,14 +99,11 @@ describe("TrainTravel treaty client (fetch)", () => {
     })
     const result = await client.getStations()
 
-    expect(result.kind).toBe("http")
+    expect(result.kind).toBe("error")
 
-    const http = result as TreatyHttpError<number, typeof errorBody>
+    const http = result as TreatyErrorResult<number, typeof errorBody>
 
-    // expect(http.error).toEqual({ status: 429, body: errorBody })
-    expect(http.error).toBeDefined()
-    expect(http.error).toBeInstanceOf(Error)
-    expect(http.error.message).toBe("Too many requests")
+    expect(http.error).toEqual(errorBody)
     expect(http.status).toBe(429)
   })
 })

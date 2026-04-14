@@ -74,6 +74,36 @@ describe("createTreatyClient (route tree)", () => {
       })
     )
   })
+
+  test("returns unexpectedError other when route path resolution throws", async () => {
+    const fetchMock = mock<typeof fetch>()
+
+    const client = createTreatyClient({
+      baseUrl: "https://api.test.com",
+      routes: {
+        broken: {
+          get: {
+            method: "get",
+            path: () => {
+              throw new Error("path boom")
+            },
+          },
+        },
+      },
+      fetch: fetchMock as unknown as typeof fetch,
+    })
+
+    const result = await client.broken.get()
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(result).toMatchObject({
+      kind: "unexpectedError",
+      subtype: "other",
+    })
+    if (result.kind === "unexpectedError" && result.subtype === "other") {
+      expect(result.error).toBeInstanceOf(Error)
+    }
+  })
 })
 
 describe("createTreatyClient (operations + metadata)", () => {
@@ -118,7 +148,7 @@ describe("createTreatyClient (operations + metadata)", () => {
     }
   })
 
-  test("returns kind=http with specStatus for known error responses", async () => {
+  test("returns kind=error with specStatus for known error responses", async () => {
     const fetchMock = mock<typeof fetch>()
     fetchMock.mockResolvedValue(
       new Response(JSON.stringify({ message: "missing" }), {
@@ -133,10 +163,32 @@ describe("createTreatyClient (operations + metadata)", () => {
       options: { fetch: fetchMock as unknown as typeof fetch },
     })
     const result = await client.showPetById({ params: { petId: "missing" } })
-    expect(result).toMatchObject({ kind: "http", specStatus: 404 })
+    expect(result).toMatchObject({ kind: "error", specStatus: 404 })
   })
 
-  test("returns kind=transport when fetch rejects", async () => {
+  test("returns unexpectedError parse when an error body fails the mapped schema", async () => {
+    const fetchMock = mock<typeof fetch>()
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ nope: true }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      })
+    )
+    const client = createTreatyClient({
+      baseUrl: "https://api.test.com",
+      operations: { showPetById },
+      operationMetadata,
+      options: { fetch: fetchMock as unknown as typeof fetch },
+    })
+    const result = await client.showPetById({ params: { petId: "missing" } })
+    expect(result).toMatchObject({
+      kind: "unexpectedError",
+      subtype: "parse",
+      status: 404,
+    })
+  })
+
+  test("returns unexpectedError transport when fetch rejects", async () => {
     const fetchMock = mock<typeof fetch>()
     fetchMock.mockRejectedValue(new TypeError("network down"))
     const client = createTreatyClient({
@@ -146,10 +198,13 @@ describe("createTreatyClient (operations + metadata)", () => {
       options: { fetch: fetchMock as unknown as typeof fetch },
     })
     const result = await client.showPetById({ params: { petId: "42" } })
-    expect(result.kind).toBe("transport")
+    expect(result).toMatchObject({
+      kind: "unexpectedError",
+      subtype: "transport",
+    })
   })
 
-  test("returns kind=parse when a typed JSON body cannot be parsed", async () => {
+  test("returns unexpectedError parse when a typed JSON body cannot be parsed", async () => {
     const fetchMock = mock<typeof fetch>()
     fetchMock.mockResolvedValue(
       new Response("not json", {
@@ -164,6 +219,9 @@ describe("createTreatyClient (operations + metadata)", () => {
       options: { fetch: fetchMock as unknown as typeof fetch },
     })
     const result = await client.showPetById({ params: { petId: "42" } })
-    expect(result.kind).toBe("parse")
+    expect(result).toMatchObject({
+      kind: "unexpectedError",
+      subtype: "parse",
+    })
   })
 })

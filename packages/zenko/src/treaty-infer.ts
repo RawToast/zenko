@@ -8,7 +8,7 @@ import type {
 } from "./types"
 import type { AnyHeaderFn } from "./types"
 import type {
-  TreatyHttpError,
+  TreatyErrorResult,
   TreatyResult,
   TreatySuccess,
 } from "./treaty-types"
@@ -107,9 +107,12 @@ type HttpBranches<
                 ? Spec extends string | number
                   ? C extends keyof KS
                     ? KS[C] extends keyof ErrorsRecord<Op>
-                      ? TreatyHttpError<Spec, InferZod<ErrorsRecord<Op>[KS[C]]>>
-                      : TreatyHttpError<Spec, unknown>
-                    : TreatyHttpError<Spec, unknown>
+                      ? TreatyErrorResult<
+                          Spec,
+                          InferZod<ErrorsRecord<Op>[KS[C]]>
+                        >
+                      : TreatyErrorResult<Spec, unknown>
+                    : TreatyErrorResult<Spec, unknown>
                   : never
                 : never
               : never
@@ -118,7 +121,7 @@ type HttpBranches<
             [C in keyof ER]: C extends string | number
               ? ResponseKeyToSpec<C> extends infer Spec
                 ? Spec extends string | number
-                  ? TreatyHttpError<Spec, unknown>
+                  ? TreatyErrorResult<Spec, unknown>
                   : never
                 : never
               : never
@@ -127,7 +130,7 @@ type HttpBranches<
           [C in keyof ER]: C extends string | number
             ? ResponseKeyToSpec<C> extends infer Spec
               ? Spec extends string | number
-                ? TreatyHttpError<Spec, unknown>
+                ? TreatyErrorResult<Spec, unknown>
                 : never
               : never
             : never
@@ -142,23 +145,24 @@ export type TreatyResultFor<
   | SuccessBranches<Op, Meta>
   | HttpBranches<Op, Meta>
   | {
-      kind: "http"
+      kind: "error"
       specStatus: "unlisted"
       status: number
       error: unknown
       response: Response
       headers: Headers
     }
-  | { kind: "transport"; error: Error }
+  | { kind: "unexpectedError"; subtype: "transport"; error: Error }
   | {
-      kind: "parse"
+      kind: "unexpectedError"
+      subtype: "parse"
       status: number
       error: Error
       rawBody: string
       response: Response
       headers: Headers
     }
-  | { kind: "unknown"; error: unknown }
+  | { kind: "unexpectedError"; subtype: "other"; error: unknown }
 
 type PathArg<Op extends AnyOperationDefinition> =
   Parameters<Op["path"]> extends []

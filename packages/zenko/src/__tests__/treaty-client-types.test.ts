@@ -174,7 +174,7 @@ describe("TreatyClient type inference", () => {
     await p
   })
 
-  test("operation result narrows on success and http error kinds (petstore-shaped)", () => {
+  test("operation result narrows success and unexpected branches (petstore-shaped)", () => {
     const Pet = z.object({
       id: z.number(),
       name: z.string(),
@@ -235,5 +235,17 @@ describe("TreatyClient type inference", () => {
     type ExpectedSuccess = Extract<Result, { kind: "success" }>
     expectTypeOf<ExpectedSuccess["status"]>().toEqualTypeOf<200>()
     expectTypeOf<ExpectedSuccess["data"]>().toEqualTypeOf<z.infer<typeof Pet>>()
+
+    type ExpectedTransportError = Extract<
+      Result,
+      { kind: "unexpectedError"; subtype: "transport" }
+    >
+    expectTypeOf<ExpectedTransportError["error"]>().toEqualTypeOf<Error>()
+
+    type ExpectedParseError = Extract<
+      Result,
+      { kind: "unexpectedError"; subtype: "parse" }
+    >
+    expectTypeOf<ExpectedParseError["rawBody"]>().toEqualTypeOf<string>()
   })
 })

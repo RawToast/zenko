@@ -118,7 +118,7 @@ describe("Petstore treaty client (fetch)", () => {
     }
   })
 
-  it("returns http branch for non-OK responses with typed error body", async () => {
+  it("returns error branch for non-OK responses with typed error body", async () => {
     const fetchMock = setupFetchMock()
     const errorBody = { code: 404, message: "Not found" }
 
@@ -134,8 +134,8 @@ describe("Petstore treaty client (fetch)", () => {
     })
     const result = await client.showPetById({ params: { petId: "missing" } })
 
-    expect(result.kind).toBe("http")
-    if (result.kind === "http") {
+    expect(result.kind).toBe("error")
+    if (result.kind === "error") {
       expect(result.specStatus).toBe("default")
       expect(result.error).toEqual(errorBody)
       expect(result.status).toBe(404)

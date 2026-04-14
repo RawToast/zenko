@@ -13,12 +13,11 @@ import { type RouteNode as RouteNodeExport, unwrap } from "./treaty-types"
 
 export type {
   RouteNode,
-  TreatyHttpError,
-  TreatyParseError,
+  TreatyErrorResult,
   TreatyResult,
   TreatySuccess,
-  TreatyTransportError,
-  TreatyUnknownError,
+  TreatyUnexpectedError,
+  TreatyUnexpectedSubtype,
 } from "./treaty-types"
 export { unwrap }
 export const orThrow = unwrap
@@ -134,7 +133,11 @@ async function executeOperation(options: {
 
   const method = meta.method.toLowerCase()
   if (!HTTP_METHODS.has(method)) {
-    return { kind: "unknown", error: new Error(`Unsupported method ${method}`) }
+    return {
+      kind: "unexpectedError",
+      subtype: "other",
+      error: new Error(`Unsupported method ${method}`),
+    }
   }
 
   const upper = method.toUpperCase()
@@ -148,7 +151,8 @@ async function executeOperation(options: {
     pathStr = (pathFn as (input?: Record<string, unknown>) => string)(merged)
   } catch (e) {
     return {
-      kind: "unknown",
+      kind: "unexpectedError",
+      subtype: "other",
       error: e,
     }
   }
@@ -199,7 +203,7 @@ async function executeOperation(options: {
     })
   } catch (e) {
     const err = e instanceof Error ? e : new Error(String(e))
-    return { kind: "transport", error: err }
+    return { kind: "unexpectedError", subtype: "transport", error: err }
   }
 
   const status = response.status
@@ -237,7 +241,8 @@ function parseSuccessResponse(
     } catch (e) {
       const err = e instanceof Error ? e : new Error(String(e))
       return {
-        kind: "parse",
+        kind: "unexpectedError",
+        subtype: "parse",
         status,
         error: err,
         rawBody,
@@ -252,7 +257,8 @@ function parseSuccessResponse(
   const result = schema.safeParse(parsed)
   if (!result.success) {
     return {
-      kind: "parse",
+      kind: "unexpectedError",
+      subtype: "parse",
       status,
       error: result.error,
       rawBody,
@@ -291,7 +297,8 @@ function parseHttpError(
     } catch (e) {
       const err = e instanceof Error ? e : new Error(String(e))
       return {
-        kind: "parse",
+        kind: "unexpectedError",
+        subtype: "parse",
         status,
         error: err,
         rawBody,
@@ -307,7 +314,8 @@ function parseHttpError(
     const result = errSchema.safeParse(parsed)
     if (!result.success) {
       return {
-        kind: "parse",
+        kind: "unexpectedError",
+        subtype: "parse",
         status,
         error: result.error,
         rawBody,
@@ -316,7 +324,7 @@ function parseHttpError(
       }
     }
     return {
-      kind: "http",
+      kind: "error",
       specStatus,
       status,
       error: result.data,
@@ -326,7 +334,7 @@ function parseHttpError(
   }
 
   return {
-    kind: "http",
+    kind: "error",
     specStatus,
     status,
     error: parsed,
@@ -450,7 +458,16 @@ function createLeafCaller(options: {
       headers?: Record<string, string>
     }
   ): Promise<TreatyResult> => {
-    const pathStr = resolvePath(leaf.path, params)
+    let pathStr: string
+    try {
+      pathStr = resolvePath(leaf.path, params)
+    } catch (e) {
+      return {
+        kind: "unexpectedError",
+        subtype: "other",
+        error: e,
+      }
+    }
     let url = joinUrl(baseUrl, pathStr)
 
     const query = isGetOrHead
@@ -498,7 +515,7 @@ function createLeafCaller(options: {
       })
     } catch (e) {
       const err = e instanceof Error ? e : new Error(String(e))
-      return { kind: "transport", error: err }
+      return { kind: "unexpectedError", subtype: "transport", error: err }
     }
 
     const rawBody = await readRawBody(response)
@@ -510,7 +527,8 @@ function createLeafCaller(options: {
       } catch (e) {
         const err = e instanceof Error ? e : new Error(String(e))
         return {
-          kind: "parse",
+          kind: "unexpectedError",
+          subtype: "parse",
           status: response.status,
           error: err,
           rawBody,
@@ -524,7 +542,7 @@ function createLeafCaller(options: {
 
     if (!response.ok) {
       return {
-        kind: "http",
+        kind: "error",
         specStatus: "unlisted",
         status: response.status,
         error: parsed,

@@ -22,6 +22,7 @@ export {
   type LeafCall,
   type RouteNode,
   type TreatyClient,
+  type TreatyErrorResult,
   type TreatyOperationMeta,
   type TreatyOperationsClient,
   type TreatyRequest,
@@ -29,4 +30,6 @@ export {
   type TreatyResultFor,
   type TreatyRouteTreeClient,
   type TreatyRoutesConstraint,
+  type TreatyUnexpectedError,
+  type TreatyUnexpectedSubtype,
 } from "./src/treaty"

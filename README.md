@@ -96,6 +96,7 @@ if (validation.success) {
 - **[Open Enums](packages/zenko/README.md#open-enums)** - Handle unknown enum values gracefully
 - **[Generated Output](packages/zenko/README.md#generated-output)** - Understanding the generated code
 - **[Building a Generic Client](packages/zenko/README.md#building-a-generic-client)** - Creating reusable HTTP clients
+- **[Treaty client](docs/treaty-client.md)** - Eden-style `createTreatyClient` wrapper and `TreatyResult` (`success` \| `error` \| `unexpectedError`)
 - **[Examples](packages/examples/README.md)** - Example clients using fetch, undici, and ts-effect
 
 ## Requirements

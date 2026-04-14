@@ -9,8 +9,9 @@ export type TreatySuccess<TStatus extends number, TData> = {
   headers: Headers
 }
 
-export type TreatyHttpError<TSpecStatus extends string | number, TError> = {
-  kind: "http"
+/** Non-OK HTTP response (OpenAPI-mapped or raw error body). */
+export type TreatyErrorResult<TSpecStatus extends string | number, TError> = {
+  kind: "error"
   specStatus: TSpecStatus
   status: number
   error: TError
@@ -18,33 +19,36 @@ export type TreatyHttpError<TSpecStatus extends string | number, TError> = {
   headers: Headers
 }
 
-export type TreatyTransportError = {
-  kind: "transport"
-  error: Error
-}
+export type TreatyUnexpectedSubtype = "transport" | "parse" | "other"
 
-export type TreatyParseError = {
-  kind: "parse"
-  status: number
-  /** JSON `SyntaxError`, `ZodError`, or other failure while decoding the body. */
-  error: Error
-  rawBody: string
-  response: Response
-  headers: Headers
-}
-
-export type TreatyUnknownError = {
-  kind: "unknown"
-  error: unknown
-}
+/** Network failure, body validation/decoding failure, or other unexpected outcomes. */
+export type TreatyUnexpectedError =
+  | {
+      kind: "unexpectedError"
+      subtype: "transport"
+      error: Error
+    }
+  | {
+      kind: "unexpectedError"
+      subtype: "parse"
+      status: number
+      /** JSON `SyntaxError`, `ZodError`, or other failure while decoding the body. */
+      error: Error
+      rawBody: string
+      response: Response
+      headers: Headers
+    }
+  | {
+      kind: "unexpectedError"
+      subtype: "other"
+      error: unknown
+    }
 
 /** Discriminated union returned by treaty clients (`kind` narrows outcomes). */
 export type TreatyResult<TData = unknown> =
   | TreatySuccess<number, TData>
-  | TreatyHttpError<string | number, unknown>
-  | TreatyTransportError
-  | TreatyParseError
-  | TreatyUnknownError
+  | TreatyErrorResult<string | number, unknown>
+  | TreatyUnexpectedError
 
 /** @alias {@link TreatyResult} */
 export type TreatyAnyResult<TData = unknown> = TreatyResult<TData>
