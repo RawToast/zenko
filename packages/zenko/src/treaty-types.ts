@@ -84,9 +84,8 @@ export function unwrap<T>(result: TreatyResult<T>): T {
 
   if (result.kind === "error") {
     throw new Error(
-      `Treaty unwrap failed: kind=error; status=${result.status}; specStatus=${String(result.specStatus)}`
+      `Treaty unwrap failed: kind=error; status=${result.status}; specStatus=${String(result.specStatus)}; error=${unwrapErrorDetail(result.error)}`
     )
-  }
   }
 
   if (result.subtype === "transport") {
