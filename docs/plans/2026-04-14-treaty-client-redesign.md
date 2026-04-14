@@ -21,6 +21,7 @@
 ### Task 1: Preserve Status-Keyed Success and Error Metadata End-to-End
 
 **Files:**
+
 - Modify: `packages/zenko/src/types/operation.ts`
 - Modify: `packages/zenko/src/core/operation-parser.ts`
 - Modify: `packages/zenko/src/zenko.ts`
@@ -34,7 +35,9 @@ Add parser and generator assertions that prove numeric success/error status maps
 ```ts
 test("preserves status-keyed response metadata", () => {
   const operations = parseOperations(spec, new Map())
-  const operation = operations.find((item) => item.operationId === "showPetById")
+  const operation = operations.find(
+    (item) => item.operationId === "showPetById"
+  )
 
   expect(operation).toMatchObject({
     operationId: "showPetById",
@@ -47,9 +50,11 @@ test("emits operation metadata with response status maps", () => {
   const output = generate(specYaml)
 
   expect(output).toContain("export const operationMetadata = {")
-  expect(output).toContain('showPetById: {')
+  expect(output).toContain("showPetById: {")
   expect(output).toContain('successResponses: { "200": "Pet" }')
-  expect(output).toContain('errorResponses: { "404": "Error", "default": "Error" }')
+  expect(output).toContain(
+    'errorResponses: { "404": "Error", "default": "Error" }'
+  )
 })
 ```
 
@@ -102,6 +107,7 @@ git commit -m "feat: preserve response status metadata for treaty clients"
 ### Task 2: Define the Canonical Treaty Result Union and Type Inference
 
 **Files:**
+
 - Modify: `packages/zenko/src/treaty-types.ts`
 - Modify: `packages/zenko/src/treaty-infer.ts`
 - Modify: `packages/zenko/src/types.ts`
@@ -202,6 +208,7 @@ git commit -m "feat: add discriminated treaty result types"
 ### Task 3: Generate an OperationId-First Request-Object Client Surface
 
 **Files:**
+
 - Modify: `packages/zenko/src/treaty-generator.ts`
 - Modify: `packages/zenko/src/utils/treaty-tree.ts`
 - Modify: `packages/zenko/src/treaty-infer.ts`
@@ -299,6 +306,7 @@ git commit -m "feat: generate operation-first treaty clients"
 ### Task 4: Implement the Runtime for Typed HTTP, Transport, Parse, and Unknown Outcomes
 
 **Files:**
+
 - Modify: `packages/zenko/src/treaty.ts`
 - Modify: `packages/zenko/src/treaty-types.ts`
 - Modify: `packages/zenko/src/__tests__/treaty-runtime.test.ts`
@@ -379,6 +387,7 @@ git commit -m "feat: categorize treaty runtime results"
 ### Task 5: Regenerate Examples and Verify the Whole Flow
 
 **Files:**
+
 - Modify: `packages/examples/src/schema/*.treaty.gen.ts` (generated)
 - Modify: snapshots or example test fixtures if needed
 

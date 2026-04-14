@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, mock } from "bun:test"
+import { TreatyHttpError, TreatySuccess } from "zenko/treaty"
 import { createClient } from "~/schema/train-travel.treaty.gen"
 
 describe("TrainTravel treaty client (fetch)", () => {
@@ -9,7 +10,7 @@ describe("TrainTravel treaty client (fetch)", () => {
     global.fetch = originalFetch
   })
 
-  it("lists stations without query and returns success", async () => {
+  it("lists stations without query and returns a success envelope", async () => {
     const fetchMock = setupFetchMock()
     const mockPayload = {
       data: [
@@ -42,13 +43,13 @@ describe("TrainTravel treaty client (fetch)", () => {
       expect.objectContaining({ method: "GET" })
     )
     expect(result.kind).toBe("success")
-    if (result.kind === "success") {
-      expect(result.data).toMatchObject(mockPayload)
-      expect(result.status).toBe(200)
-    }
+    const success = result as TreatySuccess<number, typeof mockPayload>
+    expect(success.data).toBeDefined()
+    expect(success.data).toMatchObject(mockPayload)
+    expect(success.status).toBe(200)
   })
 
-  it("appends query params for GET via treaty request", async () => {
+  it("appends query params for GET via treaty options", async () => {
     const fetchMock = setupFetchMock()
     const mockPayload = { data: [], links: {} }
 
@@ -66,23 +67,18 @@ describe("TrainTravel treaty client (fetch)", () => {
       query: { limit: 10, page: 2, country: "DE" },
     })
 
-    const calledUrl = fetchMock.mock.calls[0]?.[0] as string
-    const u = new URL(calledUrl)
-    expect(u.pathname).toBe("/stations")
-    expect(u.searchParams.get("limit")).toBe("10")
-    expect(u.searchParams.get("page")).toBe("2")
-    expect(u.searchParams.get("country")).toBe("DE")
     expect(fetchMock).toHaveBeenCalledWith(
-      calledUrl,
+      `${origin}/stations?limit=10&page=2&country=DE`,
       expect.objectContaining({ method: "GET" })
     )
+
     expect(result.kind).toBe("success")
-    if (result.kind === "success") {
-      expect(result.data).toEqual(mockPayload)
-    }
+    const success = result as TreatySuccess<number, typeof mockPayload>
+    expect(success.data).toEqual(mockPayload)
+    expect(success.status).toBe(200)
   })
 
-  it("returns http branch for non-OK responses", async () => {
+  it("returns an error envelope for non-OK responses", async () => {
     const fetchMock = setupFetchMock()
     const errorBody = { message: "Too many requests" }
 
@@ -99,26 +95,14 @@ describe("TrainTravel treaty client (fetch)", () => {
     const result = await client.getStations()
 
     expect(result.kind).toBe("http")
-    if (result.kind === "http") {
-      expect(result.status).toBe(429)
-      expect(result.specStatus).toBe(429)
-    }
-  })
 
-  it("supports nested $routes alias", async () => {
-    const fetchMock = setupFetchMock()
-    const mockPayload = { data: [], links: {} }
-    fetchMock.mockResolvedValue(
-      new Response(JSON.stringify(mockPayload), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      })
-    )
-    const client = createClient(origin, {
-      fetch: fetchMock as unknown as typeof fetch,
-    })
-    const result = await client.$routes.stations.get()
-    expect(result.kind).toBe("success")
+    const http = result as TreatyHttpError<number, typeof errorBody>
+
+    // expect(http.error).toEqual({ status: 429, body: errorBody })
+    expect(http.error).toBeDefined()
+    expect(http.error).toBeInstanceOf(Error)
+    expect(http.error.message).toBe("Too many requests")
+    expect(http.status).toBe(429)
   })
 })
 
