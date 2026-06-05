@@ -23,7 +23,7 @@
     "oxfmt": "0.42.0",
     "oxlint": "1.57.0",
     "oxlint-tsgolint": "0.17.1",
-    "turbo": "2.8.20"
+    "turbo": "2.9.16"
   },
   "engines": {
     "bun": ">=1.2.22"
