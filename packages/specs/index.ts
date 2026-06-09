@@ -20,6 +20,9 @@ export const inlineResponseArrayYamlPath = resourcePath(
   "inline-response-array.yaml"
 )
 export const mixedHeadersYamlPath = resourcePath("mixed-headers.yaml")
+export const nullableAllOfErrorsYamlPath = resourcePath(
+  "nullable-allof-errors.yaml"
+)
 export const noResponseContentYamlPath = resourcePath(
   "no-response-content.yaml"
 )
