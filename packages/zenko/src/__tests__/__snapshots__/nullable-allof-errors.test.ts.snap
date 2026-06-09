@@ -17,19 +17,19 @@ export const BaseEndpointError = z.object({
 export type BaseEndpointError = z.infer<typeof BaseEndpointError>;
 
 export const ListRecordsError = BaseEndpointError.merge(z.object({
-  code: z.enum(["record.invalid", "internal_error"]).optional(),
+  code: z.enum(["record.invalid", "internal_error"]),
 }));
 
 export type ListRecordsError = z.infer<typeof ListRecordsError>;
 
 export const GetRecordError = BaseEndpointError.merge(z.object({
-  code: z.enum(["record.invalid", "record.not_found", "internal_error"]).optional(),
+  code: z.enum(["record.invalid", "record.not_found", "internal_error"]),
 }));
 
 export type GetRecordError = z.infer<typeof GetRecordError>;
 
 export const UpdateRecordError = BaseEndpointError.merge(z.object({
-  code: z.enum(["record.invalid", "record.invalid_transition", "record.not_found", "internal_error"]).optional(),
+  code: z.enum(["record.invalid", "record.invalid_transition", "record.not_found", "internal_error"]),
 }));
 
 export type UpdateRecordError = z.infer<typeof UpdateRecordError>;
@@ -41,9 +41,9 @@ export type RecordStatus = z.infer<typeof RecordStatus>;
 export const Record = z.object({
   id: z.string(),
   status: RecordStatus,
-  notes: z.unknown(),
-  completed_at: z.unknown(),
-  archived_at: z.unknown(),
+  notes: z.union([z.string(), z.null()]),
+  completed_at: z.union([z.string(), z.null()]),
+  archived_at: z.union([z.string(), z.null()]),
 });
 
 export type Record = z.infer<typeof Record>;

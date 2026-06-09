@@ -580,6 +580,36 @@ describe("getZodTypeFromSchema", () => {
     const result = getZodTypeFromSchema(schema, defaultOptions)
     expect(result).toContain("z.object")
   })
+
+  test("should handle OpenAPI 3.1 nullable string array type", () => {
+    expect(
+      getZodTypeFromSchema({ type: ["string", "null"] }, defaultOptions)
+    ).toBe("z.union([z.string(), z.null()])")
+  })
+
+  test("should handle OpenAPI 3.1 nullable integer array type", () => {
+    expect(
+      getZodTypeFromSchema({ type: ["integer", "null"] }, defaultOptions)
+    ).toBe("z.union([z.number().int(), z.null()])")
+  })
+
+  test("should handle OpenAPI 3.1 nullable number array type", () => {
+    expect(
+      getZodTypeFromSchema({ type: ["number", "null"] }, defaultOptions)
+    ).toBe("z.union([z.number(), z.null()])")
+  })
+
+  test("should handle single-element type array", () => {
+    expect(getZodTypeFromSchema({ type: ["string"] }, defaultOptions)).toBe(
+      "z.string()"
+    )
+  })
+
+  test("should handle empty type array", () => {
+    expect(getZodTypeFromSchema({ type: [] }, defaultOptions)).toBe(
+      "z.unknown()"
+    )
+  })
 })
 
 describe("generateZodSchema", () => {
@@ -679,6 +709,100 @@ describe("generateZodSchema", () => {
       defaultOptions
     )
     expect(result).toBe("export const Empty = z.object({});")
+  })
+
+  test("should keep required enum field when extending via allOf", () => {
+    const generatedTypes = new Set<string>()
+    const schemaRegistry = {
+      BaseEndpointError: {
+        type: "object",
+        required: ["status", "code", "title", "description", "retryable"],
+        properties: {
+          status: { type: "string" },
+          code: { type: "string" },
+          title: { type: "string" },
+          description: { type: "string" },
+          retryable: { type: "boolean" },
+        },
+      },
+    }
+    const schema = {
+      allOf: [
+        { $ref: "#/components/schemas/BaseEndpointError" },
+        {
+          type: "object",
+          properties: {
+            code: {
+              type: "string",
+              enum: ["record.invalid", "internal_error"],
+            },
+          },
+        },
+      ],
+    }
+    const result = generateZodSchema(
+      "ListRecordsError",
+      schema,
+      generatedTypes,
+      defaultOptions,
+      undefined,
+      schemaRegistry
+    )
+
+    expect(result).toContain("BaseEndpointError.merge")
+    expect(result).toContain(
+      'code: z.enum(["record.invalid", "internal_error"]),'
+    )
+    expect(result).not.toContain(
+      'code: z.enum(["record.invalid", "internal_error"]).optional(),'
+    )
+  })
+
+  test("should keep required enum field from nested allOf refs", () => {
+    const generatedTypes = new Set<string>()
+    const schemaRegistry = {
+      BaseEndpointError: {
+        type: "object",
+        required: ["status", "code"],
+        properties: {
+          status: { type: "string" },
+          code: { type: "string" },
+        },
+      },
+      WrappedEndpointError: {
+        allOf: [{ $ref: "#/components/schemas/BaseEndpointError" }],
+      },
+    }
+    const schema = {
+      allOf: [
+        { $ref: "#/components/schemas/WrappedEndpointError" },
+        {
+          type: "object",
+          properties: {
+            code: {
+              type: "string",
+              enum: ["record.invalid", "internal_error"],
+            },
+          },
+        },
+      ],
+    }
+    const result = generateZodSchema(
+      "ListRecordsError",
+      schema,
+      generatedTypes,
+      defaultOptions,
+      undefined,
+      schemaRegistry
+    )
+
+    expect(result).toContain("WrappedEndpointError.merge")
+    expect(result).toContain(
+      'code: z.enum(["record.invalid", "internal_error"]),'
+    )
+    expect(result).not.toContain(
+      'code: z.enum(["record.invalid", "internal_error"]).optional(),'
+    )
   })
 
   test("should use nameMap for schema name mapping", () => {
