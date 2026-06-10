@@ -66,8 +66,20 @@ export function generateZodSchema(
   // Handle allOf schemas
   if (schema.allOf && Array.isArray(schema.allOf)) {
     const allOfSchemas = buildAllOfSchemas(schema)
+    const mergedRequired = getMergedRequiredFromAllOfParts(
+      allOfSchemas,
+      schemaRegistry
+    )
     const allOfParts = allOfSchemas.map((part: any) =>
-      getZodTypeFromSchema(part, options, nameMap, schemaRegistry, name)
+      getZodTypeFromSchema(
+        part,
+        options,
+        nameMap,
+        schemaRegistry,
+        name,
+        undefined,
+        mergedRequired
+      )
     )
     if (allOfParts.length === 0) return `export const ${name} = z.object({});`
     if (allOfParts.length === 1)
@@ -93,7 +105,6 @@ export function generateZodSchema(
       name
     )};`
   }
-
   if (schema.type === "array") {
     const itemSchema = schema.items ?? { type: "unknown" }
     const itemType = getZodTypeFromSchema(
@@ -195,6 +206,45 @@ function buildAllOfSchemas(schema: any): any[] {
     allOfSchemas.push(baseSchema)
   }
   return allOfSchemas
+}
+
+function getRequiredFromSchema(
+  schema: any,
+  schemaRegistry?: Record<string, unknown>,
+  visited = new Set<unknown>()
+): string[] {
+  const resolved = resolveRefSchema(schema, schemaRegistry)
+  if (!resolved || typeof resolved !== "object" || visited.has(resolved)) {
+    return []
+  }
+  visited.add(resolved)
+
+  const required = new Set<string>(
+    Array.isArray(resolved.required) ? resolved.required : []
+  )
+
+  if (Array.isArray(resolved.allOf)) {
+    for (const part of buildAllOfSchemas(resolved)) {
+      for (const prop of getRequiredFromSchema(part, schemaRegistry, visited)) {
+        required.add(prop)
+      }
+    }
+  }
+
+  return [...required]
+}
+
+function getMergedRequiredFromAllOfParts(
+  allOfSchemas: any[],
+  schemaRegistry?: Record<string, unknown>
+): Set<string> {
+  const merged = new Set<string>()
+  for (const part of allOfSchemas) {
+    for (const prop of getRequiredFromSchema(part, schemaRegistry)) {
+      merged.add(prop)
+    }
+  }
+  return merged
 }
 
 function schemaReferencesName(
@@ -523,7 +573,8 @@ export function getZodTypeFromSchema(
   nameMap?: Map<string, string>,
   schemaRegistry?: Record<string, unknown>,
   currentSchemaName?: string,
-  ownName?: string
+  ownName?: string,
+  allOfRequired?: Set<string>
 ): string {
   if (schema.$ref) {
     const refName = extractRefName(schema.$ref)
@@ -585,13 +636,19 @@ export function getZodTypeFromSchema(
   // Handle allOf schemas
   if (schema.allOf && Array.isArray(schema.allOf)) {
     const allOfSchemas = buildAllOfSchemas(schema)
+    const mergedRequired = getMergedRequiredFromAllOfParts(
+      allOfSchemas,
+      schemaRegistry
+    )
     const allOfParts = allOfSchemas.map((part: any) =>
       getZodTypeFromSchema(
         part,
         options,
         nameMap,
         schemaRegistry,
-        currentSchemaName
+        currentSchemaName,
+        ownName,
+        mergedRequired
       )
     )
     if (allOfParts.length === 0) return "z.object({})"
@@ -647,8 +704,36 @@ export function getZodTypeFromSchema(
       options,
       nameMap,
       schemaRegistry,
-      currentSchemaName
+      currentSchemaName,
+      allOfRequired
     )
+  }
+
+  if (Array.isArray(schema.type)) {
+    if (schema.type.length === 0) return "z.unknown()"
+    if (schema.type.length === 1) {
+      return getZodTypeFromSchema(
+        { ...schema, type: schema.type[0] },
+        options,
+        nameMap,
+        schemaRegistry,
+        currentSchemaName,
+        ownName,
+        allOfRequired
+      )
+    }
+    const unionParts = schema.type.map((memberType: string) =>
+      getZodTypeFromSchema(
+        { ...schema, type: memberType },
+        options,
+        nameMap,
+        schemaRegistry,
+        currentSchemaName,
+        ownName,
+        allOfRequired
+      )
+    )
+    return `z.union([${unionParts.join(", ")}])`
   }
 
   switch (schema.type) {
@@ -739,14 +824,18 @@ export function buildZodObject(
   options: SchemaOptions,
   nameMap?: Map<string, string>,
   schemaRegistry?: Record<string, unknown>,
-  currentSchemaName?: string
+  currentSchemaName?: string,
+  allOfRequired?: Set<string>
 ): string {
   const properties: string[] = []
   const discriminatorRequiredProperties = getDiscriminatorRequiredProperties(
     schemaRegistry,
     currentSchemaName
   )
-  const requiredProps = new Set(schema.required ?? [])
+  const requiredProps = new Set([
+    ...(schema.required ?? []),
+    ...(allOfRequired ? [...allOfRequired] : []),
+  ])
 
   for (const [propName, propSchema] of Object.entries(
     schema.properties || {}

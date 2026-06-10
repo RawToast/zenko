@@ -1,0 +1,177 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`Nullable Types and AllOf Error Schemas generates complete TypeScript output: nullable-allof-errors-complete-output 1`] = `
+"import { z } from "zod";
+import type { OperationDefinition, OperationErrors } from "zenko";
+
+// Generated Zod Schemas
+
+export const BaseEndpointError = z.object({
+  status: z.string(),
+  code: z.string(),
+  title: z.string(),
+  description: z.string(),
+  retryable: z.boolean(),
+});
+
+export type BaseEndpointError = z.infer<typeof BaseEndpointError>;
+
+export const ListRecordsError = BaseEndpointError.merge(z.object({
+  code: z.enum(["record.invalid", "internal_error"]),
+}));
+
+export type ListRecordsError = z.infer<typeof ListRecordsError>;
+
+export const GetRecordError = BaseEndpointError.merge(z.object({
+  code: z.enum(["record.invalid", "record.not_found", "internal_error"]),
+}));
+
+export type GetRecordError = z.infer<typeof GetRecordError>;
+
+export const UpdateRecordError = BaseEndpointError.merge(z.object({
+  code: z.enum(["record.invalid", "record.invalid_transition", "record.not_found", "internal_error"]),
+}));
+
+export type UpdateRecordError = z.infer<typeof UpdateRecordError>;
+
+export const RecordStatus = z.enum(["draft", "active", "archived"]);
+
+export type RecordStatus = z.infer<typeof RecordStatus>;
+
+export const Record = z.object({
+  id: z.string(),
+  status: RecordStatus,
+  notes: z.union([z.string(), z.null()]),
+  completed_at: z.union([z.string(), z.null()]),
+  archived_at: z.union([z.string(), z.null()]),
+});
+
+export type Record = z.infer<typeof Record>;
+
+export const StatusUpdateRequest = z.object({
+  status: z.enum(["active", "archived"]),
+});
+
+export type StatusUpdateRequest = z.infer<typeof StatusUpdateRequest>;
+
+export const RecordListResponse = z.object({
+  items: z.array(Record),
+  total: z.number().int(),
+});
+
+export type RecordListResponse = z.infer<typeof RecordListResponse>;
+
+// Path Functions
+export const paths = {
+  listRecords: ({ page }: { page?: number } = {}) => {
+    const params = new URLSearchParams()
+    if (page !== undefined) {
+      params.set("page", String(page))
+    }
+    const _searchParams = params.toString()
+    return \`/records\${_searchParams ? \`?\${_searchParams}\` : ""}\`
+  },
+  getRecord: ({ id }: { id: string }) => \`/records/\${id}\`,
+  updateRecordStatus: ({ id }: { id: string }) => \`/records/\${id}/status\`,
+} as const;
+
+// Header Schemas
+export const headerSchemas = {
+  listRecords: z.object({}),
+  getRecord: z.object({}),
+  updateRecordStatus: z.object({}),
+} as const;
+
+// Header Functions
+export const headers = {
+  listRecords: () => headerSchemas.listRecords.parse({}),
+  getRecord: () => headerSchemas.getRecord.parse({}),
+  updateRecordStatus: () => headerSchemas.updateRecordStatus.parse({}),
+} as const;
+
+// Operation Types
+export type ListRecordsOperation = OperationDefinition<
+  "get",
+  typeof paths.listRecords,
+  undefined,
+  typeof RecordListResponse,
+  undefined,
+  OperationErrors<{ badRequest: typeof ListRecordsError }>,
+  undefined
+>;
+
+export type GetRecordOperation = OperationDefinition<
+  "get",
+  typeof paths.getRecord,
+  undefined,
+  typeof Record,
+  undefined,
+  OperationErrors<{ notFound: typeof GetRecordError }>,
+  undefined
+>;
+
+export type UpdateRecordStatusOperation = OperationDefinition<
+  "patch",
+  typeof paths.updateRecordStatus,
+  typeof StatusUpdateRequest,
+  typeof Record,
+  undefined,
+  OperationErrors<{ badRequest: typeof UpdateRecordError }>,
+  undefined
+>;
+
+// Operation Objects
+export const listRecords: ListRecordsOperation = {
+  method: "get",
+  path: paths.listRecords,
+  response: RecordListResponse,
+    errors: {
+      badRequest: ListRecordsError,
+    },
+} as const;
+
+export const getRecord: GetRecordOperation = {
+  method: "get",
+  path: paths.getRecord,
+  response: Record,
+    errors: {
+      notFound: GetRecordError,
+    },
+} as const;
+
+export const updateRecordStatus: UpdateRecordStatusOperation = {
+  method: "patch",
+  path: paths.updateRecordStatus,
+  request: StatusUpdateRequest,
+  response: Record,
+    errors: {
+      badRequest: UpdateRecordError,
+    },
+} as const;
+
+// Operation Metadata
+export const operationMetadata = {
+  listRecords: {
+    method: "get",
+    path: "/records",
+    successResponses: {"200":"RecordListResponse"},
+    errorResponses: {"400":"ListRecordsError"},
+    errorStatusKeys: {"400":"badRequest"},
+  },
+  getRecord: {
+    method: "get",
+    path: "/records/{id}",
+    successResponses: {"200":"Record"},
+    errorResponses: {"404":"GetRecordError"},
+    errorStatusKeys: {"404":"notFound"},
+  },
+  updateRecordStatus: {
+    method: "patch",
+    path: "/records/{id}/status",
+    successResponses: {"200":"Record"},
+    errorResponses: {"400":"UpdateRecordError"},
+    errorStatusKeys: {"400":"badRequest"},
+  },
+} as const;
+"
+`;

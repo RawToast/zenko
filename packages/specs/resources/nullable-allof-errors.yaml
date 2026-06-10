@@ -1,0 +1,182 @@
+openapi: 3.1.0
+info:
+  title: Nullable Types and AllOf Error Schemas
+  version: 1.0.0
+  description: >-
+    Minimal spec exercising OpenAPI 3.1 nullable array types and allOf error
+    inheritance with required enum fields. Derived from real-world API feedback.
+
+paths:
+  /records:
+    get:
+      operationId: listRecords
+      summary: List records with pagination
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: Paginated record list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecordListResponse"
+        "400":
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListRecordsError"
+
+  /records/{id}:
+    get:
+      operationId: getRecord
+      summary: Fetch a single record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Record details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Record"
+        "404":
+          description: Record not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetRecordError"
+
+  /records/{id}/status:
+    patch:
+      operationId: updateRecordStatus
+      summary: Transition record status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StatusUpdateRequest"
+      responses:
+        "200":
+          description: Updated record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Record"
+        "400":
+          description: Invalid status transition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateRecordError"
+
+components:
+  schemas:
+    BaseEndpointError:
+      type: object
+      required: [status, code, title, description, retryable]
+      properties:
+        status:
+          type: string
+        code:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        retryable:
+          type: boolean
+
+    ListRecordsError:
+      allOf:
+        - $ref: "#/components/schemas/BaseEndpointError"
+        - type: object
+          properties:
+            code:
+              type: string
+              enum: [record.invalid, internal_error]
+
+    GetRecordError:
+      allOf:
+        - $ref: "#/components/schemas/BaseEndpointError"
+        - type: object
+          properties:
+            code:
+              type: string
+              enum: [record.invalid, record.not_found, internal_error]
+
+    UpdateRecordError:
+      allOf:
+        - $ref: "#/components/schemas/BaseEndpointError"
+        - type: object
+          properties:
+            code:
+              type: string
+              enum:
+                [
+                  record.invalid,
+                  record.invalid_transition,
+                  record.not_found,
+                  internal_error,
+                ]
+
+    RecordStatus:
+      type: string
+      enum: [draft, active, archived]
+
+    Record:
+      type: object
+      required:
+        - id
+        - status
+        - notes
+        - completed_at
+        - archived_at
+      properties:
+        id:
+          type: string
+        status:
+          $ref: "#/components/schemas/RecordStatus"
+        notes:
+          type: [string, "null"]
+        completed_at:
+          type: [string, "null"]
+          description: ISO 8601 UTC timestamp when completed
+        archived_at:
+          type: [string, "null"]
+          description: ISO 8601 UTC timestamp when archived
+
+    StatusUpdateRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [active, archived]
+
+    RecordListResponse:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Record"
+        total:
+          type: integer

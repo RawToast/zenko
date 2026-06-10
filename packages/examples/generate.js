@@ -3,6 +3,7 @@ import { dirname, relative, resolve } from "path"
 import {
   authApiYamlPath,
   enumDemoYamlPath,
+  nullableAllOfErrorsYamlPath,
   petstoreYamlPath,
   tictactoeYamlPath,
   trainTravelYamlPath,
@@ -13,6 +14,7 @@ import { generate, generateTreatyModule } from "zenko"
 const specInputPaths = {
   "auth-api.yaml": authApiYamlPath,
   "enum-demo.yaml": enumDemoYamlPath,
+  "nullable-allof-errors.yaml": nullableAllOfErrorsYamlPath,
   "petstore.yaml": petstoreYamlPath,
   "tictactoe.yaml": tictactoeYamlPath,
   "train-travel.yaml": trainTravelYamlPath,
@@ -135,13 +137,18 @@ async function generateTreatyModuleForGen(genFileName, treatyFileName, label) {
         },
       }
     )
+    const nullableAllOfErrorsSuccess = generateSchema(
+      "nullable-allof-errors.yaml",
+      "nullable-allof-errors.gen.ts"
+    )
     if (
       !petstoreSuccess ||
       !trainTravelSuccess ||
       !authApiSuccess ||
       !tictactoeSuccess ||
       !enumDemoSuccess ||
-      !fireblocksSuccess
+      !fireblocksSuccess ||
+      !nullableAllOfErrorsSuccess
     ) {
       process.exit(1)
     }
