@@ -179,6 +179,52 @@ describe("RecordsClientFetch", () => {
         "API Error: Invalid page (record.invalid)"
       )
     })
+
+    it("should parse getRecord errors with the get-record error schema", () => {
+      const fetchMock = setupFetchMock()
+      const client = new RecordsClientFetch("https://api.test.com")
+
+      fetchMock.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            status: "404",
+            code: "record.not_found",
+            title: "Record not found",
+            description: "The record does not exist",
+            retryable: false,
+          }),
+          { status: 404, statusText: "Not Found" }
+        )
+      )
+
+      expect(client.getRecord("rec_missing")).rejects.toThrow(
+        "API Error: Record not found (record.not_found)"
+      )
+    })
+
+    it("should parse updateRecordStatus errors with the update error schema", () => {
+      const fetchMock = setupFetchMock()
+      const client = new RecordsClientFetch("https://api.test.com")
+
+      fetchMock.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            status: "400",
+            code: "record.invalid_transition",
+            title: "Invalid transition",
+            description: "The record cannot transition to that status",
+            retryable: false,
+          }),
+          { status: 400, statusText: "Bad Request" }
+        )
+      )
+
+      expect(
+        client.updateRecordStatus("rec_123", { status: "archived" })
+      ).rejects.toThrow(
+        "API Error: Invalid transition (record.invalid_transition)"
+      )
+    })
   })
 
   describe("schema validation", () => {
