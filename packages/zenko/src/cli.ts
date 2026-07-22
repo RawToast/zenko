@@ -8,6 +8,7 @@ import {
   type OpenAPISpec,
   type TypesConfig,
   type EnumConfig,
+  type SchemaVersion,
 } from "./zenko.js"
 import { generateTreatyModule } from "./treaty-generator.js"
 
@@ -21,6 +22,7 @@ type CliConfigEntry = {
   types?: TypesConfig
   operationIds?: string[]
   openEnums?: boolean | string[] | EnumConfig
+  schemaVersion?: SchemaVersion
 }
 
 type CliConfigFile = {
@@ -179,7 +181,7 @@ function printHelp() {
   console.log("")
   console.log("Config file format:")
   console.log(
-    '  {"types"?: { emit?, helpers?, helpersOutput?, optionalType?, treeShake? }, "schemas": [{ input, output, strictDates?, strictNumeric?, dateTimeOffset?, types? }] }'
+    '  {"types"?: { emit?, helpers?, helpersOutput?, optionalType?, treeShake? }, "schemas": [{ input, output, strictDates?, strictNumeric?, dateTimeOffset?, schemaVersion?, types? }] }'
   )
 }
 
@@ -234,6 +236,7 @@ async function runFromConfig(parsed: ParsedArgs) {
       typesConfig,
       operationIds: entry.operationIds,
       openEnums: entry.openEnums,
+      schemaVersion: entry.schemaVersion,
     })
 
     if (entry.treatyOutput) {
@@ -307,6 +310,7 @@ async function generateSingle(options: {
   typesConfig?: TypesConfig
   operationIds?: string[]
   openEnums?: boolean | string[] | EnumConfig
+  schemaVersion?: SchemaVersion
 }) {
   const {
     inputFile,
@@ -317,6 +321,7 @@ async function generateSingle(options: {
     typesConfig,
     operationIds,
     openEnums,
+    schemaVersion,
   } = options
   const resolvedInput = path.resolve(inputFile)
   const resolvedOutput = path.resolve(outputFile)
@@ -329,6 +334,7 @@ async function generateSingle(options: {
     types: typesConfig,
     operationIds,
     openEnums,
+    schemaVersion,
   })
 
   fs.mkdirSync(path.dirname(resolvedOutput), { recursive: true })

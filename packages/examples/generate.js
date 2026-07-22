@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "fs"
 import { dirname, relative, resolve } from "path"
 import {
   authApiYamlPath,
+  blockscoutYamlPath,
   enumDemoYamlPath,
   nullableAllOfErrorsYamlPath,
   petstoreYamlPath,
@@ -13,6 +14,7 @@ import { generate, generateTreatyModule } from "zenko"
 
 const specInputPaths = {
   "auth-api.yaml": authApiYamlPath,
+  "blockscout.yaml": blockscoutYamlPath,
   "enum-demo.yaml": enumDemoYamlPath,
   "nullable-allof-errors.yaml": nullableAllOfErrorsYamlPath,
   "petstore.yaml": petstoreYamlPath,
@@ -141,6 +143,10 @@ async function generateTreatyModuleForGen(genFileName, treatyFileName, label) {
       "nullable-allof-errors.yaml",
       "nullable-allof-errors.gen.ts"
     )
+    const blockscoutSuccess = generateSchema(
+      "blockscout.yaml",
+      "blockscout.gen.ts"
+    )
     if (
       !petstoreSuccess ||
       !trainTravelSuccess ||
@@ -148,7 +154,8 @@ async function generateTreatyModuleForGen(genFileName, treatyFileName, label) {
       !tictactoeSuccess ||
       !enumDemoSuccess ||
       !fireblocksSuccess ||
-      !nullableAllOfErrorsSuccess
+      !nullableAllOfErrorsSuccess ||
+      !blockscoutSuccess
     ) {
       process.exit(1)
     }
