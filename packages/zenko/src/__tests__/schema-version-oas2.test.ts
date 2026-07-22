@@ -174,6 +174,83 @@ describe("normalizeOas2ToOas3", () => {
     expect(operation.parameters).toEqual([])
   })
 
+  test("uses application/x-www-form-urlencoded when consumes specifies it", () => {
+    const normalized = normalizeOas2ToOas3({
+      swagger: "2.0",
+      info: {},
+      consumes: ["application/x-www-form-urlencoded"],
+      paths: {
+        "/login": {
+          post: {
+            operationId: "login",
+            parameters: [
+              {
+                name: "username",
+                in: "formData",
+                type: "string",
+                required: true,
+              },
+              {
+                name: "password",
+                in: "formData",
+                type: "string",
+                required: true,
+              },
+            ],
+            responses: { "204": { description: "ok" } },
+          },
+        },
+      },
+    })
+
+    const operation = (normalized.paths["/login"] as any).post
+    expect(
+      operation.requestBody.content["application/x-www-form-urlencoded"].schema
+    ).toEqual({
+      type: "object",
+      properties: {
+        username: { type: "string" },
+        password: { type: "string" },
+      },
+      required: ["username", "password"],
+    })
+    expect(operation.requestBody.content["multipart/form-data"]).toBeUndefined()
+  })
+
+  test("operation consumes override global form encoding", () => {
+    const normalized = normalizeOas2ToOas3({
+      swagger: "2.0",
+      info: {},
+      consumes: ["multipart/form-data"],
+      paths: {
+        "/contact": {
+          post: {
+            operationId: "submitContact",
+            consumes: ["application/x-www-form-urlencoded"],
+            parameters: [
+              {
+                name: "email",
+                in: "formData",
+                type: "string",
+                required: true,
+              },
+            ],
+            responses: { "204": { description: "ok" } },
+          },
+        },
+      },
+    })
+
+    const operation = (normalized.paths["/contact"] as any).post
+    expect(
+      operation.requestBody.content["application/x-www-form-urlencoded"].schema
+    ).toEqual({
+      type: "object",
+      properties: { email: { type: "string" } },
+      required: ["email"],
+    })
+  })
+
   test("resolves reusable parameters and responses", () => {
     const input = {
       swagger: "2.0",

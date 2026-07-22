@@ -190,10 +190,11 @@ function normalizeOperation(
           },
         }
       } else if (formParams.length > 0) {
+        const formMediaType = pickFormDataMediaType(consumes, formParams)
         operation.requestBody = {
           required: formParams.some((p) => p.required),
           content: {
-            "multipart/form-data": {
+            [formMediaType]: {
               schema: formDataToSchema(formParams),
             },
           },
@@ -350,6 +351,32 @@ function rewriteDefinitionRefs(value: unknown): unknown {
 function pickMediaType(types: string[]): string {
   if (types.length === 0) return DEFAULT_MEDIA_TYPE
   return types.find((t) => t.includes("json")) ?? types[0] ?? DEFAULT_MEDIA_TYPE
+}
+
+const FORM_URLENCODED = "application/x-www-form-urlencoded"
+const MULTIPART_FORM_DATA = "multipart/form-data"
+
+function pickFormDataMediaType(
+  consumes: string[],
+  formParams: JsonObject[]
+): string {
+  if (formParams.some(isFileFormParam)) return MULTIPART_FORM_DATA
+
+  const formMediaTypes = consumes.filter(
+    (type) => type === FORM_URLENCODED || type === MULTIPART_FORM_DATA
+  )
+  if (formMediaTypes.includes(FORM_URLENCODED)) return FORM_URLENCODED
+  if (formMediaTypes.includes(MULTIPART_FORM_DATA)) return MULTIPART_FORM_DATA
+  return FORM_URLENCODED
+}
+
+function isFileFormParam(param: JsonObject): boolean {
+  return (
+    param.type === "file" ||
+    (isPlainObject(param.schema) &&
+      param.schema.type === "string" &&
+      param.schema.format === "binary")
+  )
 }
 
 function asStringArray(value: unknown): string[] | undefined {
