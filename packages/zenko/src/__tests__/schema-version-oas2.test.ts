@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test"
+import { describe, test, expect, mock } from "bun:test"
 
 import { blockscoutYamlPath } from "@zenko/specs"
 
@@ -368,6 +368,172 @@ describe("normalizeOas2ToOas3", () => {
 
     const result = generate(input)
     expect(result).toContain("typeof Pet,\n  typeof Pet,\n  undefined")
+  })
+
+  test("operation-level parameters override path-level parameters", () => {
+    const normalized = normalizeOas2ToOas3({
+      swagger: "2.0",
+      info: {},
+      paths: {
+        "/items": {
+          parameters: [
+            {
+              name: "X-Token",
+              in: "header",
+              type: "string",
+              required: false,
+            },
+            {
+              name: "body",
+              in: "body",
+              required: false,
+              schema: {
+                type: "object",
+                properties: { old: { type: "string" } },
+              },
+            },
+          ],
+          post: {
+            operationId: "createItem",
+            parameters: [
+              {
+                name: "X-Token",
+                in: "header",
+                type: "string",
+                required: true,
+              },
+              {
+                name: "body",
+                in: "body",
+                required: true,
+                schema: { $ref: "#/definitions/Item" },
+              },
+            ],
+            responses: { "200": { description: "ok" } },
+          },
+        },
+      },
+      definitions: {
+        Item: { type: "object", properties: { name: { type: "string" } } },
+      },
+    })
+
+    const operation = (normalized.paths["/items"] as any).post
+    expect(operation.parameters).toEqual([
+      {
+        name: "X-Token",
+        in: "header",
+        required: true,
+        schema: { type: "string" },
+      },
+    ])
+    expect(operation.requestBody.content["application/json"].schema).toEqual({
+      $ref: "#/components/schemas/Item",
+    })
+  })
+
+  test("throws on unresolved parameter references", () => {
+    expect(() =>
+      normalizeOas2ToOas3({
+        swagger: "2.0",
+        info: {},
+        paths: {
+          "/pets": {
+            get: {
+              operationId: "listPets",
+              parameters: [{ $ref: "#/parameters/Missing" }],
+              responses: { "200": { description: "ok" } },
+            },
+          },
+        },
+      })
+    ).toThrow('unresolved reference "#/parameters/Missing"')
+  })
+
+  test("converts basic and oauth2 securityDefinitions to OAS3 shape", () => {
+    const normalized = normalizeOas2ToOas3({
+      swagger: "2.0",
+      info: {},
+      paths: {},
+      securityDefinitions: {
+        BasicAuth: { type: "basic" },
+        OAuth: {
+          type: "oauth2",
+          flow: "accessCode",
+          authorizationUrl: "https://example.com/oauth/authorize",
+          tokenUrl: "https://example.com/oauth/token",
+          scopes: { read: "Read access" },
+        },
+      },
+    })
+
+    expect(normalized.components?.securitySchemes?.BasicAuth).toEqual({
+      type: "http",
+      scheme: "basic",
+    })
+    expect(normalized.components?.securitySchemes?.OAuth).toEqual({
+      type: "oauth2",
+      flows: {
+        authorizationCode: {
+          authorizationUrl: "https://example.com/oauth/authorize",
+          tokenUrl: "https://example.com/oauth/token",
+          scopes: { read: "Read access" },
+        },
+      },
+    })
+
+    const result = generate(normalized, { schemaVersion: "oas3" })
+    expect(result).toContain('type: "http"')
+    expect(result).toContain('scheme: "basic"')
+    expect(result).toContain('type: "oauth2"')
+    expect(result).toContain('"authorizationCode"')
+  })
+
+  test("falls back to application/json for unsupported request body media types", () => {
+    const input: OpenAPISpec = {
+      swagger: "2.0",
+      info: {},
+      consumes: ["application/xml"],
+      paths: {
+        "/items": {
+          post: {
+            operationId: "createItem",
+            parameters: [
+              {
+                name: "body",
+                in: "body",
+                required: true,
+                schema: {
+                  type: "object",
+                  properties: { name: { type: "string" } },
+                },
+              },
+            ],
+            responses: { "200": { description: "ok" } },
+          },
+        },
+      },
+    }
+
+    const warn = mock(() => {})
+    const originalWarn = console.warn
+    console.warn = warn
+
+    try {
+      const normalized = normalizeOas2ToOas3(input)
+      const operation = (normalized.paths["/items"] as any).post
+      expect(operation.requestBody.content["application/json"].schema).toEqual({
+        type: "object",
+        properties: { name: { type: "string" } },
+      })
+      expect(warn).toHaveBeenCalled()
+
+      const result = generate(input, { schemaVersion: "auto" })
+      expect(result).toContain("export const createItem:")
+      expect(result).toContain("request:")
+    } finally {
+      console.warn = originalWarn
+    }
   })
 })
 

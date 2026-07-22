@@ -3,6 +3,7 @@ import { execSync } from "child_process"
 import * as fs from "fs"
 import * as path from "path"
 import {
+  blockscoutYamlPath,
   dateEnumYamlPath,
   petstoreYamlPath,
   tictactoeYamlPath,
@@ -501,5 +502,83 @@ describe("CLI", () => {
     // Version should remain closed
     expect(output).toContain("export const Version = z.enum([")
     expect(output).not.toContain("const VersionKnown =")
+  })
+
+  test("help text includes schemaVersion", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+    const output = execSync(`bun run ${cliPath} --help`, {
+      encoding: "utf8",
+    })
+
+    expect(output).toContain("schemaVersion")
+    expect(output).toContain("--schema-version")
+  })
+
+  test("supports schemaVersion auto in config file", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+    const configDir = path.join(tempDir, "schema-version-auto-config")
+    fs.mkdirSync(configDir, { recursive: true })
+
+    const configPath = path.join(configDir, "zenko.config.json")
+    const configOutput = path.join(configDir, "blockscout.gen.ts")
+    const config = {
+      schemas: [
+        {
+          input: path.relative(configDir, blockscoutYamlPath),
+          output: "blockscout.gen.ts",
+          schemaVersion: "auto",
+        },
+      ],
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+
+    execSync(`bun run ${cliPath} --config ${configPath}`, {
+      encoding: "utf8",
+    })
+
+    const output = fs.readFileSync(configOutput, "utf8")
+    expect(output).toContain("// Generated Zod Schemas")
+    expect(output).toContain("export const v1Counters")
+  })
+
+  test("supports schemaVersion oas3 in config file", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+    const configDir = path.join(tempDir, "schema-version-oas3-config")
+    fs.mkdirSync(configDir, { recursive: true })
+
+    const configPath = path.join(configDir, "zenko.config.json")
+    const configOutput = path.join(configDir, "blockscout.gen.ts")
+    const config = {
+      schemas: [
+        {
+          input: path.relative(configDir, blockscoutYamlPath),
+          output: "blockscout.gen.ts",
+          schemaVersion: "oas3",
+        },
+      ],
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+
+    execSync(`bun run ${cliPath} --config ${configPath}`, {
+      encoding: "utf8",
+    })
+
+    const output = fs.readFileSync(configOutput, "utf8")
+    expect(output).not.toContain("// Generated Zod Schemas")
+    expect(output).toContain("OperationErrors<{ defaultError: undefined }>")
+  })
+
+  test("supports --schema-version on single-file CLI path", () => {
+    const cliPath = path.join(process.cwd(), "src/cli.ts")
+    const outputPath = path.join(tempDir, "blockscout-oas3-cli.ts")
+
+    execSync(
+      `bun run ${cliPath} ${blockscoutYamlPath} ${outputPath} --schema-version oas3`,
+      { encoding: "utf8" }
+    )
+
+    const output = fs.readFileSync(outputPath, "utf8")
+    expect(output).not.toContain("// Generated Zod Schemas")
+    expect(output).toContain("OperationErrors<{ defaultError: undefined }>")
   })
 })

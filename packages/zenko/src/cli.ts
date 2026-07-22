@@ -34,6 +34,7 @@ type ParsedArgs = {
   showHelp: boolean
   strictDates: boolean
   strictNumeric: boolean
+  schemaVersion?: SchemaVersion
   configPath?: string
   positional: string[]
 }
@@ -111,6 +112,7 @@ async function main() {
         outputFile,
         strictDates: parsed.strictDates,
         strictNumeric: parsed.strictNumeric,
+        schemaVersion: parsed.schemaVersion,
       })
     }
   } catch (error) {
@@ -145,6 +147,16 @@ function parseArgs(args: string[]): ParsedArgs {
       continue
     }
 
+    if (arg === "--schema-version") {
+      const next = args[index + 1]
+      if (!next || !["auto", "oas2", "oas3"].includes(next)) {
+        throw new Error("--schema-version requires auto, oas2, or oas3")
+      }
+      parsed.schemaVersion = next as SchemaVersion
+      index += 1
+      continue
+    }
+
     if (arg === "--config" || arg === "-c") {
       const next = args[index + 1]
       if (!next) {
@@ -174,6 +186,9 @@ function printHelp() {
   )
   console.log(
     "  --strict-numeric    Preserve numeric min/max bounds (can be set per config entry)"
+  )
+  console.log(
+    "  --schema-version    Swagger/OpenAPI version handling: auto, oas2, or oas3"
   )
   console.log(
     "  -c, --config        Path to config file (JSON, YAML, or JS module)"

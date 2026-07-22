@@ -82,10 +82,10 @@ export function normalizeOas2ToOas3(spec: OpenAPISpec): OpenAPISpec {
     ...(cloned.definitions as JsonObject | undefined),
     ...(components.schemas as JsonObject | undefined),
   }
-  components.securitySchemes = {
-    ...(cloned.securityDefinitions as JsonObject | undefined),
-    ...(components.securitySchemes as JsonObject | undefined),
-  }
+  components.securitySchemes = convertSecurityDefinitions(
+    cloned.securityDefinitions,
+    components.securitySchemes as JsonObject | undefined
+  )
 
   if (isPlainObject(cloned.paths)) {
     for (const pathItem of Object.values(cloned.paths)) {
@@ -180,11 +180,12 @@ function normalizeOperation(
 
     if (!operation.requestBody) {
       if (bodyParam) {
+        const requestMediaType = pickRequestBodyMediaType(consumes, operation)
         operation.requestBody = {
           description: bodyParam.description,
           required: bodyParam.required ?? false,
           content: {
-            [pickMediaType(consumes)]: {
+            [requestMediaType]: {
               schema: bodyParam.schema ?? {},
             },
           },
@@ -265,7 +266,11 @@ function resolveOas2Reference(
 
   const name = value.$ref.slice(prefix.length)
   const resolved = definitions[name]
-  if (resolved === undefined) return value
+  if (resolved === undefined) {
+    throw new Error(
+      `Swagger 2.0 normalization: unresolved reference "${value.$ref}"`
+    )
+  }
 
   seen.add(value.$ref)
   const dereferenced = resolveOas2Reference(resolved, definitions, prefix, seen)
@@ -355,6 +360,28 @@ function pickMediaType(types: string[]): string {
 
 const FORM_URLENCODED = "application/x-www-form-urlencoded"
 const MULTIPART_FORM_DATA = "multipart/form-data"
+const SUPPORTED_REQUEST_MEDIA_TYPES = new Set([
+  DEFAULT_MEDIA_TYPE,
+  MULTIPART_FORM_DATA,
+  FORM_URLENCODED,
+])
+
+function pickRequestBodyMediaType(
+  consumes: string[],
+  operation: JsonObject
+): string {
+  const picked = pickMediaType(consumes)
+  if (SUPPORTED_REQUEST_MEDIA_TYPES.has(picked)) return picked
+
+  const operationId =
+    typeof operation.operationId === "string"
+      ? operation.operationId
+      : "unknown"
+  console.warn(
+    `Swagger 2.0 normalization: operation "${operationId}" consumes "${picked}" which Zenko cannot generate request types for; falling back to application/json`
+  )
+  return DEFAULT_MEDIA_TYPE
+}
 
 function pickFormDataMediaType(
   consumes: string[],
@@ -377,6 +404,71 @@ function isFileFormParam(param: JsonObject): boolean {
       param.schema.type === "string" &&
       param.schema.format === "binary")
   )
+}
+
+function convertSecurityDefinitions(
+  oas2Definitions: unknown,
+  existing: JsonObject | undefined
+): JsonObject {
+  const result: JsonObject = { ...existing }
+  if (!isPlainObject(oas2Definitions)) return result
+
+  for (const [name, scheme] of Object.entries(oas2Definitions)) {
+    if (!isPlainObject(scheme)) continue
+    result[name] = convertSecurityScheme(scheme)
+  }
+
+  return result
+}
+
+function convertSecurityScheme(scheme: JsonObject): JsonObject {
+  if (scheme.type === "basic") {
+    return {
+      ...(scheme.description !== undefined
+        ? { description: scheme.description }
+        : {}),
+      type: "http",
+      scheme: "basic",
+    }
+  }
+
+  if (scheme.type === "oauth2") {
+    return {
+      ...(scheme.description !== undefined
+        ? { description: scheme.description }
+        : {}),
+      type: "oauth2",
+      flows: convertOauth2Flows(scheme),
+    }
+  }
+
+  return { ...scheme }
+}
+
+function convertOauth2Flows(scheme: JsonObject): JsonObject {
+  const flow = typeof scheme.flow === "string" ? scheme.flow : undefined
+  const scopes = isPlainObject(scheme.scopes) ? scheme.scopes : {}
+  const flowDef: JsonObject = { scopes }
+
+  if (scheme.authorizationUrl !== undefined) {
+    flowDef.authorizationUrl = scheme.authorizationUrl
+  }
+  if (scheme.tokenUrl !== undefined) {
+    flowDef.tokenUrl = scheme.tokenUrl
+  }
+
+  switch (flow) {
+    case "implicit":
+      return { implicit: flowDef }
+    case "password":
+      return { password: flowDef }
+    case "application":
+      return { clientCredentials: flowDef }
+    case "accessCode":
+      return { authorizationCode: flowDef }
+    default:
+      return {}
+  }
 }
 
 function asStringArray(value: unknown): string[] | undefined {
