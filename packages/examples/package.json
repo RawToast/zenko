@@ -16,12 +16,12 @@
     "axios": "1.18.1",
     "effect": "3.21.2",
     "undici": "8.7.0",
-    "zod": "4.3.6"
+    "zod": "4.4.3"
   },
   "devDependencies": {
-    "@types/bun": "1.3.11",
+    "@types/bun": "1.3.14",
     "@zenko/specs": "workspace:*",
-    "typescript": "5.9.3",
+    "typescript": "6.0.2",
     "zenko": "workspace:*"
   },
   "peerDependencies": {
