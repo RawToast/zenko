@@ -3,6 +3,7 @@ export {
   type OpenAPISpec,
   type GenerateOptions,
   type TypesConfig,
+  type SchemaVersion,
 } from "./src/zenko"
 export {
   type PathFn,

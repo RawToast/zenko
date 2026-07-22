@@ -3,6 +3,7 @@ import { formatPropertyName, isValidJSIdentifier } from "./utils/property-name"
 import { toCamelCase, capitalize } from "./utils/string-utils"
 import { analyzeZenkoUsage, generateZenkoImport } from "./utils/tree-shaking"
 import { collectReferencedSchemas } from "./utils/collect-referenced-schemas"
+import { normalizeSpecForSchemaVersion } from "./utils/normalize-oas2"
 import {
   type SchemaOptions,
   generateZodSchema,
@@ -23,11 +24,18 @@ import type {
 import { generateHelperFile } from "./utils/generate-helper-file"
 
 export type OpenAPISpec = {
-  openapi: string
+  openapi?: string
+  swagger?: string | number
   info: unknown
   paths: Record<string, Record<string, unknown>>
   webhooks?: Record<string, Record<string, unknown>>
   security?: Record<string, string[]>[]
+  consumes?: string[]
+  produces?: string[]
+  definitions?: Record<string, unknown>
+  parameters?: Record<string, unknown>
+  responses?: Record<string, unknown>
+  securityDefinitions?: Record<string, unknown>
   components?: {
     schemas?: Record<string, unknown>
     parameters?: Record<string, unknown>
@@ -51,6 +59,8 @@ export type EnumConfig = {
   unknownPrefix?: string
 }
 
+export type SchemaVersion = "oas3" | "oas2" | "auto"
+
 export type GenerateOptions = {
   strictDates?: boolean
   strictNumeric?: boolean
@@ -58,6 +68,11 @@ export type GenerateOptions = {
   types?: TypesConfig
   operationIds?: string[]
   openEnums?: boolean | string[] | EnumConfig
+  /**
+   * Spec dialect for parsing. `"auto"` (default) detects Swagger 2.0 via
+   * `swagger: "2.0"` and normalizes it to OpenAPI 3 shape before generation.
+   */
+  schemaVersion?: SchemaVersion
 }
 
 export type GenerateResult = {
@@ -107,6 +122,7 @@ export function generateWithMetadata(
     dateTimeOffset = true,
     operationIds,
     openEnums = false,
+    schemaVersion = "auto",
   } = options
   const typesConfig = normalizeTypesConfig({
     ...options.types,
@@ -121,6 +137,8 @@ export function generateWithMetadata(
     openEnums: enumConfig.open,
     openEnumPrefix: enumConfig.prefix,
   }
+
+  spec = normalizeSpecForSchemaVersion(spec, schemaVersion)
 
   output.push('import { z } from "zod";')
 

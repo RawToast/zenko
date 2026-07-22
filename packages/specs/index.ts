@@ -8,6 +8,7 @@ export const additionalPropertiesYamlPath = resourcePath(
 )
 export const anyOfCombinationsYamlPath = resourcePath("anyof-combinations.yaml")
 export const authApiYamlPath = resourcePath("auth-api.yaml")
+export const blockscoutYamlPath = resourcePath("blockscout.yaml")
 export const complexCompositionYamlPath = resourcePath(
   "complex-composition.yaml"
 )

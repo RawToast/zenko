@@ -8,6 +8,7 @@ import {
   type OpenAPISpec,
   type TypesConfig,
   type EnumConfig,
+  type SchemaVersion,
 } from "./zenko.js"
 import { generateTreatyModule } from "./treaty-generator.js"
 
@@ -21,6 +22,7 @@ type CliConfigEntry = {
   types?: TypesConfig
   operationIds?: string[]
   openEnums?: boolean | string[] | EnumConfig
+  schemaVersion?: SchemaVersion
 }
 
 type CliConfigFile = {
@@ -32,6 +34,7 @@ type ParsedArgs = {
   showHelp: boolean
   strictDates: boolean
   strictNumeric: boolean
+  schemaVersion?: SchemaVersion
   configPath?: string
   positional: string[]
 }
@@ -109,6 +112,7 @@ async function main() {
         outputFile,
         strictDates: parsed.strictDates,
         strictNumeric: parsed.strictNumeric,
+        schemaVersion: parsed.schemaVersion,
       })
     }
   } catch (error) {
@@ -143,6 +147,16 @@ function parseArgs(args: string[]): ParsedArgs {
       continue
     }
 
+    if (arg === "--schema-version") {
+      const next = args[index + 1]
+      if (!next || !["auto", "oas2", "oas3"].includes(next)) {
+        throw new Error("--schema-version requires auto, oas2, or oas3")
+      }
+      parsed.schemaVersion = next as SchemaVersion
+      index += 1
+      continue
+    }
+
     if (arg === "--config" || arg === "-c") {
       const next = args[index + 1]
       if (!next) {
@@ -174,12 +188,15 @@ function printHelp() {
     "  --strict-numeric    Preserve numeric min/max bounds (can be set per config entry)"
   )
   console.log(
+    "  --schema-version    Swagger/OpenAPI version handling: auto, oas2, or oas3"
+  )
+  console.log(
     "  -c, --config        Path to config file (JSON, YAML, or JS module)"
   )
   console.log("")
   console.log("Config file format:")
   console.log(
-    '  {"types"?: { emit?, helpers?, helpersOutput?, optionalType?, treeShake? }, "schemas": [{ input, output, strictDates?, strictNumeric?, dateTimeOffset?, types? }] }'
+    '  {"types"?: { emit?, helpers?, helpersOutput?, optionalType?, treeShake? }, "schemas": [{ input, output, strictDates?, strictNumeric?, dateTimeOffset?, schemaVersion?, types? }] }'
   )
 }
 
@@ -234,6 +251,7 @@ async function runFromConfig(parsed: ParsedArgs) {
       typesConfig,
       operationIds: entry.operationIds,
       openEnums: entry.openEnums,
+      schemaVersion: entry.schemaVersion,
     })
 
     if (entry.treatyOutput) {
@@ -307,6 +325,7 @@ async function generateSingle(options: {
   typesConfig?: TypesConfig
   operationIds?: string[]
   openEnums?: boolean | string[] | EnumConfig
+  schemaVersion?: SchemaVersion
 }) {
   const {
     inputFile,
@@ -317,6 +336,7 @@ async function generateSingle(options: {
     typesConfig,
     operationIds,
     openEnums,
+    schemaVersion,
   } = options
   const resolvedInput = path.resolve(inputFile)
   const resolvedOutput = path.resolve(outputFile)
@@ -329,6 +349,7 @@ async function generateSingle(options: {
     types: typesConfig,
     operationIds,
     openEnums,
+    schemaVersion,
   })
 
   fs.mkdirSync(path.dirname(resolvedOutput), { recursive: true })
