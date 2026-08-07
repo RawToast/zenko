@@ -7,6 +7,7 @@ import type { OpenAPISpec } from "../zenko"
 export const CONTENT_TYPE_MAP: Record<string, string> = {
   "application/json": "unknown", // Will use schema when available
   "text/csv": "string",
+  "application/csv": "string",
   "text/plain": "string",
   // Binary/ambiguous types default to unknown for cross-platform compatibility
   "application/octet-stream": "unknown",
@@ -43,6 +44,7 @@ function isTextContentType(contentType: string): boolean {
   const normalized = contentType.toLowerCase().split(";")[0]?.trim()
   if (!normalized) return false
   if (normalized.startsWith("text/")) return true
+  if (normalized === "application/csv") return true
   if (normalized === "application/xml") return true
   if (normalized.startsWith("application/") && normalized.endsWith("+xml")) {
     return true

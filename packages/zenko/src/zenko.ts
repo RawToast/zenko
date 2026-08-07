@@ -1,6 +1,10 @@
 import { topologicalSort } from "./utils/topological-sort"
 import { formatPropertyName, isValidJSIdentifier } from "./utils/property-name"
-import { toCamelCase, capitalize } from "./utils/string-utils"
+import {
+  toCamelCase,
+  capitalize,
+  normalizeOperationId,
+} from "./utils/string-utils"
 import { analyzeZenkoUsage, generateZenkoImport } from "./utils/tree-shaking"
 import { collectReferencedSchemas } from "./utils/collect-referenced-schemas"
 import { normalizeSpecForSchemaVersion } from "./utils/normalize-oas2"
@@ -153,10 +157,12 @@ export function generateWithMetadata(
   // Parse all operations early for tree-shaking
   let operations = parseOperations(spec, nameMap)
 
-  // Filter operations if operationIds is provided
+  // Filter operations if operationIds is provided (period-insensitive)
   if (operationIds && operationIds.length > 0) {
-    const selectedIds = new Set(operationIds)
-    operations = operations.filter((op) => selectedIds.has(op.operationId))
+    const selectedIds = new Set(operationIds.map(normalizeOperationId))
+    operations = operations.filter((op) =>
+      selectedIds.has(normalizeOperationId(op.operationId))
+    )
   }
 
   // Generate helper types import right after Zod import
@@ -524,7 +530,40 @@ function appendOperationField(
   value?: string
 ): void {
   if (!value) return
-  buffer.push(`  ${key}: ${value},`)
+  buffer.push(`  ${key}: ${toZodValueReference(value)},`)
+}
+
+/**
+ * Converts a response/request type name into a Zod value expression for
+ * operation object fields. TypeScript type keywords become Zod schemas
+ * (e.g. "unknown" -> "z.unknown()"); named schemas pass through unchanged.
+ * The "undefined" keyword is left as-is so empty error bodies stay `undefined`.
+ */
+function toZodValueReference(typeName: string): string {
+  const normalized = typeName.trim()
+  if (normalized === "undefined") return "undefined"
+  switch (normalized) {
+    case "unknown":
+      return "z.unknown()"
+    case "string":
+      return "z.string()"
+    case "number":
+      return "z.number()"
+    case "boolean":
+      return "z.boolean()"
+    case "null":
+      return "z.null()"
+    case "any":
+      return "z.any()"
+    case "never":
+      return "z.never()"
+    case "void":
+      return "z.void()"
+    case "bigint":
+      return "z.bigint()"
+    default:
+      return typeName
+  }
 }
 
 function appendErrorGroup(
@@ -535,7 +574,9 @@ function appendErrorGroup(
   if (!errors || Object.keys(errors).length === 0) return
   buffer.push(`    ${label}: {`)
   for (const [name, typeName] of Object.entries(errors)) {
-    buffer.push(`      ${formatPropertyName(name)}: ${typeName},`)
+    buffer.push(
+      `      ${formatPropertyName(name)}: ${toZodValueReference(typeName)},`
+    )
   }
   buffer.push("    },")
 }
@@ -804,26 +845,14 @@ function buildErrorBucket(bucket?: OperationErrorMap): string {
   return `{ ${accessibleEntries.join("; ")} }`
 }
 
-const TYPE_KEYWORDS = new Set([
-  "any",
-  "unknown",
-  "never",
-  "void",
-  "null",
-  "undefined",
-  "string",
-  "number",
-  "boolean",
-  "bigint",
-  "symbol",
-])
 const IDENTIFIER_PATTERN = /^[A-Za-z_$][A-Za-z0-9_$]*$/
 
 function wrapTypeReference(typeName?: string): string {
   if (!typeName) return "undefined"
   const normalized = typeName.trim()
   if (normalized === "undefined") return "undefined"
-  if (TYPE_KEYWORDS.has(normalized)) return normalized
+  const zodType = typeKeywordToZodType(normalized)
+  if (zodType) return zodType
   if (normalized.startsWith("typeof ")) return normalized
 
   const arrayMatch = normalized.match(/^z\.array\((.+)\)$/)
@@ -841,7 +870,9 @@ function wrapTypeReference(typeName?: string): string {
 function wrapErrorValueType(typeName?: string): string {
   if (!typeName) return "unknown"
   const normalized = typeName.trim()
-  if (TYPE_KEYWORDS.has(normalized)) return normalized
+  if (normalized === "undefined") return "undefined"
+  const zodType = typeKeywordToZodType(normalized)
+  if (zodType) return zodType
   if (normalized.startsWith("typeof ")) return normalized
 
   const arrayMatch = normalized.match(/^z\.array\((.+)\)$/)
@@ -853,6 +884,31 @@ function wrapErrorValueType(typeName?: string): string {
     return `typeof ${normalized}`
   }
   return normalized
+}
+
+function typeKeywordToZodType(typeName: string): string | undefined {
+  switch (typeName) {
+    case "string":
+      return "z.ZodString"
+    case "number":
+      return "z.ZodNumber"
+    case "boolean":
+      return "z.ZodBoolean"
+    case "unknown":
+      return "z.ZodUnknown"
+    case "any":
+      return "z.ZodAny"
+    case "null":
+      return "z.ZodNull"
+    case "never":
+      return "z.ZodNever"
+    case "void":
+      return "z.ZodVoid"
+    case "bigint":
+      return "z.ZodBigInt"
+    default:
+      return undefined
+  }
 }
 
 function mapHeaderToZodType(header: RequestHeader): string {

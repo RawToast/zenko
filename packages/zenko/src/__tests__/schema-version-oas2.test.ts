@@ -537,26 +537,38 @@ describe("normalizeOas2ToOas3", () => {
   })
 })
 
-describe("schemaVersion with blockscout (Swagger 2.0)", () => {
+describe("schemaVersion with blockscout (OpenAPI 3.0)", () => {
   const blockscoutSpec = loadOpenAPISpec(blockscoutYamlPath)
 
-  test("auto generates response schemas and types from definitions", () => {
+  test("auto generates schemas and strips periods from operationIds", () => {
     const result = generate(blockscoutSpec, { schemaVersion: "auto" })
 
     expect(result).toContain("// Generated Zod Schemas")
-    expect(result).toContain("export const v1Counters")
-    expect(result).toContain("export const rpcStatus")
-    expect(result).toContain("export type StatsService_GetCountersOperation")
-    expect(result).toContain("typeof v1Counters")
-    expect(result).toContain("typeof rpcStatus")
-    expect(result).toContain("export const securitySchemes")
-    expect(result).toContain("ApiKeyAuth")
+    expect(result).toContain("export const Address")
+    expect(result).toContain("export const ArbitrumWithdrawal")
+    expect(result).not.toContain("export const Arbitrum.Withdrawal")
+    expect(result).toContain(
+      "export type BlockScoutWebAPIV2BlockControllerInternal_transactionsOperation"
+    )
+    expect(result).not.toContain(
+      "export type BlockScoutWeb.API.V2.BlockController.internal_transactionsOperation"
+    )
+    expect(result).toContain(
+      "export const BlockScoutWebAPIV2TransactionControllerZksync_batch"
+    )
+    expect(result).toContain(
+      "export const BlockScoutWebAPIV2SearchControllerSearch2"
+    )
+    expect(result).not.toContain("Search (2)")
   })
 
-  test("oas3 skips normalization and leaves responses undefined", () => {
+  test("oas3 generates the same OAS3 schemas without swagger normalization", () => {
     const result = generate(blockscoutSpec, { schemaVersion: "oas3" })
 
-    expect(result).not.toContain("// Generated Zod Schemas")
-    expect(result).toContain("OperationErrors<{ defaultError: undefined }>")
+    expect(result).toContain("// Generated Zod Schemas")
+    expect(result).toContain("export const Address")
+    expect(result).toContain(
+      "export const BlockScoutWebAPIV2TransactionControllerZksync_batch"
+    )
   })
 })

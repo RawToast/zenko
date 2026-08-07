@@ -91,4 +91,63 @@ describe("Selective Operations", () => {
     expect(result).toContain("export const Pets =")
     expect(result).toContain("export const Error =")
   })
+
+  test("matches operationIds with periods stripped", () => {
+    const spec = {
+      openapi: "3.0.0",
+      info: { title: "Dotted Ops", version: "1.0.0" },
+      paths: {
+        "/batch": {
+          get: {
+            operationId:
+              "BlockScoutWeb.API.V2.TransactionController.zksync_batch",
+            responses: {
+              "200": {
+                description: "ok",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: { id: { type: "string" } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "/other": {
+          get: {
+            operationId: "otherOp",
+            responses: {
+              "200": {
+                description: "ok",
+                content: {
+                  "application/json": {
+                    schema: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }
+
+    const withDots = generate(spec, {
+      operationIds: ["BlockScoutWeb.API.V2.TransactionController.zksync_batch"],
+    })
+    expect(withDots).toContain(
+      "BlockScoutWebAPIV2TransactionControllerZksync_batch:"
+    )
+    expect(withDots).not.toContain("otherOp:")
+
+    const stripped = generate(spec, {
+      operationIds: ["BlockScoutWebAPIV2TransactionControllerzksync_batch"],
+    })
+    expect(stripped).toContain(
+      "BlockScoutWebAPIV2TransactionControllerZksync_batch:"
+    )
+    expect(stripped).not.toContain("otherOp:")
+  })
 })

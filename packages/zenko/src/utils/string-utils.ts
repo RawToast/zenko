@@ -1,11 +1,26 @@
 /**
- * Converts a string with hyphens to camelCase.
+ * Converts a string with hyphens, periods, or spaces to a camelCase
+ * JavaScript identifier. Invalid characters (e.g. parentheses) are removed.
  * Example: "Links-Self" -> "LinksSelf"
+ * Example: "Arbitrum.Withdrawal" -> "ArbitrumWithdrawal"
+ * Example: "BlockScoutWeb.API.V2.foo" -> "BlockScoutWebAPIV2Foo"
+ * Example: "search (2)" -> "search2"
  */
 export function toCamelCase(str: string): string {
   return str
-    .replace(/-([a-zA-Z])/g, (_, letter) => letter.toUpperCase())
-    .replace(/-+$/, "") // Remove trailing hyphens
+    .replace(/[()]/g, "")
+    .replace(/[.\-\s]+([a-zA-Z0-9])/g, (_, char) => char.toUpperCase())
+    .replace(/[^a-zA-Z0-9_$]/g, "")
+}
+
+/**
+ * Normalizes an operationId for matching by stripping periods, spaces, and
+ * parentheses. Specs like Blockscout use dotted Elixir-style operationIds
+ * (and occasional " (2)" suffixes); callers may pass either the original or
+ * the sanitized form.
+ */
+export function normalizeOperationId(operationId: string): string {
+  return operationId.replace(/[.\s()]/g, "")
 }
 
 /**

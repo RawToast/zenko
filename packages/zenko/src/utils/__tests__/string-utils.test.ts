@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test"
-import { toCamelCase, capitalize } from "../string-utils"
+import { toCamelCase, capitalize, normalizeOperationId } from "../string-utils"
 
 describe("string-utils", () => {
   describe("toCamelCase", () => {
@@ -10,6 +10,23 @@ describe("string-utils", () => {
       expect(toCamelCase("Links-Pagination")).toBe("LinksPagination")
       expect(toCamelCase("Wrapper-Collection")).toBe("WrapperCollection")
       expect(toCamelCase("Links-Booking")).toBe("LinksBooking")
+    })
+
+    it("should strip periods like hyphens", () => {
+      expect(toCamelCase("Arbitrum.Withdrawal")).toBe("ArbitrumWithdrawal")
+      expect(
+        toCamelCase("BlockScoutWeb.API.V2.TransactionController.zksync_batch")
+      ).toBe("BlockScoutWebAPIV2TransactionControllerZksync_batch")
+      expect(toCamelCase("BlockScoutWeb.API.V2.foo")).toBe(
+        "BlockScoutWebAPIV2Foo"
+      )
+    })
+
+    it("should strip spaces and parentheses", () => {
+      expect(toCamelCase("search (2)")).toBe("search2")
+      expect(
+        toCamelCase("BlockScoutWeb.API.V2.SearchController.search (2)")
+      ).toBe("BlockScoutWebAPIV2SearchControllerSearch2")
     })
 
     it("should handle strings without hyphens", () => {
@@ -30,7 +47,34 @@ describe("string-utils", () => {
     it("should handle edge cases", () => {
       expect(toCamelCase("-leading")).toBe("Leading")
       expect(toCamelCase("trailing-")).toBe("trailing")
+      expect(toCamelCase(".leading")).toBe("Leading")
+      expect(toCamelCase("trailing.")).toBe("trailing")
       expect(toCamelCase("a")).toBe("a")
+    })
+  })
+
+  describe("normalizeOperationId", () => {
+    it("should strip periods for matching", () => {
+      expect(
+        normalizeOperationId(
+          "BlockScoutWeb.API.V2.TransactionController.zksync_batch"
+        )
+      ).toBe("BlockScoutWebAPIV2TransactionControllerzksync_batch")
+      expect(
+        normalizeOperationId(
+          "BlockScoutWebAPIV2TransactionControllerzksync_batch"
+        )
+      ).toBe("BlockScoutWebAPIV2TransactionControllerzksync_batch")
+    })
+
+    it("should strip spaces and parentheses for matching", () => {
+      expect(
+        normalizeOperationId("BlockScoutWeb.API.V2.SearchController.search (2)")
+      ).toBe("BlockScoutWebAPIV2SearchControllersearch2")
+    })
+
+    it("should leave ids without periods unchanged", () => {
+      expect(normalizeOperationId("listPets")).toBe("listPets")
     })
   })
 
