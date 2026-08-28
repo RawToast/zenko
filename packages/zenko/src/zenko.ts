@@ -1,10 +1,6 @@
 import { topologicalSort } from "./utils/topological-sort"
 import { formatPropertyName, isValidJSIdentifier } from "./utils/property-name"
-import {
-  toCamelCase,
-  capitalize,
-  normalizeOperationId,
-} from "./utils/string-utils"
+import { toCamelCase, capitalize } from "./utils/string-utils"
 import {
   toZodValueReference,
   typeKeywordToZodType,
@@ -111,6 +107,53 @@ function resolveEnumConfig(openEnums?: boolean | string[] | EnumConfig): {
   }
 }
 
+function selectOperations(
+  operations: Operation[],
+  operationIds: string[]
+): Operation[] {
+  const selected = new Set<Operation>()
+
+  for (const requestedId of operationIds) {
+    const exactMatches = operations.filter(
+      (operation) => operation.operationId === requestedId
+    )
+    if (exactMatches.length > 0) {
+      for (const operation of exactMatches) selected.add(operation)
+      continue
+    }
+
+    const aliasMatches = operations.filter(
+      (operation) => toCamelCase(operation.operationId) === requestedId
+    )
+    if (aliasMatches.length > 1) {
+      const matchingIds = aliasMatches
+        .map((operation) => `"${operation.operationId}"`)
+        .join(" and ")
+      throw new Error(
+        `Operation ID alias "${requestedId}" is ambiguous between ${matchingIds}`
+      )
+    }
+    if (aliasMatches[0]) selected.add(aliasMatches[0])
+  }
+
+  return operations.filter((operation) => selected.has(operation))
+}
+
+function assertUniqueOperationNames(operations: Operation[]): void {
+  const operationIdByName = new Map<string, string>()
+
+  for (const operation of operations) {
+    const generatedName = toCamelCase(operation.operationId)
+    const existingOperationId = operationIdByName.get(generatedName)
+    if (existingOperationId !== undefined) {
+      throw new Error(
+        `Operation IDs "${existingOperationId}" and "${operation.operationId}" both generate the name "${generatedName}"`
+      )
+    }
+    operationIdByName.set(generatedName, operation.operationId)
+  }
+}
+
 /**
  * Generate TypeScript source with additional metadata about helper files.
  *
@@ -161,13 +204,11 @@ export function generateWithMetadata(
   // Parse all operations early for tree-shaking
   let operations = parseOperations(spec, nameMap)
 
-  // Filter operations if operationIds is provided (period-insensitive)
+  // Filter by exact IDs first, then by the identifiers emitted by the generator.
   if (operationIds && operationIds.length > 0) {
-    const selectedIds = new Set(operationIds.map(normalizeOperationId))
-    operations = operations.filter((op) =>
-      selectedIds.has(normalizeOperationId(op.operationId))
-    )
+    operations = selectOperations(operations, operationIds)
   }
+  assertUniqueOperationNames(operations)
 
   // Generate helper types import right after Zod import
   appendHelperTypesImport(output, typesConfig, operations)

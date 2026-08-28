@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test"
-import { toCamelCase, capitalize, normalizeOperationId } from "../string-utils"
+import { toCamelCase, capitalize } from "../string-utils"
 
 describe("string-utils", () => {
   describe("toCamelCase", () => {
@@ -50,31 +50,6 @@ describe("string-utils", () => {
       expect(toCamelCase(".leading")).toBe("Leading")
       expect(toCamelCase("trailing.")).toBe("trailing")
       expect(toCamelCase("a")).toBe("a")
-    })
-  })
-
-  describe("normalizeOperationId", () => {
-    it("should strip periods for matching", () => {
-      expect(
-        normalizeOperationId(
-          "BlockScoutWeb.API.V2.TransactionController.zksync_batch"
-        )
-      ).toBe("BlockScoutWebAPIV2TransactionControllerzksync_batch")
-      expect(
-        normalizeOperationId(
-          "BlockScoutWebAPIV2TransactionControllerzksync_batch"
-        )
-      ).toBe("BlockScoutWebAPIV2TransactionControllerzksync_batch")
-    })
-
-    it("should strip spaces and parentheses for matching", () => {
-      expect(
-        normalizeOperationId("BlockScoutWeb.API.V2.SearchController.search (2)")
-      ).toBe("BlockScoutWebAPIV2SearchControllersearch2")
-    })
-
-    it("should leave ids without periods unchanged", () => {
-      expect(normalizeOperationId("listPets")).toBe("listPets")
     })
   })
 

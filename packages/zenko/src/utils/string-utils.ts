@@ -14,16 +14,6 @@ export function toCamelCase(str: string): string {
 }
 
 /**
- * Normalizes an operationId for matching by stripping periods, spaces, and
- * parentheses. Specs like Blockscout use dotted Elixir-style operationIds
- * (and occasional " (2)" suffixes); callers may pass either the original or
- * the sanitized form.
- */
-export function normalizeOperationId(operationId: string): string {
-  return operationId.replace(/[.\s()]/g, "")
-}
-
-/**
  * Capitalizes the first letter of a string.
  * Example: "linksSelf" -> "LinksSelf"
  */

@@ -92,7 +92,7 @@ describe("Selective Operations", () => {
     expect(result).toContain("export const Error =")
   })
 
-  test("matches operationIds with periods stripped", () => {
+  test("matches original and emitted operationIds", () => {
     const spec = {
       openapi: "3.0.0",
       info: { title: "Dotted Ops", version: "1.0.0" },
@@ -142,12 +142,70 @@ describe("Selective Operations", () => {
     )
     expect(withDots).not.toContain("otherOp:")
 
-    const stripped = generate(spec, {
-      operationIds: ["BlockScoutWebAPIV2TransactionControllerzksync_batch"],
+    const emitted = generate(spec, {
+      operationIds: ["BlockScoutWebAPIV2TransactionControllerZksync_batch"],
     })
-    expect(stripped).toContain(
+    expect(emitted).toContain(
       "BlockScoutWebAPIV2TransactionControllerZksync_batch:"
     )
-    expect(stripped).not.toContain("otherOp:")
+    expect(emitted).not.toContain("otherOp:")
+  })
+
+  test("prefers exact operationIds over colliding emitted names", () => {
+    const spec = {
+      openapi: "3.0.0",
+      info: { title: "Colliding Ops", version: "1.0.0" },
+      paths: {
+        "/dotted": {
+          get: {
+            operationId: "Foo.Bar",
+            responses: { "200": { description: "ok" } },
+          },
+        },
+        "/plain": {
+          get: {
+            operationId: "FooBar",
+            responses: { "200": { description: "ok" } },
+          },
+        },
+      },
+    }
+
+    const dotted = generate(spec, { operationIds: ["Foo.Bar"] })
+    expect(dotted).toContain('() => "/dotted"')
+    expect(dotted).not.toContain('() => "/plain"')
+
+    const plain = generate(spec, { operationIds: ["FooBar"] })
+    expect(plain).toContain('() => "/plain"')
+    expect(plain).not.toContain('() => "/dotted"')
+  })
+
+  test("rejects colliding emitted operation names", () => {
+    const spec = {
+      openapi: "3.0.0",
+      info: { title: "Colliding Ops", version: "1.0.0" },
+      paths: {
+        "/dotted": {
+          get: {
+            operationId: "Foo.Bar",
+            responses: { "200": { description: "ok" } },
+          },
+        },
+        "/hyphenated": {
+          get: {
+            operationId: "Foo-Bar",
+            responses: { "200": { description: "ok" } },
+          },
+        },
+      },
+    }
+
+    expect(() => generate(spec)).toThrow(
+      'Operation IDs "Foo.Bar" and "Foo-Bar" both generate the name "FooBar"'
+    )
+
+    expect(() => generate(spec, { operationIds: ["FooBar"] })).toThrow(
+      'Operation ID alias "FooBar" is ambiguous between "Foo.Bar" and "Foo-Bar"'
+    )
   })
 })
