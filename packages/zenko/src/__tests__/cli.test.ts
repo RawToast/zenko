@@ -538,21 +538,49 @@ describe("CLI", () => {
 
     const output = fs.readFileSync(configOutput, "utf8")
     expect(output).toContain("// Generated Zod Schemas")
-    expect(output).toContain("export const v1Counters")
+    expect(output).toContain("export const Address")
+    expect(output).toContain(
+      "export const BlockScoutWebAPIV2TransactionControllerZksync_batch"
+    )
   })
 
-  test("supports schemaVersion oas3 in config file", () => {
+  test("supports schemaVersion oas3 in config file for swagger 2.0", () => {
     const cliPath = path.join(process.cwd(), "src/cli.ts")
     const configDir = path.join(tempDir, "schema-version-oas3-config")
     fs.mkdirSync(configDir, { recursive: true })
 
+    const swagger2Path = path.join(configDir, "swagger2.yaml")
+    fs.writeFileSync(
+      swagger2Path,
+      `swagger: "2.0"
+info:
+  title: Demo
+  version: "1.0.0"
+paths:
+  /counters:
+    get:
+      operationId: getCounters
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: "#/definitions/Counters"
+definitions:
+  Counters:
+    type: object
+    properties:
+      total:
+        type: integer
+`
+    )
+
     const configPath = path.join(configDir, "zenko.config.json")
-    const configOutput = path.join(configDir, "blockscout.gen.ts")
+    const configOutput = path.join(configDir, "swagger2.gen.ts")
     const config = {
       schemas: [
         {
-          input: path.relative(configDir, blockscoutYamlPath),
-          output: "blockscout.gen.ts",
+          input: "swagger2.yaml",
+          output: "swagger2.gen.ts",
           schemaVersion: "oas3",
         },
       ],
@@ -564,21 +592,49 @@ describe("CLI", () => {
     })
 
     const output = fs.readFileSync(configOutput, "utf8")
+    // oas3 skips swagger 2.0 normalization, so definitions are not converted
     expect(output).not.toContain("// Generated Zod Schemas")
-    expect(output).toContain("OperationErrors<{ defaultError: undefined }>")
+    expect(output).not.toContain("export const Counters")
+    expect(output).toContain("export const getCounters")
   })
 
   test("supports --schema-version on single-file CLI path", () => {
     const cliPath = path.join(process.cwd(), "src/cli.ts")
-    const outputPath = path.join(tempDir, "blockscout-oas3-cli.ts")
+    const swagger2Path = path.join(tempDir, "swagger2-cli.yaml")
+    const outputPath = path.join(tempDir, "swagger2-oas3-cli.ts")
+
+    fs.writeFileSync(
+      swagger2Path,
+      `swagger: "2.0"
+info:
+  title: Demo
+  version: "1.0.0"
+paths:
+  /counters:
+    get:
+      operationId: getCounters
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: "#/definitions/Counters"
+definitions:
+  Counters:
+    type: object
+    properties:
+      total:
+        type: integer
+`
+    )
 
     execSync(
-      `bun run ${cliPath} ${blockscoutYamlPath} ${outputPath} --schema-version oas3`,
+      `bun run ${cliPath} ${swagger2Path} ${outputPath} --schema-version oas3`,
       { encoding: "utf8" }
     )
 
     const output = fs.readFileSync(outputPath, "utf8")
     expect(output).not.toContain("// Generated Zod Schemas")
-    expect(output).toContain("OperationErrors<{ defaultError: undefined }>")
+    expect(output).not.toContain("export const Counters")
+    expect(output).toContain("export const getCounters")
   })
 })

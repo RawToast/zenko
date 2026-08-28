@@ -11,6 +11,7 @@ describe("CONTENT_TYPE_MAP", () => {
   test("should have expected content type mappings", () => {
     expect(CONTENT_TYPE_MAP["application/json"]).toBe("unknown")
     expect(CONTENT_TYPE_MAP["text/csv"]).toBe("string")
+    expect(CONTENT_TYPE_MAP["application/csv"]).toBe("string")
     expect(CONTENT_TYPE_MAP["text/plain"]).toBe("string")
     expect(CONTENT_TYPE_MAP["application/octet-stream"]).toBe("unknown")
     expect(CONTENT_TYPE_MAP["application/pdf"]).toBe("unknown")

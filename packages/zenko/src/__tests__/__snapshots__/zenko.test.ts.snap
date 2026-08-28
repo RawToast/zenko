@@ -140,7 +140,7 @@ export type GetErrorWithoutSchemaOperation = OperationDefinition<
   undefined,
   typeof GetErrorWithoutSchemaResponse,
   undefined,
-  OperationErrors<{ internalServerError: string }>,
+  OperationErrors<{ internalServerError: z.ZodString }>,
   undefined
 >;
 
@@ -150,7 +150,7 @@ export const getErrorWithoutSchema: GetErrorWithoutSchemaOperation = {
   path: paths.getErrorWithoutSchema,
   response: GetErrorWithoutSchemaResponse,
     errors: {
-      internalServerError: string,
+      internalServerError: z.string(),
     },
 } as const;
 

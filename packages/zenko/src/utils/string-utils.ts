@@ -1,11 +1,16 @@
 /**
- * Converts a string with hyphens to camelCase.
+ * Converts a string with hyphens, periods, or spaces to a camelCase
+ * JavaScript identifier. Invalid characters (e.g. parentheses) are removed.
  * Example: "Links-Self" -> "LinksSelf"
+ * Example: "Arbitrum.Withdrawal" -> "ArbitrumWithdrawal"
+ * Example: "BlockScoutWeb.API.V2.foo" -> "BlockScoutWebAPIV2Foo"
+ * Example: "search (2)" -> "search2"
  */
 export function toCamelCase(str: string): string {
   return str
-    .replace(/-([a-zA-Z])/g, (_, letter) => letter.toUpperCase())
-    .replace(/-+$/, "") // Remove trailing hyphens
+    .replace(/[()]/g, "")
+    .replace(/[.\-\s]+([a-zA-Z0-9])/g, (_, char) => char.toUpperCase())
+    .replace(/[^a-zA-Z0-9_$]/g, "")
 }
 
 /**

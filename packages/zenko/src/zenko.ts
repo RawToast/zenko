@@ -1,6 +1,10 @@
 import { topologicalSort } from "./utils/topological-sort"
 import { formatPropertyName, isValidJSIdentifier } from "./utils/property-name"
 import { toCamelCase, capitalize } from "./utils/string-utils"
+import {
+  toZodValueReference,
+  typeKeywordToZodType,
+} from "./utils/zod-type-refs"
 import { analyzeZenkoUsage, generateZenkoImport } from "./utils/tree-shaking"
 import { collectReferencedSchemas } from "./utils/collect-referenced-schemas"
 import { normalizeSpecForSchemaVersion } from "./utils/normalize-oas2"
@@ -103,6 +107,53 @@ function resolveEnumConfig(openEnums?: boolean | string[] | EnumConfig): {
   }
 }
 
+function selectOperations(
+  operations: Operation[],
+  operationIds: string[]
+): Operation[] {
+  const selected = new Set<Operation>()
+
+  for (const requestedId of operationIds) {
+    const exactMatches = operations.filter(
+      (operation) => operation.operationId === requestedId
+    )
+    if (exactMatches.length > 0) {
+      for (const operation of exactMatches) selected.add(operation)
+      continue
+    }
+
+    const aliasMatches = operations.filter(
+      (operation) => toCamelCase(operation.operationId) === requestedId
+    )
+    if (aliasMatches.length > 1) {
+      const matchingIds = aliasMatches
+        .map((operation) => `"${operation.operationId}"`)
+        .join(" and ")
+      throw new Error(
+        `Operation ID alias "${requestedId}" is ambiguous between ${matchingIds}`
+      )
+    }
+    if (aliasMatches[0]) selected.add(aliasMatches[0])
+  }
+
+  return operations.filter((operation) => selected.has(operation))
+}
+
+function assertUniqueOperationNames(operations: Operation[]): void {
+  const operationIdByName = new Map<string, string>()
+
+  for (const operation of operations) {
+    const generatedName = toCamelCase(operation.operationId)
+    const existingOperationId = operationIdByName.get(generatedName)
+    if (existingOperationId !== undefined) {
+      throw new Error(
+        `Operation IDs "${existingOperationId}" and "${operation.operationId}" both generate the name "${generatedName}"`
+      )
+    }
+    operationIdByName.set(generatedName, operation.operationId)
+  }
+}
+
 /**
  * Generate TypeScript source with additional metadata about helper files.
  *
@@ -153,11 +204,11 @@ export function generateWithMetadata(
   // Parse all operations early for tree-shaking
   let operations = parseOperations(spec, nameMap)
 
-  // Filter operations if operationIds is provided
+  // Filter by exact IDs first, then by the identifiers emitted by the generator.
   if (operationIds && operationIds.length > 0) {
-    const selectedIds = new Set(operationIds)
-    operations = operations.filter((op) => selectedIds.has(op.operationId))
+    operations = selectOperations(operations, operationIds)
   }
+  assertUniqueOperationNames(operations)
 
   // Generate helper types import right after Zod import
   appendHelperTypesImport(output, typesConfig, operations)
@@ -524,7 +575,7 @@ function appendOperationField(
   value?: string
 ): void {
   if (!value) return
-  buffer.push(`  ${key}: ${value},`)
+  buffer.push(`  ${key}: ${toZodValueReference(value)},`)
 }
 
 function appendErrorGroup(
@@ -535,7 +586,9 @@ function appendErrorGroup(
   if (!errors || Object.keys(errors).length === 0) return
   buffer.push(`    ${label}: {`)
   for (const [name, typeName] of Object.entries(errors)) {
-    buffer.push(`      ${formatPropertyName(name)}: ${typeName},`)
+    buffer.push(
+      `      ${formatPropertyName(name)}: ${toZodValueReference(typeName)},`
+    )
   }
   buffer.push("    },")
 }
@@ -804,26 +857,14 @@ function buildErrorBucket(bucket?: OperationErrorMap): string {
   return `{ ${accessibleEntries.join("; ")} }`
 }
 
-const TYPE_KEYWORDS = new Set([
-  "any",
-  "unknown",
-  "never",
-  "void",
-  "null",
-  "undefined",
-  "string",
-  "number",
-  "boolean",
-  "bigint",
-  "symbol",
-])
 const IDENTIFIER_PATTERN = /^[A-Za-z_$][A-Za-z0-9_$]*$/
 
 function wrapTypeReference(typeName?: string): string {
   if (!typeName) return "undefined"
   const normalized = typeName.trim()
   if (normalized === "undefined") return "undefined"
-  if (TYPE_KEYWORDS.has(normalized)) return normalized
+  const zodType = typeKeywordToZodType(normalized)
+  if (zodType) return zodType
   if (normalized.startsWith("typeof ")) return normalized
 
   const arrayMatch = normalized.match(/^z\.array\((.+)\)$/)
@@ -841,7 +882,9 @@ function wrapTypeReference(typeName?: string): string {
 function wrapErrorValueType(typeName?: string): string {
   if (!typeName) return "unknown"
   const normalized = typeName.trim()
-  if (TYPE_KEYWORDS.has(normalized)) return normalized
+  if (normalized === "undefined") return "undefined"
+  const zodType = typeKeywordToZodType(normalized)
+  if (zodType) return zodType
   if (normalized.startsWith("typeof ")) return normalized
 
   const arrayMatch = normalized.match(/^z\.array\((.+)\)$/)

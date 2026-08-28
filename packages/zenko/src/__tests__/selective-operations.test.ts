@@ -91,4 +91,121 @@ describe("Selective Operations", () => {
     expect(result).toContain("export const Pets =")
     expect(result).toContain("export const Error =")
   })
+
+  test("matches original and emitted operationIds", () => {
+    const spec = {
+      openapi: "3.0.0",
+      info: { title: "Dotted Ops", version: "1.0.0" },
+      paths: {
+        "/batch": {
+          get: {
+            operationId:
+              "BlockScoutWeb.API.V2.TransactionController.zksync_batch",
+            responses: {
+              "200": {
+                description: "ok",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: { id: { type: "string" } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "/other": {
+          get: {
+            operationId: "otherOp",
+            responses: {
+              "200": {
+                description: "ok",
+                content: {
+                  "application/json": {
+                    schema: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }
+
+    const withDots = generate(spec, {
+      operationIds: ["BlockScoutWeb.API.V2.TransactionController.zksync_batch"],
+    })
+    expect(withDots).toContain(
+      "BlockScoutWebAPIV2TransactionControllerZksync_batch:"
+    )
+    expect(withDots).not.toContain("otherOp:")
+
+    const emitted = generate(spec, {
+      operationIds: ["BlockScoutWebAPIV2TransactionControllerZksync_batch"],
+    })
+    expect(emitted).toContain(
+      "BlockScoutWebAPIV2TransactionControllerZksync_batch:"
+    )
+    expect(emitted).not.toContain("otherOp:")
+  })
+
+  test("prefers exact operationIds over colliding emitted names", () => {
+    const spec = {
+      openapi: "3.0.0",
+      info: { title: "Colliding Ops", version: "1.0.0" },
+      paths: {
+        "/dotted": {
+          get: {
+            operationId: "Foo.Bar",
+            responses: { "200": { description: "ok" } },
+          },
+        },
+        "/plain": {
+          get: {
+            operationId: "FooBar",
+            responses: { "200": { description: "ok" } },
+          },
+        },
+      },
+    }
+
+    const dotted = generate(spec, { operationIds: ["Foo.Bar"] })
+    expect(dotted).toContain('() => "/dotted"')
+    expect(dotted).not.toContain('() => "/plain"')
+
+    const plain = generate(spec, { operationIds: ["FooBar"] })
+    expect(plain).toContain('() => "/plain"')
+    expect(plain).not.toContain('() => "/dotted"')
+  })
+
+  test("rejects colliding emitted operation names", () => {
+    const spec = {
+      openapi: "3.0.0",
+      info: { title: "Colliding Ops", version: "1.0.0" },
+      paths: {
+        "/dotted": {
+          get: {
+            operationId: "Foo.Bar",
+            responses: { "200": { description: "ok" } },
+          },
+        },
+        "/hyphenated": {
+          get: {
+            operationId: "Foo-Bar",
+            responses: { "200": { description: "ok" } },
+          },
+        },
+      },
+    }
+
+    expect(() => generate(spec)).toThrow(
+      'Operation IDs "Foo.Bar" and "Foo-Bar" both generate the name "FooBar"'
+    )
+
+    expect(() => generate(spec, { operationIds: ["FooBar"] })).toThrow(
+      'Operation ID alias "FooBar" is ambiguous between "Foo.Bar" and "Foo-Bar"'
+    )
+  })
 })
